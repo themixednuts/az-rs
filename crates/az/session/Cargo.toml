@@ -1,0 +1,76 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-session"
+version = "0.1.0"
+edition.workspace = true
+description = "Azoth editor session supervision core"
+
+[[bin]]
+name = "az-session-exit-probe"
+path = "tests/fixtures/service_exit_probe.rs"
+test = false
+bench = false
+required-features = ["test-support"]
+
+[[test]]
+name = "service_exit_evidence"
+path = "tests/service_exit_evidence.rs"
+required-features = ["test-support"]
+
+
+[lints]
+workspace = true
+[features]
+default = []
+test-support = []
+
+[dependencies]
+az-asset = { path = "../asset" }
+az-observability = { path = "../observability" }
+az-filesystem = { workspace = true }
+az-project = { path = "../project" }
+az-proto-asset = { path = "../proto/asset" }
+az-proto-core = { path = "../proto/core" }
+az-proto-observability = { path = "../proto/observability" }
+az-proto-project = { path = "../proto/project" }
+az-proto-runtime = { path = "../proto/runtime" }
+az-proto-session = { path = "../proto/session" }
+az-rpc = { workspace = true }
+az-service-catalog = { workspace = true }
+az-service-supervision = { workspace = true }
+az-work = { workspace = true, features = ["process"] }
+capnp = { workspace = true }
+capnp-rpc = { workspace = true }
+crossbeam-channel = { workspace = true }
+futures = { workspace = true }
+fs2 = "0.4.3"
+serde = { workspace = true, features = ["derive"] }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+toml = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+
+[target.'cfg(windows)'.dependencies]
+windows = { workspace = true, features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_System_JobObjects",
+    "Win32_System_Threading",
+] }
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+[dev-dependencies]
+az-architecture-guard = { workspace = true }
+az-service-entrypoint = { workspace = true }
+clap = { workspace = true }
+az-asset-processor = { path = "../asset-processor", features = ["test-support"] }
+az-gem-contract = { workspace = true }
+az-assetdb = { path = "../assetdb" }
+az-node-graph = { path = "../node-graph" }
+az-project-host = { path = "../project-host", features = ["test-support"] }
+az-runtime-host = { path = "../runtime-host", features = ["test-support"] }
+tempfile = "3"

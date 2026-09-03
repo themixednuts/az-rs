@@ -1,0 +1,20 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-material-nodes"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Azoth built-in material graph node library and material graph type"
+
+[lints]
+workspace = true
+
+[dependencies]
+az-core = { workspace = true }
+az-material = { workspace = true }
+az-node-graph = { workspace = true }
+glam = { workspace = true }
+
+[dev-dependencies]
+az-gem-contract = { workspace = true }

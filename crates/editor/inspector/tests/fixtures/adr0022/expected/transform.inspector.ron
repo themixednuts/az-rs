@@ -1,0 +1,14 @@
+(
+    case: "transform",
+    schema: "azoth.transform.Transform",
+    type_label: "Transform",
+    category: Some("Core"),
+    icon: Some("open_with"),
+    fields: [
+        (name: "position", label: "Position", schema_type: "core.vec3", widget: "vec3:m", default: Some("struct{1=float:0,2=float:0,3=float:0}"), constraints: ()),
+        (name: "rotation", label: "Rotation", schema_type: "core.quat", widget: "quat:", default: Some("struct{1=float:0,2=float:0,3=float:0,4=float:1}"), constraints: ()),
+        (name: "scale", label: "Scale", schema_type: "core.vec3", widget: "vec3:", default: Some("struct{1=float:1,2=float:1,3=float:1}"), constraints: ()),
+    ],
+    add_component: Some((editor_export: true, runtime_export: true, provides: ["azoth.transform"], requires: [], incompatible: ["azoth.transform"], default_available: true)),
+    behaviors: ["vector", "default_construction", "add_component"],
+)

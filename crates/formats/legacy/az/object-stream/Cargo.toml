@@ -1,0 +1,33 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-objectstream"
+version = "0.1.0"
+edition.workspace = true
+
+
+[lints]
+workspace = true
+[lib]
+name = "az_objectstream"
+path = "src/lib.rs"
+
+[dependencies]
+arcstr = { workspace = true }
+az-asset = { path = "../../../../az/asset" }
+az-core = { path = "../../../../az/core" }
+crc32fast = { workspace = true }
+hex = { workspace = true }
+quick-xml = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true, features = ["preserve_order"] }
+thiserror = { workspace = true }
+uuid = { workspace = true, features = ["serde"] }
+
+[dev-dependencies]
+bevy_color = { workspace = true }
+criterion = { workspace = true }
+
+[[bench]]
+name = "parse"
+harness = false

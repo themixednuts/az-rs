@@ -1,0 +1,27 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-gem-fast-noise"
+version = "0.1.0"
+edition = "2024"
+description = "Lumberyard FastNoise Gem component data as a Bevy plugin"
+
+
+[lints]
+workspace = true
+[dependencies]
+az-gem-contract = { workspace = true }
+az-core = { workspace = true }
+az-derive = { workspace = true }
+az-prefab = { workspace = true }
+bevy = { workspace = true, features = ["default_app", "common_api"] }
+bracket-noise = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+azoth-fast-noise-ids = { path = "ids" }
+
+[features]
+default = ["bevy"]
+bevy = ["az-core/bevy"]

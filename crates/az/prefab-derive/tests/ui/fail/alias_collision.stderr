@@ -1,0 +1,27 @@
+error: Prefab canonical/alias tag collision
+  --> tests/ui/fail/alias_collision.rs:11:17
+   |
+11 |     alias(tag = "Old", version = 1)
+   |                 ^^^^^
+
+error[E0277]: the trait bound `PrefabTypeData: FromType<AliasCollision>` is not satisfied
+ --> tests/ui/fail/alias_collision.rs:6:31
+  |
+5 | #[derive(Component, Reflect, Default, Prefab)]
+  |                     ------- required by a bound introduced by this call
+6 | #[reflect(Component, Default, Prefab)]
+  |                               ^^^^^^ the trait `FromType<AliasCollision>` is not implemented for `PrefabTypeData`
+  |
+help: the trait `FromType<AliasCollision>` is not implemented for `PrefabTypeData`
+      but trait `FromType<MultiInstanceOf>` is implemented for it
+ --> $WORKSPACE/crates/az/prefab/src/multi_instance.rs
+  |
+  | #[derive(Component, Reflect, Clone, Default, PartialEq, Eq, Prefab)]
+  |                                                             ^^^^^^
+  = help: for that trait implementation, expected `MultiInstanceOf`, found `AliasCollision`
+note: required by a bound in `TypeRegistration::register_type_data`
+ --> $CARGO/bevy_reflect-$VERSION/src/type_registry.rs
+  |
+  |     pub fn register_type_data<T: TypeData + FromType<V>, V>(&mut self) {
+  |                                             ^^^^^^^^^^^ required by this bound in `TypeRegistration::register_type_data`
+  = note: this error originates in the derive macro `Prefab` (in Nightly builds, run with -Z macro-backtrace for more info)

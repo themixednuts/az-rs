@@ -1,0 +1,22 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-proto-session"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Cap'n Proto protocol types for Azoth session supervision"
+
+
+[lints]
+workspace = true
+[dependencies]
+az-proto-asset = { path = "../asset" }
+az-proto-core = { path = "../core" }
+az-proto-project = { path = "../project" }
+az-proto-runtime = { path = "../runtime" }
+capnp = { workspace = true }
+uuid = { workspace = true }
+
+[build-dependencies]
+az-proto-build = { path = "../build" }

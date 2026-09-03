@@ -1,0 +1,54 @@
+[manifest]
+kind = "gem"
+schema = "azoth.gem/v3"
+
+[gem]
+id = "azoth.eos"
+name = "Epic Online Services"
+version = "0.1.0"
+
+[paths]
+assets = "assets"
+scripts = "scripts"
+
+[[contributions]]
+id = "client-runtime"
+kind = "code"
+package = "az-gem-eos"
+roles = ["client", "unified"]
+
+[[contributions]]
+id = "anti-cheat-client"
+kind = "code"
+package = "az-gem-eos"
+roles = ["client", "unified"]
+
+[[contributions]]
+id = "server-runtime"
+kind = "code"
+package = "az-gem-eos"
+roles = ["server", "unified", "headless-server"]
+
+[capabilities.client-runtime]
+label = "Client Runtime SDK"
+description = "EOS client runtime SDK integration."
+contributions = ["client-runtime"]
+cargo_features = ["client-runtime"]
+
+[capabilities.anti-cheat-client]
+label = "Anti-Cheat Client"
+description = "EOS Anti-Cheat client runtime integration."
+contributions = ["anti-cheat-client"]
+cargo_features = ["anti-cheat-client"]
+
+[capabilities.server-runtime]
+label = "Server Runtime SDK"
+description = "EOS server runtime SDK integration."
+contributions = ["server-runtime"]
+cargo_features = ["server-runtime"]
+
+[capabilities.anti-cheat-server]
+label = "Anti-Cheat Server"
+description = "Compatibility alias for the explicit EOS server runtime selection."
+contributions = ["server-runtime"]
+cargo_features = ["server-runtime"]

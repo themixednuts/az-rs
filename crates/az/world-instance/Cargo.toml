@@ -1,0 +1,21 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-world-instance"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Provider-neutral authoritative WorldInstance lifecycle contracts"
+
+[lints]
+workspace = true
+
+[dependencies]
+serde = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+az-architecture-guard = { workspace = true }
+toml = { workspace = true }
+trybuild = "1"

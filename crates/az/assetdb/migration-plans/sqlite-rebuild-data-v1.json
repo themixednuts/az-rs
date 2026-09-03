@@ -1,0 +1,198 @@
+{
+  "version": 1,
+  "plans": [
+    {
+      "predecessorSnapshotId": "b4b991c6-73d8-4bb9-abab-e558bc51ba32",
+      "tables": [
+        {
+          "table": "asset_identities",
+          "columns": [
+            {
+              "target": "content_hash",
+              "expression": {
+                "kind": "hexTextToBlob",
+                "source": "content_hash",
+                "bytes": 32
+              }
+            }
+          ]
+        },
+        {
+          "table": "asset_path_history",
+          "columns": [
+            {
+              "target": "content_hash",
+              "expression": {
+                "kind": "hexTextToBlob",
+                "source": "content_hash",
+                "bytes": 32
+              }
+            }
+          ]
+        },
+        {
+          "table": "workspace_source_roots",
+          "validations": [
+            {
+              "kind": "jsonValid",
+              "column": "excluded_paths"
+            }
+          ]
+        },
+        {
+          "table": "workspace_asset_entries",
+          "columns": [
+            {
+              "target": "content_hash",
+              "expression": {
+                "kind": "hexTextToBlob",
+                "source": "content_hash",
+                "bytes": 32
+              }
+            }
+          ],
+          "validations": [
+            {
+              "kind": "integerSet",
+              "column": "status",
+              "allowed": [
+                0,
+                1,
+                2,
+                3,
+                4
+              ]
+            }
+          ]
+        },
+        {
+          "table": "authored_documents",
+          "columns": [
+            {
+              "target": "content_hash",
+              "expression": {
+                "kind": "hexTextToBlob",
+                "source": "content_hash",
+                "bytes": 32
+              }
+            }
+          ]
+        },
+        {
+          "table": "source_payloads",
+          "columns": [
+            {
+              "target": "content_hash",
+              "expression": {
+                "kind": "hexTextToBlob",
+                "source": "content_hash",
+                "bytes": 32
+              }
+            }
+          ]
+        },
+        {
+          "table": "source_dependency",
+          "columns": [
+            {
+              "target": "type_of_dependency",
+              "expression": {
+                "kind": "integerMap",
+                "source": "type_of_dependency",
+                "cases": [
+                  {
+                    "from": 1,
+                    "to": 0
+                  },
+                  {
+                    "from": 2,
+                    "to": 1
+                  },
+                  {
+                    "from": 4,
+                    "to": 2
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "table": "asset_job_attempts",
+          "validations": [
+            {
+              "kind": "integerSet",
+              "column": "status",
+              "allowed": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5
+              ]
+            }
+          ]
+        },
+        {
+          "table": "asset_job_current_attempts",
+          "validations": [
+            {
+              "kind": "integerSet",
+              "column": "status",
+              "allowed": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5
+              ]
+            }
+          ]
+        },
+        {
+          "table": "asset_job_attempt_dependencies",
+          "validations": [
+            {
+              "kind": "integerSet",
+              "column": "dependency_type",
+              "allowed": [
+                0,
+                1,
+                2
+              ]
+            }
+          ]
+        },
+        {
+          "table": "asset_job_attempt_products",
+          "columns": [
+            {
+              "target": "content_hash",
+              "expression": {
+                "kind": "hexTextToBlob",
+                "source": "content_hash",
+                "bytes": 32
+              }
+            }
+          ],
+          "validations": [
+            {
+              "kind": "jsonValid",
+              "column": "catalog_aliases"
+            },
+            {
+              "kind": "integerSet",
+              "column": "catalog_path_registration",
+              "allowed": [
+                0,
+                1
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

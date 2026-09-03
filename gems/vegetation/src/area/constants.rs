@@ -1,0 +1,11 @@
+use uuid::{Uuid, uuid};
+
+pub const VEGETATION_SPAWNER_COMPONENT_TYPE_ID: Uuid =
+    uuid!("6287D96B-C31F-48D3-9A86-9C8DD6538253");
+pub const VEGETATION_SPAWNER_CONFIG_TYPE_ID: Uuid = uuid!("D8ADF158-DF5E-4FBE-9A29-1B8C9961C024");
+
+pub const BACKGROUND_LAYER: u32 = 0;
+pub const FOREGROUND_LAYER: u32 = 1;
+pub const PRIORITY_MIN: u32 = 0;
+pub const PRIORITY_MAX: u32 = 10000;
+pub const PRIORITY_SOFT_MAX: u32 = 100;

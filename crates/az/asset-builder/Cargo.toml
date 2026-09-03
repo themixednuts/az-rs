@@ -1,0 +1,49 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-asset-builder"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Azoth asset build-rule SDK: BuildRule, AssetBuilderPattern, BuildProduct, and AssetId derivation."
+
+# This is the offline build-pipeline SDK — the Rust port of O3DE's
+# `Code/Tools/AssetProcessor/AssetBuilderSDK/AssetBuilderSDK/AssetBuilderSDK.h`.
+# Build rules register source matchers and produce `BuildProduct`s. Project
+# workers walk builders, call `create_jobs` / `process_job`, and persist
+# worktree source entries, job attempts, verified products, and dependency facts
+# through the registry/catalog model.
+#
+# This crate has zero project/game knowledge — it's the SDK only. Concrete
+# builders live in project/gem crates and are linked into project-owned workers.
+
+
+[lints]
+workspace = true
+
+[features]
+default = []
+# Registers the `az.test.raw` product format for test fixtures that need an
+# arbitrary registered byte format. Production processes register no format
+# from this SDK (ADR 0010 end state).
+test-support = []
+
+[dependencies]
+# UUID handle for BuilderId / AssetId.guid.
+az-asset = { workspace = true }
+az-core = { workspace = true }
+az-asset-builder-derive = { workspace = true }
+az-filesystem = { workspace = true }
+# Registrar surface only — this SDK never touches a Bevy `App`.
+az-gem-contract = { workspace = true }
+az-work = { workspace = true }
+blake3 = { workspace = true }
+uuid = { workspace = true }
+thiserror = { workspace = true }
+regex = { workspace = true }
+inventory = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

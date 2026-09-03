@@ -1,0 +1,338 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "id": "9f60bab0-d939-4eed-8bd7-08c6e437fc33",
+  "prevIds": [
+    "00000000-0000-0000-0000-000000000000"
+  ],
+  "ddl": [
+    {
+      "entityType": "tables",
+      "name": "project_ui_states"
+    },
+    {
+      "entityType": "columns",
+      "table": "project_ui_states",
+      "name": "project_key",
+      "type": "text",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "project_ui_states",
+      "name": "state_version",
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "project_ui_states",
+      "name": "last_mode",
+      "type": "text",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "project_ui_states",
+      "name": "asset_view_mode",
+      "type": "text",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "project_ui_states",
+      "name": "asset_folder_key",
+      "type": "text",
+      "notNull": false,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "project_ui_states",
+      "name": "active_level_document_id",
+      "type": "text",
+      "notNull": false,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "project_ui_states",
+      "name": "window_x",
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "project_ui_states",
+      "name": "window_y",
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "project_ui_states",
+      "name": "window_width",
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "project_ui_states",
+      "name": "window_height",
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "project_ui_states",
+      "name": "window_maximized",
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "project_ui_states",
+      "name": "updated_unix_ms",
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "pks",
+      "table": "project_ui_states",
+      "name": "project_ui_states_pkey",
+      "columns": [
+        "project_key"
+      ],
+      "nameExplicit": false
+    },
+    {
+      "entityType": "tables",
+      "name": "db_info"
+    },
+    {
+      "entityType": "columns",
+      "table": "db_info",
+      "name": "row_id",
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "db_info",
+      "name": "version",
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "pks",
+      "table": "db_info",
+      "name": "db_info_pkey",
+      "columns": [
+        "row_id"
+      ],
+      "nameExplicit": false
+    },
+    {
+      "entityType": "tables",
+      "name": "project_manager_preferences"
+    },
+    {
+      "entityType": "columns",
+      "table": "project_manager_preferences",
+      "name": "row_id",
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "project_manager_preferences",
+      "name": "recent_layout",
+      "type": "text",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "project_manager_preferences",
+      "name": "recent_sort",
+      "type": "text",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "project_manager_preferences",
+      "name": "pinned_project_ids_json",
+      "type": "text",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "project_manager_preferences",
+      "name": "updated_unix_ms",
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "pks",
+      "table": "project_manager_preferences",
+      "name": "project_manager_preferences_pkey",
+      "columns": [
+        "row_id"
+      ],
+      "nameExplicit": false
+    },
+    {
+      "entityType": "tables",
+      "name": "workspace_ui_layouts"
+    },
+    {
+      "entityType": "columns",
+      "table": "workspace_ui_layouts",
+      "name": "layout_key",
+      "type": "text",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "workspace_ui_layouts",
+      "name": "project_key",
+      "type": "text",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "workspace_ui_layouts",
+      "name": "mode",
+      "type": "text",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "workspace_ui_layouts",
+      "name": "state_version",
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "workspace_ui_layouts",
+      "name": "layout_json",
+      "type": "text",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "workspace_ui_layouts",
+      "name": "updated_unix_ms",
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "pks",
+      "table": "workspace_ui_layouts",
+      "name": "workspace_ui_layouts_pkey",
+      "columns": [
+        "layout_key"
+      ],
+      "nameExplicit": false
+    }
+  ],
+  "renames": []
+}

@@ -1,0 +1,21 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "cry-system-assets"
+version = "0.1.0"
+edition.workspace = true
+description = "Engine-owned CrySystem config-script source transform and builder"
+
+
+[lints]
+workspace = true
+[dependencies]
+az-asset-builder = { workspace = true }
+az-core = { workspace = true }
+az-gem-contract = { workspace = true }
+cry-system = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+toml = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }

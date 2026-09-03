@@ -1,0 +1,39 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-gem-lyshine"
+version = "0.1.0"
+edition = "2024"
+description = "LyShine Gem UI boot data and Bevy integration"
+
+[package.metadata.azoth]
+legacy-runtime-compatibility = ["az-lua-bytecode", "lyshine"]
+
+
+[lints]
+workspace = true
+[features]
+default = []
+
+[dependencies]
+az-gem-contract = { workspace = true }
+az-asset = { path = "../../crates/az/asset" }
+az-core = { path = "../../crates/az/core", features = ["serde"] }
+az-derive = { workspace = true }
+az-framework = { path = "../../crates/az/framework" }
+az-gem-texture-atlas = { path = "../texture-atlas" }
+bevy = { workspace = true, features = ["ui_bevy_render", "bevy_sprite", "scene", "dds"] }
+bevy_mod_scripting = { workspace = true }
+bink = { path = "../../crates/formats/bink" }
+logging-registry = { path = "../../crates/integrations/logging-registry" }
+lyshine = { path = "../../crates/formats/legacy/lumberyard/lyshine" }
+az-lua-bytecode = { path = "../../crates/import/legacy/lua/lua-bytecode" }
+quick-xml = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+azoth-lyshine-ids = { path = "ids" }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }

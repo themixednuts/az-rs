@@ -1,0 +1,20 @@
+[manifest]
+kind = "gem"
+schema = "azoth.gem/v3"
+
+[gem]
+id = "azoth.slayer-script"
+name = "SlayerScript"
+version = "0.1.0"
+
+[[contributions]]
+id = "package"
+kind = "code"
+package = "az-gem-slayer-script"
+roles = ["game", "p2p", "client", "server", "unified", "headless-server", "project-host", "runtime-host"]
+
+[[contributions]]
+id = "prefab-types"
+kind = "builder"
+package = "az-gem-slayer-script"
+roles = ["asset-worker"]

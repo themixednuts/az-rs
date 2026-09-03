@@ -1,0 +1,59 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-project-host"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Project-host service adapter for reflected project sources and Cap'n Proto RPCs"
+
+
+[lints]
+workspace = true
+[features]
+default = []
+test-support = []
+
+[dependencies]
+az-core = { workspace = true }
+az-asset-builder = { workspace = true }
+az-filesystem = { path = "../filesystem" }
+az-framework = { workspace = true }
+az-gem-contract = { workspace = true }
+az-material = { workspace = true }
+az-terrain = { workspace = true }
+gamedata = { workspace = true, features = ["authoring"] }
+az-node-graph = { workspace = true }
+az-prefab = { workspace = true }
+az-project = { path = "../project" }
+az-render = { workspace = true }
+az-proto-core = { path = "../proto/core" }
+az-proto-asset = { path = "../proto/asset" }
+az-proto-project = { path = "../proto/project" }
+az-proto-runtime = { path = "../proto/runtime" }
+az-proto-session = { path = "../proto/session" }
+az-rpc = { workspace = true }
+az-transform = { workspace = true }
+bevy_ecs = { workspace = true }
+bevy_reflect = { workspace = true }
+capnp = { workspace = true }
+capnp-rpc = { workspace = true }
+blake3 = { workspace = true }
+futures = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+az-architecture-guard = { workspace = true }
+# The three engine bundles a `project-host` role names (asset-contract ticket
+# 014, D5). Dev-only: production project-host still composes nothing and says
+# so, and the architecture guard that keeps the asset pipeline out of this
+# crate reads production dependencies for exactly that reason.
+az-engine-assets = { workspace = true }
+az-engine-builders = { workspace = true }
+az-engine-types = { workspace = true }
+glam = { workspace = true }
+tempfile = "3"
+toml = { workspace = true }

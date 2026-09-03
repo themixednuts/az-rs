@@ -1,0 +1,34 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-engine-builders"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Engine contribution bundle: the build rules, source schemas and product formats the engine owns"
+publish = false
+
+[lints]
+workspace = true
+
+# The engine crates the three pipeline roles link — and the reason a `client`
+# target does not link `az-texture-builder` (ADR 0036 linkage duality). Every
+# vendor-format source family the engine claims is in this list; a source root
+# the host cannot classify is a source root nothing builds.
+[dependencies]
+az-animation = { workspace = true }
+az-gem-contract = { workspace = true }
+az-graph-builder = { workspace = true }
+az-lua-bytecode = { workspace = true }
+az-material-builder = { workspace = true }
+az-mesh-builder = { workspace = true }
+az-nv-cloth = { workspace = true }
+az-prefab-builder = { workspace = true }
+az-terrain-builder = { workspace = true }
+az-texture-builder = { workspace = true }
+bink = { path = "../../formats/bink" }
+cry-character-assets = { workspace = true }
+cry-localization = { workspace = true }
+cry-system-assets = { workspace = true }
+cry-text = { workspace = true }
+cry-xml-assets = { workspace = true }

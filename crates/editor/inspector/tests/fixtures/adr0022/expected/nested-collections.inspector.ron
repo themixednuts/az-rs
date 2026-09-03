@@ -1,0 +1,14 @@
+(
+    case: "nested_collections",
+    schema: "azoth.phase0.NestedCollections",
+    type_label: "Nested Collections",
+    category: Some("Phase 0"),
+    icon: None,
+    fields: [
+        (name: "items", label: "Items", schema_type: "core.list<azoth.phase0.NestedItem>", widget: "default", default: Some("list[]"), constraints: ()),
+        (name: "weights_by_name", label: "Weights By Name", schema_type: "core.map<core.string,core.f32>", widget: "default", default: Some("map{}"), constraints: ()),
+        (name: "mode", label: "Mode", schema_type: "azoth.phase0.NestedMode", widget: "dropdown", default: Some("variant:21()"), constraints: ()),
+    ],
+    add_component: None,
+    behaviors: ["nested_struct", "list", "map", "string_map_keys", "enum_variant"],
+)

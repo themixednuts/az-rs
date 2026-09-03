@@ -1,0 +1,52 @@
+target/
+ssl_keylog.txt
+sslkeylog.txt
+steam_appid.txt
+tmp/
+.env
+.env.*
+!.env.example
+.claude
+.agents
+.cursor
+.codemogger
+.codex
+.lore/
+.vscode
+.zed
+.cargo-ok
+nul
+__pycache__/
+*.pyc
+*.class
+node_modules/
+.svelte-kit/
+crates/tools/nwcap-web/build/
+
+# Local reverse-engineering snapshots and generated app dumps.
+rcd*.json
+resources/componentapp*.json
+resources/assetcatalog*.catalog
+resources/datasheets/
+
+# Runtime captures are local diagnostics and must be curated before commit.
+resources/captures/**/*.bin
+resources/captures/live/
+resources/captures/vendor/
+
+# EOS SDK tool installers are local/vendor payloads and exceed normal Git limits.
+resources/EOS-SDK-*/SDK/Tools/
+resources/EOS-SDK-*/Samples/
+
+# Local runtime logs generated during GUI development.
+run-rebased-*.log
+run-*.log
+
+# Local agent scratch files and GUI/debug logs.
+/.scratch/
+/myeasylog.log
+/ui-log.txt
+
+# Proprietary Oodle SDK binaries stay outside version control.
+/vendor/oodle/*
+!/vendor/oodle/README.md

@@ -1,0 +1,14 @@
+[manifest]
+kind = "gem"
+schema = "azoth.gem/v3"
+
+[gem]
+id = "azoth.historical-input"
+name = "Historical Input"
+version = "0.1.0"
+
+[[contributions]]
+id = "package"
+kind = "code"
+package = "az-gem-historical-input"
+roles = ["game", "p2p", "client", "unified", "project-host", "runtime-host"]

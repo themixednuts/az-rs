@@ -1,0 +1,5 @@
+# Windows CI selects its vcpkg triplet explicitly. Keeping that setting out of
+# the shared config lets native Linux builds use their system OpenSSL normally.
+#
+# Do not set [build].incremental here. Cargo treats that as a global override
+# for all profiles, which prevents per-crate profile settings from taking effect.

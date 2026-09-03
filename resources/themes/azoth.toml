@@ -1,0 +1,254 @@
+#:schema ./schema.json
+# AZoth - The AZoth game-engine editor theme.
+# A cool blue-grey game-engine dark UI with an electric-blue accent, plus a
+# matching light mode. (Palette derived from the AZoth editor design system.)
+name = "AZoth"
+
+# Tight, engine-style chrome: small radius, compact 12px base type.
+radius = 5.0
+
+# Design fonts from the exported editor mockups: IBM Plex Sans for chrome, IBM Plex Mono
+# for paths/hashes/versions/service data.
+[font]
+size = 12.0           # Base UI body size
+family = "IBM Plex Sans"
+mono_family = "IBM Plex Mono"
+mono_size = 12.0
+
+# ----------------------------------------------------------------------------
+# Dark variant (primary) — the canonical AZoth look.
+# ----------------------------------------------------------------------------
+[dark.colors]
+# Core surfaces
+background = "#15171b"          # window / viewport (deepest)
+foreground = "#d6dae0"          # primary text
+border = "#2c313a"              # main separators / panel borders
+axis_x = "#d9645e"              # viewport axis X
+axis_x_muted = "#a8524d"        # status-bar axis X
+axis_y = "#67b96a"              # viewport axis Y
+axis_y_muted = "#4d8a4f"        # status-bar axis Y
+axis_z = "#5b8fd6"              # viewport axis Z
+axis_z_muted = "#436a9e"        # status-bar axis Z
+group_box = "#1c2025"           # toolbar band
+group_box_foreground = "#d6dae0"
+drag_border = "#363c46"         # popover/modal border
+drop_target = "#4188e059"
+
+# Accent (electric blue)
+accent = "#4188e0"
+accent_foreground = "#ffffff"
+
+# Primary action (Build button / selected fill)
+primary = "#2f6ad0"
+primary_hover = "#3d78de"
+primary_active = "#3160a8"
+primary_foreground = "#ffffff"
+
+# Secondary surfaces (hover chips / secondary buttons)
+secondary = "#22262c"
+secondary_hover = "#2a2f37"
+secondary_active = "#2c313a"
+secondary_foreground = "#c2c8d0"
+
+# Status — danger (errors / close hover)
+danger = "#c0453f"
+danger_hover = "#cd524c"
+danger_active = "#a83a35"
+danger_foreground = "#ffffff"
+
+# Status — success (ready / play)
+success = "#57b97e"
+success_hover = "#63c489"
+success_active = "#4aa46e"
+success_foreground = "#0f1a13"
+
+# Status — warning (unsaved / warnings)
+warning = "#d6a23b"
+warning_hover = "#e0ad48"
+warning_active = "#bd8d2e"
+warning_foreground = "#1a1405"
+
+# Status — info
+info = "#4188e0"
+info_hover = "#5295e6"
+info_active = "#3160a8"
+info_foreground = "#ffffff"
+
+# Inputs
+input = "#16181c"
+caret = "#4188e0"
+selection = "#4188e059"         # accent @ 35% alpha (text selection)
+ring = "#4188e0"
+
+# Muted surfaces / dim text
+muted = "#22262c"
+muted_foreground = "#8b919c"
+skeleton = "#22262c"
+
+# Lists / tree rows
+list = "#1b1e23"
+list_active = "#202d3d"         # accent @ 14% over panel
+list_hover = "#23262b"          # white @ 3.5% over panel
+list_active_border = "#4188e0"
+list_even = "#181b20"
+list_head = "#191c21"
+
+# Popovers / overlays / scrollbars
+popover = "#23272e"
+popover_foreground = "#cfd4db"
+overlay = "#08090b9e"
+scrollbar = "#00000000"
+scrollbar_thumb = "#39404b"
+scrollbar_thumb_hover = "#454d59"
+progress_bar = "#4188e0"
+slider_bar = "#2c313a"
+slider_thumb = "#cfd4db"
+switch = "#3a3f48"
+switch_thumb = "#9aa1ac"
+
+# Tabs
+tab = "#1a1d22"
+tab_active = "#1b1e23"
+tab_active_foreground = "#e4e7ec"
+tab_foreground = "#8b919c"
+tab_bar = "#1a1d22"
+tab_bar_segmented = "#16181c"
+
+# Docks / sidebars
+sidebar = "#1b1e23"
+sidebar_foreground = "#aeb4bd"
+sidebar_border = "#2c313a"
+sidebar_accent = "#202d3d"
+sidebar_accent_foreground = "#e4e7ec"
+sidebar_primary = "#2f6ad0"
+sidebar_primary_foreground = "#ffffff"
+
+# Tables / tiles
+table = "#1b1e23"
+table_active = "#202d3d"
+table_active_border = "#4188e0"
+table_even = "#181b20"
+table_head = "#191c21"
+table_head_foreground = "#6b7280"
+table_foot = "#1a1d22"
+table_foot_foreground = "#6b7280"
+table_hover = "#23262b"
+table_row_border = "#23272e"
+tiles = "#1e2228"
+
+# Title / menu / status bar
+title_bar = "#202429"
+title_bar_border = "#2c313a"
+window_border = "#2c313a"
+
+# ----------------------------------------------------------------------------
+# Light variant — matches the AZoth editor design system tokens exactly
+# (DESIGN.md): quiet neutral surfaces, restrained #1F6FEB primary, semantic
+# state colors. Hover/active shades are derived steps of the design tokens.
+# ----------------------------------------------------------------------------
+[light.colors]
+background = "#f6f8fa"          # canvas (window / viewport base)
+foreground = "#1f2328"          # text
+border = "#d0d7de"              # border
+axis_x = "#cf222e"
+axis_x_muted = "#a31621"
+axis_y = "#1a7f37"
+axis_y_muted = "#135e29"
+axis_z = "#0969da"
+axis_z_muted = "#074ca0"
+group_box = "#f1f3f5"
+group_box_foreground = "#1f2328"
+drag_border = "#afb8c1"
+drop_target = "#1f6feb33"
+
+accent = "#1f6feb"              # primary
+accent_foreground = "#ffffff"   # on-primary
+
+primary = "#1f6feb"             # primary
+primary_hover = "#1a66e0"
+primary_active = "#0969da"      # focus
+primary_foreground = "#ffffff"  # on-primary
+
+secondary = "#f1f3f5"           # surface-muted
+secondary_hover = "#e7eaee"
+secondary_active = "#dde1e6"
+secondary_foreground = "#1f2328" # text
+
+danger = "#cf222e"              # error
+danger_hover = "#b91c28"
+danger_active = "#a31621"
+danger_foreground = "#ffffff"
+
+success = "#1a7f37"             # success
+success_hover = "#176f30"
+success_active = "#135e29"
+success_foreground = "#ffffff"
+
+warning = "#9a6700"            # warning
+warning_hover = "#875a00"
+warning_active = "#744e00"
+warning_foreground = "#ffffff"
+
+info = "#0969da"               # focus
+info_hover = "#0860c4"
+info_active = "#074ca0"
+info_foreground = "#ffffff"
+
+input = "#ffffff"              # surface
+caret = "#1f6feb"              # primary
+selection = "#1f6feb33"         # primary @ 20% alpha
+ring = "#0969da"
+
+muted = "#f1f3f5"              # surface-muted
+muted_foreground = "#57606a"   # text-muted
+skeleton = "#f1f3f5"
+
+list = "#ffffff"               # surface
+list_active = "#dde7fb"         # primary tint
+list_hover = "#f1f3f5"          # surface-muted
+list_active_border = "#1f6feb"  # primary
+list_even = "#fafbfc"
+list_head = "#f1f3f5"
+
+popover = "#ffffff"
+popover_foreground = "#1f2328"
+overlay = "#1f232899"
+scrollbar = "#00000000"
+scrollbar_thumb = "#d0d7de"
+scrollbar_thumb_hover = "#afb8c1"
+progress_bar = "#1f6feb"
+slider_bar = "#d0d7de"
+slider_thumb = "#57606a"
+switch = "#d0d7de"
+switch_thumb = "#ffffff"
+
+tab = "#f1f3f5"                # surface-muted
+tab_active = "#ffffff"          # surface
+tab_active_foreground = "#1f2328" # text
+tab_foreground = "#57606a"       # text-muted
+tab_bar = "#f1f3f5"
+tab_bar_segmented = "#ffffff"
+
+sidebar = "#fafbfc"            # surface-panel
+sidebar_foreground = "#57606a"  # text-muted
+sidebar_border = "#d0d7de"      # border
+sidebar_accent = "#dde7fb"
+sidebar_accent_foreground = "#1f2328"
+sidebar_primary = "#1f6feb"
+sidebar_primary_foreground = "#ffffff"
+
+table = "#ffffff"
+table_active = "#dde7fb"
+table_active_border = "#1f6feb"
+table_even = "#fafbfc"
+table_head = "#f1f3f5"
+table_head_foreground = "#57606a"
+table_foot = "#f1f3f5"
+table_foot_foreground = "#57606a"
+table_hover = "#f1f3f5"
+table_row_border = "#d0d7de"
+tiles = "#fafbfc"
+
+title_bar = "#ffffff"          # surface
+title_bar_border = "#d0d7de"    # border
+window_border = "#d0d7de"

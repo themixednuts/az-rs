@@ -1,0 +1,28 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "gridmate-bevy"
+version = "0.1.0"
+edition = "2024"
+
+
+[lints]
+workspace = true
+[lib]
+name = "gridmate_bevy"
+path = "src/lib.rs"
+
+[features]
+# Pass role capabilities through to gridmate without choosing one for
+# shared/plugin-only consumers.
+default = []
+client = ["gridmate/client"]
+server = ["gridmate/server"]
+
+[dependencies]
+az-gem-contract = { workspace = true }
+gridmate = { path = "../gridmate", default-features = false, features = ["transport"] }
+bevy = { workspace = true, features = ["default_app"] }
+async-channel = { workspace = true }
+logging-registry = { path = "../../integrations/logging-registry" }
+tracing = { workspace = true }

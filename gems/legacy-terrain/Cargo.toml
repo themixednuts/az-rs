@@ -1,0 +1,19 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-gem-legacy-terrain"
+version = "0.1.0"
+edition = "2024"
+description = "Lumberyard LegacyTerrain Gem runtime data as a Bevy plugin"
+
+
+[lints]
+workspace = true
+[dependencies]
+az-gem-contract = { workspace = true }
+az-gem-lmbr-central = { path = "../lmbr-central" }
+bevy = { workspace = true, features = ["default_app", "3d_bevy_render", "scene"] }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+azoth-legacy-terrain-ids = { path = "ids" }

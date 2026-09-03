@@ -1,0 +1,47 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-asset-processor-host"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Engine-owned asset-processor host binary (scheduler/DB/watch/dispatch; zero project gem linkage)"
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "asset-processor"
+path = "src/main.rs"
+
+[[bin]]
+name = "assetdb-maintenance"
+path = "src/bin/assetdb-maintenance.rs"
+
+[[bin]]
+name = "assetdb-migration"
+path = "src/bin/assetdb-migration.rs"
+
+[dependencies]
+az-asset-processor = { workspace = true }
+az-assetdb = { workspace = true }
+az-service-entrypoint = { workspace = true }
+az-source-control = { workspace = true }
+az-turso = { workspace = true }
+blake3 = { workspace = true }
+clap = { workspace = true, features = ["derive"] }
+drizzle-migrations = { workspace = true }
+drizzle-types = { workspace = true, features = ["uuid"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter", "fmt"] }
+
+[dev-dependencies]
+az-project = { workspace = true }
+az-proto-core = { path = "../proto/core" }
+az-service-catalog = { workspace = true }
+az-service-supervision = { workspace = true }
+tempfile = { workspace = true }
+toml = { workspace = true }
+uuid = { workspace = true }

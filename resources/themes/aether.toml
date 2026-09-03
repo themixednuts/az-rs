@@ -1,0 +1,225 @@
+#:schema ./schema.json
+# Aether — pixel-faithful theme for the htmlswap-generated editor + project-manager
+# views (design/aether-editor.html, design/aether-project-manager.html).
+#
+# Exact shades harvested in design/aether-palette.md. Cool blue-grey game-engine
+# dark UI with an electric-blue (#4188e0) accent.
+#
+# The TOML -> ThemeConfig mapping lives in
+# `crates/editor/ui/src/theme/definition.rs::to_theme_config` (and is mirrored by
+# `schema.json`). Keep keys aligned to gpui-component ThemeConfigColors fields.
+name = "Aether"
+
+# Tight engine chrome: small radius, compact 12px base type (matches the mockups).
+radius = 5.0
+
+[font]
+size = 12.0
+family = "IBM Plex Sans"
+mono_family = "IBM Plex Mono"
+mono_size = 12.0
+
+# ============================================================================
+# Dark variant (the canonical Aether look — the HTML designs are dark-only).
+# ============================================================================
+[dark.colors]
+# ---------------------------------------------------------------------------
+# MAPPED — these keys are read by to_theme_config / validated by schema.json.
+# ---------------------------------------------------------------------------
+
+# Core surfaces / text
+background = "#15171b"          # window / viewport root (deepest)
+foreground = "#d6dae0"          # primary body text
+border = "#2c313a"              # primary separators / panel borders
+
+# Accent (electric blue) — hover backgrounds on rows/menu items
+accent = "#4188e0"
+accent_foreground = "#ffffff"
+
+# Primary action (Build / New Project / selected fill)
+primary = "#4188e0"
+primary_hover = "#5b8fd6"
+primary_active = "#3160a8"
+primary_foreground = "#ffffff"
+
+# Secondary surfaces (raised rows / cards / secondary buttons)
+secondary = "#22262c"
+secondary_hover = "#2a2f37"
+secondary_active = "#2c313a"
+secondary_foreground = "#c2c8d0"
+
+# Status — danger (errors / destructive)
+danger = "#c0453f"
+danger_hover = "#cf6a64"
+danger_active = "#a8524d"
+danger_foreground = "#ffffff"
+
+# Status — success (ready / valid)
+success = "#57b97e"
+success_hover = "#67b96a"
+success_active = "#4d8a4f"
+success_foreground = "#0f1a13"
+
+# Status — warning (unsaved / caution)
+warning = "#d6a23b"
+warning_hover = "#e0c06a"
+warning_active = "#9c7a2e"
+warning_foreground = "#1a1405"
+
+# Status — info (mirrors the blue accent)
+info = "#4188e0"
+info_hover = "#5b8fd6"
+info_active = "#3160a8"
+info_foreground = "#ffffff"
+
+# Inputs (NOTE: `input` is the input *border* color, per ThemeColor + Input widget)
+input = "#2c313a"
+input_background = "#16181c"
+caret = "#4188e0"
+selection = "#4188e059"         # accent @ ~35% alpha (text selection)
+
+# Muted surfaces / dim text
+muted = "#22262c"
+muted_foreground = "#6b7280"
+
+# Lists / tree rows
+list = "#1b1e23"
+list_active = "#4188e029"        # accent @ ~16% wash (selected row)
+list_hover = "#2a2f37"           # semantic dark hover surface; alpha hex is not portable
+list_active_border = "#4188e0"
+
+# Tabs
+tab = "#1a1d22"
+tab_active = "#1b1e23"
+tab_active_foreground = "#e4e7ec"
+tab_foreground = "#8b919c"
+tab_bar = "#1a1d22"
+
+# Docks / sidebars
+sidebar = "#1b1e23"
+sidebar_foreground = "#aeb4bd"
+sidebar_border = "#2c313a"
+
+# Title / menu bar
+title_bar = "#202429"
+title_bar_border = "#2c313a"
+
+# ---------------------------------------------------------------------------
+# MAPPED — additional gpui-component ThemeColor fields copied by to_theme_config.
+# ---------------------------------------------------------------------------
+
+# Links
+link = "#4188e0"
+link_hover = "#5b8fd6"
+link_active = "#3160a8"
+
+# Focus ring
+ring = "#4188e0"
+
+# Popovers / modals / overlays
+drag_border = "#363c46"         # stronger border for popover/modal chrome
+drop_target = "#4188e059"
+popover = "#16181cd9"           # base surface @ ~85% alpha (menu over content)
+popover_foreground = "#cfd4db"
+overlay = "#00000080"           # modal scrim
+
+# Skeleton / group box / accordion
+skeleton = "#22262c"
+group_box = "#1c2025"
+group_box_foreground = "#d6dae0"
+accordion = "#16181c"
+accordion_hover = "#2a2f37"
+
+# Explicit Button primary overrides
+button_primary = "#4188e0"
+button_primary_hover = "#5b8fd6"
+button_primary_active = "#3160a8"
+button_primary_foreground = "#ffffff"
+
+# Progress / slider / switch controls
+progress_bar = "#4188e0"
+slider_bar = "#2c313a"
+slider_thumb = "#cfd4db"
+switch = "#3a3f48"
+switch_thumb = "#9aa1ac"
+
+# Scrollbars
+scrollbar = "#33394300"
+scrollbar_thumb = "#39404b"
+scrollbar_thumb_hover = "#454d59"
+
+# List striping / header
+list_even = "#181b20"
+list_head = "#191c21"
+
+# Tab bar segmented control
+tab_bar_segmented = "#16181c"
+
+# Sidebar accent / primary
+sidebar_accent = "#1e2228"
+sidebar_accent_foreground = "#e4e7ec"
+sidebar_primary = "#4188e0"
+sidebar_primary_foreground = "#ffffff"
+
+# Tables / tiles
+table = "#16181c"
+table_active = "#4188e029"
+table_active_border = "#4188e0"
+table_even = "#181b20"
+table_head = "#191c21"
+table_head_foreground = "#6b7280"
+table_foot = "#1a1d22"
+table_foot_foreground = "#6b7280"
+table_hover = "#2a2f37"         # semantic dark hover surface; keep table text readable
+table_row_border = "#23272e"
+tiles = "#1e2228"
+
+# Description list
+description_list_label = "#1c2025"
+description_list_label_foreground = "#9aa1ac"
+
+# Window border (Linux only)
+window_border = "#2c313a"
+
+# Chart / categorical series
+chart_1 = "#4188e0"
+chart_2 = "#57b97e"
+chart_3 = "#d6a23b"
+chart_4 = "#b78fd6"
+chart_5 = "#5ac0c0"
+chart_bullish = "#57b97e"
+chart_bearish = "#c0453f"
+
+# Semantic authored/runtime type accents. These are presentation identities,
+# not chart/status aliases; hierarchy and asset surfaces consume the same set.
+type_accent_neutral = "#8b919c"
+type_accent_slate = "#7a8aa0"
+type_accent_level = "#e0a060"
+type_accent_prefab = "#b78fd6"
+type_accent_gold = "#d6a23b"
+type_accent_light = "#d6c14a"
+type_accent_teal = "#5ac0c0"
+type_accent_terrain = "#8fc97e"
+type_accent_audio = "#d68fb0"
+type_accent_animation = "#7ad6a6"
+
+# Base named colors are private fields on gpui-component's ThemeConfigColors,
+# so they cannot be set through the stock public config API.
+# red = "#c0453f"
+# red_light = "#e06c75"
+# green = "#57b97e"
+# green_light = "#7ad6a6"
+# blue = "#4188e0"
+# blue_light = "#7fb0ec"
+# yellow = "#d6a23b"
+# yellow_light = "#e2c98a"
+# magenta = "#b78fd6"
+# magenta_light = "#d68fb0"
+# cyan = "#5ac0c0"
+# cyan_light = "#7ad6d6"
+
+# ============================================================================
+# Light variant — intentionally omitted. Aether is a dark-only design; the
+# editor default is pinned to "Aether:dark" so light mode is never resolved.
+# If a light Aether is ever wanted, author a [light.colors] block here.
+# ============================================================================

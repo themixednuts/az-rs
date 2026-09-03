@@ -1,0 +1,65 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-asset-processor"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Asset-processor service adapter for Azoth's durable asset DB queue"
+
+
+[lints]
+workspace = true
+[features]
+default = []
+test-support = ["az-assetdb/test-support"]
+
+[dependencies]
+az-asset = { workspace = true }
+az-asset-builder = { workspace = true }
+az-core = { workspace = true, features = ["serde"] }
+# The engine's own composition (asset-contract ticket 014, D7). Bundles, not
+# individual engine crates: the dependency set is the contribution, and this
+# host composes exactly the ones its role declares.
+az-engine-assets = { workspace = true }
+az-engine-builders = { workspace = true }
+az-engine-ids = { workspace = true }
+az-engine-types = { workspace = true }
+az-gem-contract = { workspace = true }
+az-graph-builder = { workspace = true }
+az-assetdb = { path = "../assetdb" }
+az-filesystem = { workspace = true }
+az-project = { path = "../project" }
+az-proto-asset = { path = "../proto/asset" }
+az-proto-core = { path = "../proto/core" }
+az-proto-session = { path = "../proto/session" }
+az-rpc = { workspace = true }
+az-service-catalog = { workspace = true }
+az-work = { workspace = true }
+blake3 = { workspace = true }
+capnp = { workspace = true }
+capnp-rpc = { workspace = true }
+crossbeam-channel = { workspace = true }
+futures = { workspace = true }
+notify = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+
+[target.'cfg(windows)'.dependencies]
+windows = { workspace = true, features = ["Win32_Storage_FileSystem"] }
+
+[dev-dependencies]
+az-architecture-guard = { workspace = true }
+az-asset-builder = { workspace = true, features = ["test-support"] }
+az-asset-worker = { workspace = true, features = ["test-support"] }
+az-assetdb = { path = "../assetdb", features = ["test-support"] }
+az-graph-runtime = { workspace = true }
+az-node-graph = { workspace = true }
+az-prefab = { workspace = true }
+bevy_reflect = { workspace = true }
+tempfile = "3"
+toml = { workspace = true }

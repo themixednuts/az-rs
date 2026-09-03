@@ -1,0 +1,15 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-gem-mount-prefab"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Fixture builder contribution nested one level below its gem manifest"
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+az-gem-contract = { workspace = true }

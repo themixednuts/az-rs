@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{background:#15171b;}
+  ::selection{background:rgba(65,136,224,0.35);}
+  input,select{font-family:inherit;outline:none;}
+  select{appearance:none;-webkit-appearance:none;}
+  .ms{font-family:'Material Symbols Outlined';font-weight:400;font-style:normal;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;direction:ltr;-webkit-font-smoothing:antialiased;font-variation-settings:'opsz' 20,'wght' 400,'GRAD' 0,'FILL' 0;vertical-align:middle;user-select:none;}
+  ::-webkit-scrollbar{width:11px;height:11px;}
+  ::-webkit-scrollbar-thumb{background:#33394300;border:3px solid transparent;background-clip:padding-box;border-radius:8px;}
+  *:hover::-webkit-scrollbar-thumb{background:#39404b;background-clip:padding-box;}
+  ::-webkit-scrollbar-thumb:hover{background:#454d59;background-clip:padding-box;}
+  @keyframes ap-spin{to{transform:rotate(360deg);}}
+  @keyframes ap-pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+</style>
+</helmet>
+
+<div data-htmlswap-region="asset.processor" style="display:flex;flex-direction:column;height:100vh;width:100vw;overflow:hidden;background:#15171b;color:#d6dae0;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:12px;line-height:1.4;-webkit-font-smoothing:antialiased;user-select:none;">
+
+  <!-- titlebar -->
+  <div style="flex:0 0 36px;">
+    <dc-import name="Titlebar" title="Aether" subtitle="Asset Processor" accent="#b78fd6" hint-size="100%,36px"></dc-import>
+  </div>
+
+  <!-- status strip -->
+  <div data-htmlswap-component="status-strip" style="flex:0 0 auto;display:flex;align-items:center;gap:18px;padding:11px 18px;background:#181b20;border-bottom:1px solid #2c313a;">
+    <div style="display:flex;align-items:center;gap:11px;min-width:0;">
+      <span class="ms" style="{{ headState.iconStyle }}">{{ headState.icon }}</span>
+      <div style="min-width:0;">
+        <div style="font-size:13px;font-weight:600;color:#e8ebef;">{{ headState.title }}</div>
+        <div style="font-size:11px;color:#6b7280;margin-top:1px;">{{ headState.sub }}</div>
+      </div>
+    </div>
+    <div style="flex:1 1 auto;display:flex;flex-direction:column;gap:5px;max-width:340px;min-width:120px;">
+      <div style="height:6px;border-radius:4px;background:#22262c;overflow:hidden;">
+        <div style="{{ progressStyle }}"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:#5f6670;font-family:'IBM Plex Mono',monospace;">
+        <span>{{ progressLabel }}</span><span>{{ progressPctLabel }}</span>
+      </div>
+    </div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:7px;">
+      <sc-for list="{{ statChips }}" as="c" hint-placeholder-count="5">
+        <div style="{{ c.style }}"><span class="ms" style="font-size:15px;color:{{ c.color }};">{{ c.icon }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:{{ c.textColor }};font-weight:500;">{{ c.value }}</span><span style="font-size:11px;color:#6b7280;">{{ c.label }}</span></div>
+      </sc-for>
+      <div onClick="{{ onScan }}" style="display:flex;align-items:center;gap:6px;height:30px;padding:0 13px;margin-left:6px;background:#1b1e23;border:1px solid #2c313a;border-radius:7px;color:#c2c8d0;font-size:12px;font-weight:500;cursor:default;" style-hover="border-color:#3a4150;background:#22262c;color:#fff;"><span class="ms" style="font-size:16px;">refresh</span>Scan</div>
+    </div>
+  </div>
+
+  <div style="flex:1 1 auto;display:flex;min-height:0;">
+
+    <!-- tab rail -->
+    <div data-htmlswap-component="tabs" role="tablist" data-htmlswap-region="asset.processor.nav" style="width:184px;flex:0 0 184px;background:#181b20;border-right:1px solid #2c313a;display:flex;flex-direction:column;padding:10px 10px;">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+        <div role="tab" aria-selected="{{ t.selected }}" onClick="{{ t.onClick }}" style="{{ t.style }}">
+          <span class="ms" style="font-size:18px;flex:0 0 auto;">{{ t.icon }}</span>
+          <span style="flex:1 1 auto;">{{ t.label }}</span>
+          <sc-if value="{{ t.hasBadge }}" hint-placeholder-val="{{ true }}"><span style="{{ t.badgeStyle }}">{{ t.badge }}</span></sc-if>
+        </div>
+      </sc-for>
+      <div style="margin-top:auto;display:flex;flex-direction:column;gap:6px;border-top:1px solid #23272e;padding-top:10px;">
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 9px;font-size:11px;color:#6b7280;">
+          <span class="ms" style="font-size:16px;color:#57b97e;">bolt</span>Builder pool · <span style="color:#aeb4bd;font-family:'IBM Plex Mono',monospace;">3 / 8</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 9px;font-size:11px;color:#6b7280;">
+          <span class="ms" style="font-size:16px;color:#7a8aa0;">folder_managed</span>1 scan folder
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ JOBS TAB ============ -->
+    <sc-if value="{{ isJobs }}" hint-placeholder-val="{{ true }}">
+    <div data-htmlswap-region="asset.processor.jobs" style="flex:1 1 auto;display:flex;flex-direction:column;min-width:0;min-height:0;background:#15171b;">
+
+      <!-- toolbar -->
+      <div style="flex:0 0 auto;display:flex;align-items:center;gap:9px;padding:12px 16px;border-bottom:1px solid #20242a;">
+        <div style="display:flex;align-items:center;gap:7px;height:32px;padding:0 11px;background:#1b1e23;border:1px solid #2c313a;border-radius:7px;width:240px;flex:0 0 auto;"><span class="ms" style="font-size:16px;color:#6b7280;">search</span><input value="{{ filter }}" onInput="{{ onFilter }}" placeholder="Filter by source or job key…" style="flex:1 1 auto;background:none;border:none;color:#d6dae0;font-size:12px;"/></div>
+        <div style="display:flex;gap:4px;">
+          <sc-for list="{{ statusChips }}" as="s" hint-placeholder-count="6"><div onClick="{{ s.onClick }}" style="{{ s.style }}">{{ s.label }}<sc-if value="{{ s.hasCount }}" hint-placeholder-val="{{ true }}"><span style="{{ s.countStyle }}">{{ s.count }}</span></sc-if></div></sc-for>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:9px;">
+          <div style="display:flex;align-items:center;gap:6px;height:32px;padding:0 10px;background:#1b1e23;border:1px solid #2c313a;border-radius:7px;"><span class="ms" style="font-size:15px;color:#6b7280;">tune</span><select value="{{ platform }}" onChange="{{ onPlatform }}" style="background:none;border:none;color:#c2c8d0;font-size:12px;cursor:default;"><sc-for list="{{ platformOpts }}" as="p" hint-placeholder-count="4"><option value="{{ p.id }}">{{ p.label }}</option></sc-for></select><span class="ms" style="font-size:16px;color:#6b7280;margin-left:-2px;">arrow_drop_down</span></div>
+          <div onClick="{{ onReprocess }}" style="display:flex;align-items:center;gap:6px;height:32px;padding:0 13px;background:#22262c;border:1px solid #2c313a;border-radius:7px;color:#c2c8d0;font-size:12px;font-weight:500;cursor:default;" style-hover="background:#2a2f37;color:#fff;"><span class="ms" style="font-size:16px;">restart_alt</span>Reprocess</div>
+        </div>
+      </div>
+
+      <!-- table header -->
+      <div style="flex:0 0 auto;display:flex;align-items:center;height:28px;padding:0 16px;color:#5a6068;font-size:10px;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #20242a;">
+        <span style="width:132px;flex:0 0 132px;">Status</span>
+        <span style="width:92px;flex:0 0 92px;">Platform</span>
+        <span style="width:150px;flex:0 0 150px;">Job Key</span>
+        <span style="flex:1 1 auto;">Source Asset</span>
+        <span style="width:130px;flex:0 0 130px;">Completed</span>
+        <span style="width:78px;flex:0 0 78px;text-align:right;">Duration</span>
+      </div>
+
+      <!-- rows -->
+      <div style="flex:1 1 auto;overflow-y:auto;overflow-x:hidden;min-height:150px;">
+        <sc-for list="{{ jobRows }}" as="j" hint-placeholder-count="12">
+          <div onClick="{{ j.onClick }}" style="{{ j.rowStyle }}">
+            <div style="width:132px;flex:0 0 132px;display:flex;align-items:center;gap:8px;"><span class="ms" style="{{ j.dotStyle }}">{{ j.icon }}</span><span style="font-size:11.5px;color:{{ j.color }};">{{ j.statusLabel }}</span></div>
+            <div style="width:92px;flex:0 0 92px;"><span style="{{ j.platStyle }}">{{ j.platLabel }}</span></div>
+            <div style="width:150px;flex:0 0 150px;font-size:11.5px;color:#aeb4bd;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ j.jobKey }}</div>
+            <div style="flex:1 1 auto;min-width:0;font-size:12px;color:#d6dae0;font-family:'IBM Plex Mono',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ j.source }}</div>
+            <div style="width:130px;flex:0 0 130px;font-size:11px;color:#8b919c;">{{ j.completed }}</div>
+            <div style="width:78px;flex:0 0 78px;text-align:right;font-size:11px;color:#8b919c;font-family:'IBM Plex Mono',monospace;">{{ j.duration }}</div>
+          </div>
+        </sc-for>
+        <sc-if value="{{ noJobs }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px;gap:8px;color:#5f6670;"><span class="ms" style="font-size:34px;color:#2c313a;">filter_alt_off</span><span style="font-size:12px;">No jobs match this filter</span></div>
+        </sc-if>
+      </div>
+
+      <!-- event log details -->
+      <div data-htmlswap-component="event-log" style="flex:0 1 250px;display:flex;flex-direction:column;min-height:0;border-top:1px solid #2c313a;background:#181b20;">
+        <div style="flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:9px 16px;border-bottom:1px solid #20242a;">
+          <span style="font-size:11px;font-weight:600;color:#aeb4bd;text-transform:uppercase;letter-spacing:.5px;">Event Log</span>
+          <span style="font-size:12px;color:#d6dae0;font-family:'IBM Plex Mono',monospace;">{{ selJob.source }}</span>
+          <span style="{{ selJob.platStyle }}">{{ selJob.platLabel }}</span>
+          <div style="margin-left:auto;display:flex;gap:5px;">
+            <sc-for list="{{ logActions }}" as="a" hint-placeholder-count="4"><div onClick="{{ a.onClick }}" title="{{ a.label }}" style="display:flex;align-items:center;gap:5px;height:26px;padding:0 10px;background:#1b1e23;border:1px solid #2c313a;border-radius:6px;color:#9aa1ac;font-size:11px;cursor:default;" style-hover="background:#22262c;color:#fff;border-color:#3a4150;"><span class="ms" style="font-size:15px;">{{ a.icon }}</span>{{ a.label }}</div></sc-for>
+          </div>
+        </div>
+        <div style="flex:1 1 auto;overflow-y:auto;padding:6px 0;">
+          <sc-for list="{{ selEvents }}" as="e" hint-placeholder-count="6">
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:4px 16px;" style-hover="background:#1b1e23;">
+              <span style="width:78px;flex:0 0 78px;font-size:11px;color:#5f6670;font-family:'IBM Plex Mono',monospace;">{{ e.t }}</span>
+              <span style="{{ e.tagStyle }}">{{ e.tag }}</span>
+              <span style="flex:1 1 auto;font-size:11.5px;color:{{ e.msgColor }};font-family:'IBM Plex Mono',monospace;">{{ e.msg }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ ASSETS TAB ============ -->
+    <sc-if value="{{ isAssets }}" hint-placeholder-val="{{ false }}">
+    <div data-htmlswap-region="asset.processor.assets" style="flex:1 1 auto;display:flex;min-width:0;background:#15171b;">
+      <!-- source list -->
+      <div style="width:320px;flex:0 0 320px;display:flex;flex-direction:column;border-right:1px solid #2c313a;background:#181b20;">
+        <div style="flex:0 0 auto;padding:12px 14px;border-bottom:1px solid #20242a;">
+          <div style="display:flex;align-items:center;gap:7px;height:32px;padding:0 11px;background:#1b1e23;border:1px solid #2c313a;border-radius:7px;"><span class="ms" style="font-size:16px;color:#6b7280;">search</span><input value="{{ assetQuery }}" onInput="{{ onAssetQuery }}" placeholder="Search assets…" style="flex:1 1 auto;background:none;border:none;color:#d6dae0;font-size:12px;"/></div>
+        </div>
+        <div style="flex:1 1 auto;overflow-y:auto;padding:6px 0;">
+          <sc-for list="{{ assetGroups }}" as="g" hint-placeholder-count="5">
+            <div style="padding:9px 14px 4px;display:flex;align-items:center;gap:6px;"><span class="ms" style="font-size:14px;color:#7a8aa0;">folder</span><span style="font-size:10px;font-weight:600;color:#8b919c;text-transform:uppercase;letter-spacing:.5px;">{{ g.folder }}</span></div>
+            <sc-for list="{{ g.items }}" as="a" hint-placeholder-count="3">
+              <div onClick="{{ a.onClick }}" style="{{ a.rowStyle }}">
+                <span class="ms" style="font-size:16px;color:{{ a.iconColor }};flex:0 0 auto;">{{ a.icon }}</span>
+                <span style="flex:1 1 auto;min-width:0;font-size:12px;color:#d6dae0;font-family:'IBM Plex Mono',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ a.name }}</span>
+                <span class="ms" style="font-size:14px;color:{{ a.stColor }};flex:0 0 auto;">{{ a.stIcon }}</span>
+              </div>
+            </sc-for>
+          </sc-for>
+        </div>
+      </div>
+      <!-- detail -->
+      <div style="flex:1 1 auto;overflow-y:auto;min-width:0;">
+        <sc-if value="{{ hasAsset }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:20px 24px;display:flex;flex-direction:column;gap:20px;max-width:720px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:44px;height:44px;border-radius:10px;background:#22262c;display:flex;align-items:center;justify-content:center;flex:0 0 auto;"><span class="ms" style="font-size:24px;color:{{ selAsset.iconColor }};">{{ selAsset.icon }}</span></div>
+            <div style="min-width:0;">
+              <div style="font-size:16px;font-weight:600;color:#e8ebef;font-family:'IBM Plex Mono',monospace;">{{ selAsset.name }}</div>
+              <div style="font-size:11px;color:#6b7280;font-family:'IBM Plex Mono',monospace;margin-top:2px;">{{ selAsset.folder }}</div>
+            </div>
+            <div style="margin-left:auto;"><span style="{{ selAsset.stBadgeStyle }}"><span class="ms" style="font-size:14px;">{{ selAsset.stIcon }}</span>{{ selAsset.stLabel }}</span></div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:1px;background:#20242a;border:1px solid #20242a;border-radius:9px;overflow:hidden;">
+            <sc-for list="{{ selAsset.meta }}" as="m" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;gap:12px;padding:9px 14px;background:#1b1e23;">
+                <span style="width:120px;flex:0 0 120px;font-size:11px;color:#8b919c;">{{ m.label }}</span>
+                <span style="flex:1 1 auto;font-size:12px;color:#d6dae0;font-family:'IBM Plex Mono',monospace;overflow:hidden;text-overflow:ellipsis;">{{ m.value }}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <div>
+            <div style="font-size:11px;font-weight:600;color:#aeb4bd;text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px;">Product Assets · {{ selAsset.productCount }}</div>
+            <sc-if value="{{ selAsset.hasProducts }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <sc-for list="{{ selAsset.products }}" as="p" hint-placeholder-count="2">
+                <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#1b1e23;border:1px solid #2c313a;border-radius:8px;">
+                  <span class="ms" style="font-size:16px;color:#7a8aa0;flex:0 0 auto;">deployed_code</span>
+                  <span style="flex:1 1 auto;min-width:0;font-size:12px;color:#d6dae0;font-family:'IBM Plex Mono',monospace;overflow:hidden;text-overflow:ellipsis;">{{ p.name }}</span>
+                  <span style="{{ p.platStyle }}">{{ p.platLabel }}</span>
+                  <span style="font-size:11px;color:#8b919c;font-family:'IBM Plex Mono',monospace;width:66px;text-align:right;flex:0 0 auto;">{{ p.size }}</span>
+                </div>
+              </sc-for>
+            </div>
+            </sc-if>
+            <sc-if value="{{ selAsset.noProducts }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;gap:9px;padding:11px 12px;background:rgba(224,82,75,0.07);border:1px solid rgba(224,82,75,0.25);border-radius:8px;color:#e0524b;font-size:11.5px;"><span class="ms" style="font-size:16px;">error</span>No products — last job failed. See the Jobs tab event log.</div>
+            </sc-if>
+          </div>
+
+          <div>
+            <div style="font-size:11px;font-weight:600;color:#aeb4bd;text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px;">Source Dependencies · {{ selAsset.depCount }}</div>
+            <sc-if value="{{ selAsset.hasDeps }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-wrap:wrap;gap:7px;">
+              <sc-for list="{{ selAsset.deps }}" as="d" hint-placeholder-count="3"><div style="display:flex;align-items:center;gap:6px;height:28px;padding:0 11px;background:#1b1e23;border:1px solid #2c313a;border-radius:7px;font-size:11.5px;color:#c2c8d0;font-family:'IBM Plex Mono',monospace;"><span class="ms" style="font-size:14px;color:#7a8aa0;">link</span>{{ d }}</div></sc-for>
+            </div>
+            </sc-if>
+            <sc-if value="{{ selAsset.noDeps }}" hint-placeholder-val="{{ false }}"><div style="font-size:11.5px;color:#5f6670;">No source dependencies.</div></sc-if>
+          </div>
+        </div>
+        </sc-if>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ LOGS TAB ============ -->
+    <sc-if value="{{ isLogs }}" hint-placeholder-val="{{ false }}">
+    <div data-htmlswap-region="asset.processor.logs" style="flex:1 1 auto;display:flex;flex-direction:column;min-width:0;background:#15171b;">
+      <div style="flex:0 0 auto;display:flex;align-items:center;gap:4px;padding:10px 16px;border-bottom:1px solid #20242a;">
+        <sc-for list="{{ logTabs }}" as="l" hint-placeholder-count="4"><div role="tab" aria-selected="{{ l.selected }}" onClick="{{ l.onClick }}" style="{{ l.style }}">{{ l.label }}<span style="{{ l.countStyle }}">{{ l.count }}</span></div></sc-for>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:6px;font-size:11px;color:#6b7280;"><span class="ms" style="font-size:15px;color:#57b97e;">circle</span>Live tail</div>
+      </div>
+      <div style="flex:1 1 auto;overflow-y:auto;overflow-x:hidden;padding:6px 0;">
+        <sc-for list="{{ logRows }}" as="l" hint-placeholder-count="16">
+          <div style="display:flex;align-items:flex-start;gap:12px;padding:4px 16px;" style-hover="background:#1b1e23;">
+            <span style="width:88px;flex:0 0 88px;font-size:11px;color:#5f6670;font-family:'IBM Plex Mono',monospace;">{{ l.t }}</span>
+            <span style="{{ l.tagStyle }}">{{ l.tag }}</span>
+            <span style="width:120px;flex:0 0 120px;font-size:11px;color:#8b919c;">{{ l.source }}</span>
+            <span style="flex:1 1 auto;font-size:11.5px;color:{{ l.msgColor }};font-family:'IBM Plex Mono',monospace;">{{ l.msg }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ CONNECTIONS TAB ============ -->
+    <sc-if value="{{ isConns }}" hint-placeholder-val="{{ false }}">
+    <div data-htmlswap-region="asset.processor.connections" style="flex:1 1 auto;display:flex;flex-direction:column;min-width:0;background:#15171b;">
+      <div style="flex:0 0 auto;display:flex;align-items:center;gap:12px;padding:16px 20px 12px;">
+        <div><div style="font-size:15px;font-weight:600;color:#e8ebef;">Connections</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">{{ connSub }}</div></div>
+        <div onClick="{{ onAddConn }}" style="margin-left:auto;display:flex;align-items:center;gap:6px;height:30px;padding:0 13px;background:#1b1e23;border:1px solid #2c313a;border-radius:7px;color:#c2c8d0;font-size:12px;font-weight:500;cursor:default;" style-hover="border-color:#3a4150;background:#22262c;color:#fff;"><span class="ms" style="font-size:16px;">add_link</span>Add connection</div>
+      </div>
+      <div style="flex:0 0 auto;display:flex;align-items:center;height:26px;padding:0 20px;color:#5a6068;font-size:10px;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #20242a;">
+        <span style="width:22px;flex:0 0 22px;"></span>
+        <span style="flex:1 1 auto;">Name</span>
+        <span style="width:110px;flex:0 0 110px;">Type</span>
+        <span style="width:100px;flex:0 0 100px;">Platform</span>
+        <span style="width:190px;flex:0 0 190px;">Address</span>
+        <span style="width:120px;flex:0 0 120px;">Status</span>
+        <span style="width:70px;flex:0 0 70px;text-align:center;">Auto</span>
+      </div>
+      <div style="flex:1 1 auto;overflow-y:auto;overflow-x:hidden;">
+        <sc-for list="{{ connRows }}" as="c" hint-placeholder-count="6">
+          <div style="display:flex;align-items:center;height:46px;padding:0 20px;border-bottom:1px solid #1c2026;" style-hover="background:#1b1e23;">
+            <span style="width:22px;flex:0 0 22px;"><span class="ms" style="font-size:18px;color:{{ c.iconColor }};">{{ c.icon }}</span></span>
+            <span style="flex:1 1 auto;font-size:12.5px;color:#e4e7ec;font-weight:500;">{{ c.name }}</span>
+            <span style="width:110px;flex:0 0 110px;"><span style="{{ c.typeStyle }}">{{ c.type }}</span></span>
+            <span style="width:100px;flex:0 0 100px;"><sc-if value="{{ c.hasPlatform }}" hint-placeholder-val="{{ true }}"><span style="{{ c.platStyle }}">{{ c.platLabel }}</span></sc-if><sc-if value="{{ c.noPlatform }}" hint-placeholder-val="{{ false }}"><span style="color:#5f6670;font-size:12px;">—</span></sc-if></span>
+            <span style="width:190px;flex:0 0 190px;font-size:11.5px;color:#8b919c;font-family:'IBM Plex Mono',monospace;">{{ c.address }}</span>
+            <span style="width:120px;flex:0 0 120px;display:flex;align-items:center;gap:7px;"><span style="{{ c.stDotStyle }}"></span><span style="font-size:11.5px;color:{{ c.stColor }};">{{ c.stLabel }}</span></span>
+            <span style="width:70px;flex:0 0 70px;display:flex;justify-content:center;"><span class="ms" style="font-size:19px;color:{{ c.autoColor }};">{{ c.autoIcon }}</span></span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="flex:0 0 auto;display:flex;gap:0;border-top:1px solid #2c313a;background:#181b20;">
+        <div style="flex:1 1 0;padding:12px 20px;border-right:1px solid #20242a;">
+          <div style="display:flex;align-items:center;gap:6px;font-size:10px;font-weight:600;color:#57b97e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;"><span class="ms" style="font-size:14px;">verified_user</span>Allowed</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;"><sc-for list="{{ allowList }}" as="x" hint-placeholder-count="3"><span style="font-size:11px;color:#aeb4bd;font-family:'IBM Plex Mono',monospace;background:#1b1e23;border:1px solid #2c313a;padding:3px 8px;border-radius:5px;">{{ x }}</span></sc-for></div>
+        </div>
+        <div style="flex:1 1 0;padding:12px 20px;">
+          <div style="display:flex;align-items:center;gap:6px;font-size:10px;font-weight:600;color:#e0524b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;"><span class="ms" style="font-size:14px;">block</span>Rejected</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;"><sc-for list="{{ rejectList }}" as="x" hint-placeholder-count="1"><span style="font-size:11px;color:#8b919c;font-family:'IBM Plex Mono',monospace;background:#1b1e23;border:1px solid #2c313a;padding:3px 8px;border-radius:5px;">{{ x }}</span></sc-for></div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+  </div>
+
+  <!-- bottom status bar -->
+  <div data-htmlswap-component="statusbar" style="flex:0 0 24px;display:flex;align-items:center;gap:16px;padding:0 14px;background:#202429;border-top:1px solid #2c313a;font-size:11px;color:#8b919c;">
+    <div style="display:flex;align-items:center;gap:6px;"><span style="{{ barDotStyle }}"></span>{{ barStatus }}</div>
+    <div style="display:flex;align-items:center;gap:6px;"><span class="ms" style="font-size:14px;color:#7a8aa0;">visibility</span>Watching <span style="color:#aeb4bd;font-family:'IBM Plex Mono',monospace;">~/dev/aether/Verdant/Assets</span></div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:14px;font-family:'IBM Plex Mono',monospace;">
+      <span>{{ barCounts }}</span>
+      <span style="color:#5f6670;">Asset Processor 0.4.2</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1180,&quot;height&quot;:720},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#4188e0&quot;,&quot;options&quot;:[&quot;#4188e0&quot;,&quot;#b78fd6&quot;,&quot;#5ac0c0&quot;,&quot;#57b97e&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Style&quot;},&quot;defaultTab&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;jobs&quot;,&quot;options&quot;:[&quot;jobs&quot;,&quot;assets&quot;,&quot;logs&quot;,&quot;connections&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Behavior&quot;},&quot;zebra&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Style&quot;}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.statusMeta = {
+      completed:{label:'Completed', color:'#57b97e', icon:'check_circle'},
+      processing:{label:'Processing', color:'#4a90e2', icon:'sync'},
+      pending:{label:'Queued', color:'#d6a23b', icon:'schedule'},
+      warning:{label:'Warnings', color:'#d6a23b', icon:'warning'},
+      failed:{label:'Failed', color:'#e0524b', icon:'error'}
+    };
+    this.platMeta = {
+      pc:{label:'PC', color:'#4188e0'}, android:{label:'Android', color:'#8fc97e'},
+      ios:{label:'iOS', color:'#d68fb0'}, linux:{label:'Linux', color:'#d6a23b'},
+      mac:{label:'macOS', color:'#b78fd6'}, server:{label:'Server', color:'#7a8aa0'}
+    };
+    this.keyIcon = {
+      'Mesh (fbx)':'view_in_ar','Texture (streaming)':'image','Material':'palette','Prefab':'category',
+      'Audio (adpcm)':'graphic_eq','Audio (vorbis)':'graphic_eq','Shader':'gradient','UI Canvas':'dashboard',
+      'Skeleton (actor)':'accessibility_new','Motion':'directions_run','Script':'code'
+    };
+    // id, source, folder, jobKey, builder, platform, status, size, duration, product, msg
+    this.jobs = [
+      ['j01','env_forest.fbx','Environments','Mesh (fbx)','Model Builder','pc','completed','4.2 MB','2.14s','env_forest.azmodel',''],
+      ['j02','env_forest.fbx','Environments','Mesh (fbx)','Model Builder','android','processing','4.2 MB','—','env_forest.azmodel',''],
+      ['j03','terrain_albedo.tif','Environments','Texture (streaming)','Image Builder','pc','failed','96 MB','—','','Unsupported bit depth: 32-bit float — expected 8 or 16-bit integer'],
+      ['j04','hero_diffuse.png','Materials','Texture (streaming)','Image Builder','pc','completed','5.3 MB','0.88s','hero_diffuse.streamingimage',''],
+      ['j05','hero_normal.png','Materials','Texture (streaming)','Image Builder','pc','completed','5.3 MB','0.91s','hero_normal.streamingimage',''],
+      ['j06','rock_01.material','Materials','Material','Material Builder','pc','completed','12 KB','0.12s','rock_01.azmaterial',''],
+      ['j07','water.material','Materials','Material','Material Builder','pc','warning','14 KB','0.20s','water.azmaterial','Referenced texture "foam.png" not found — substituting fallback white'],
+      ['j08','player.prefab','Characters','Prefab','Prefab Builder','pc','completed','88 KB','0.34s','player.procprefab',''],
+      ['j09','level_greybox.prefab','Environments','Prefab','Prefab Builder','pc','processing','1.1 MB','—','level_greybox.procprefab',''],
+      ['j10','footsteps.wav','Audio','Audio (adpcm)','Audio Builder','pc','completed','220 KB','0.45s','footsteps.azbank',''],
+      ['j11','ambient_wind.wav','Audio','Audio (vorbis)','Audio Builder','android','pending','3.4 MB','—','ambient_wind.azbank',''],
+      ['j12','pbr_opaque.shader','Shaders','Shader','Shader Builder','pc','completed','34 KB','3.72s','pbr_opaque.azshader',''],
+      ['j13','pbr_opaque.shader','Shaders','Shader','Shader Builder','android','processing','34 KB','—','pbr_opaque.azshader',''],
+      ['j14','ui_hud.canvas','UI','UI Canvas','UI Builder','pc','completed','26 KB','0.09s','ui_hud.uicanvas',''],
+      ['j15','character.actor','Characters','Skeleton (actor)','Anim Builder','pc','completed','2.7 MB','1.02s','character.azmodel',''],
+      ['j16','run_cycle.motion','Characters','Motion','Anim Builder','pc','pending','640 KB','—','run_cycle.motion',''],
+      ['j17','dialogue.lua','Scripts','Script','Script Builder','pc','completed','8 KB','0.05s','dialogue.luac',''],
+      ['j18','sky_gradient.tif','Environments','Texture (streaming)','Image Builder','ios','failed','128 MB','—','','Out of memory compressing 8192×8192 source to ASTC 6×6']
+    ].map(a=>({id:a[0],source:a[1],folder:a[2],jobKey:a[3],builder:a[4],platform:a[5],status:a[6],size:a[7],duration:a[8],product:a[9],msg:a[10]}));
+
+    // assets: id,name,folder,ext,icon,iconColor,uuid,jobKey,status,processed,products[[name,platform,size]],deps[]
+    this.assets = [
+      ['a1','env_forest.fbx','Assets/Environments','view_in_ar','#4188e0','{AB3F7C10-9DAD-11F0-80B4-00C04FD430C8}','Mesh (fbx)','processing','2 min ago',[['env_forest.azmodel','pc','1.9 MB'],['env_forest.azmodel','android','—']],['rock_01.material','bark_diffuse.png']],
+      ['a2','terrain_albedo.tif','Assets/Environments','image','#d68fb0','{C7E21B44-0F32-11F1-9AE2-00C04FD430C8}','Texture (streaming)','failed','—',[],[]],
+      ['a3','hero_diffuse.png','Assets/Materials','image','#d68fb0','{1F0A9E22-7B10-11F0-A1C3-00C04FD430C8}','Texture (streaming)','completed','5 min ago',[['hero_diffuse.streamingimage','pc','4.1 MB']],[]],
+      ['a4','rock_01.material','Assets/Materials','palette','#5ac0c0','{9D4C6E88-3A21-11F1-88FA-00C04FD430C8}','Material','completed','5 min ago',[['rock_01.azmaterial','pc','9 KB']],['hero_diffuse.png','hero_normal.png']],
+      ['a5','player.prefab','Assets/Characters','category','#8fc97e','{5E7B12A0-66C4-11F0-93D1-00C04FD430C8}','Prefab','completed','8 min ago',[['player.procprefab','pc','72 KB']],['character.actor','run_cycle.motion']],
+      ['a6','character.actor','Assets/Characters','accessibility_new','#7ad6a6','{2A88F1D6-51E9-11F1-B0C7-00C04FD430C8}','Skeleton (actor)','completed','8 min ago',[['character.azmodel','pc','2.4 MB']],[]],
+      ['a7','footsteps.wav','Assets/Audio','graphic_eq','#d68fb0','{B0193C7E-42AA-11F0-9F55-00C04FD430C8}','Audio (adpcm)','completed','12 min ago',[['footsteps.azbank','pc','180 KB']],[]],
+      ['a8','pbr_opaque.shader','Assets/Shaders','gradient','#e0a060','{7C55A9F0-1D8B-11F1-A6E4-00C04FD430C8}','Shader','processing','3 min ago',[['pbr_opaque.azshader','pc','28 KB'],['pbr_opaque.azshader','android','—']],['SceneSrg.azsli','ForwardPassSrg.azsli']],
+      ['a9','ui_hud.canvas','Assets/UI','dashboard','#b78fd6','{3EF6820C-9C71-11F0-BB90-00C04FD430C8}','UI Canvas','completed','15 min ago',[['ui_hud.uicanvas','pc','22 KB']],['hud_font.ttf']],
+      ['a10','dialogue.lua','Assets/Scripts','code','#9aa1ac','{D2A47B18-8E60-11F0-97C2-00C04FD430C8}','Script','completed','15 min ago',[['dialogue.luac','pc','6 KB']],[]]
+    ].map(a=>({id:a[0],name:a[1],folder:a[2],icon:a[3],iconColor:a[4],uuid:a[5],jobKey:a[6],status:a[7],processed:a[8],products:a[9],deps:a[10]}));
+
+    // logs: t, sev, source, msg
+    this.logs = [
+      ['14:32:00.011','message','AssetProcessor','Started — watching 1 scan folder · 11 recognizers active'],
+      ['14:32:00.140','debug','FileWatcher','Change detected: Assets/Environments/env_forest.fbx'],
+      ['14:32:00.142','message','Model Builder','env_forest.fbx — created 2 jobs (PC, Android)'],
+      ['14:32:00.320','debug','Image Builder','terrain_albedo.tif — analyzing 96 MB source'],
+      ['14:32:01.004','error','Image Builder','terrain_albedo.tif [PC] — Unsupported bit depth: 32-bit float'],
+      ['14:32:01.006','error','AssetProcessor','Job failed: terrain_albedo.tif [PC] — 0 products emitted'],
+      ['14:32:01.210','message','Material Builder','rock_01.material [PC] — compiled in 0.12s'],
+      ['14:32:01.402','warning','Material Builder','water.material [PC] — texture "foam.png" not found, using fallback'],
+      ['14:32:01.611','message','Shader Builder','pbr_opaque.shader [PC] — compiled 6 variants in 3.72s'],
+      ['14:32:02.220','debug','Shader Builder','pbr_opaque.shader [Android] — compiling variant 2 of 6…'],
+      ['14:32:02.480','message','Audio Builder','footsteps.wav [PC] — 0.45s'],
+      ['14:32:02.900','debug','JobScheduler','3 jobs in flight · 2 queued'],
+      ['14:32:03.140','error','Image Builder','sky_gradient.tif [iOS] — Out of memory compressing 8192×8192 → ASTC'],
+      ['14:32:03.142','error','AssetProcessor','Job failed: sky_gradient.tif [iOS] — 0 products emitted'],
+      ['14:32:03.560','message','Prefab Builder','player.prefab [PC] — 0.34s'],
+      ['14:32:03.900','debug','Model Builder','env_forest.fbx [Android] — remeshing LOD chain…'],
+      ['14:32:04.010','message','Script Builder','dialogue.lua [PC] — 0.05s'],
+      ['14:32:04.220','message','UI Builder','ui_hud.canvas [PC] — 0.09s'],
+      ['14:32:04.500','debug','Connection','Aether Editor (127.0.0.1:45643) — heartbeat ok'],
+      ['14:32:04.780','message','AssetProcessor','10 assets up to date · 5 processing · 2 failed'],
+      ['14:32:05.010','debug','FileWatcher','Idle — waiting for changes']
+    ].map(a=>({t:a[0],sev:a[1],source:a[2],msg:a[3]}));
+
+    // connections: name,type,platform(''),address,status,auto
+    this.conns = [
+      ['Aether Editor','Editor','pc','127.0.0.1:45643','connected',true],
+      ['Model Builder','Builder','','worker://local#1','idle',true],
+      ['Image Builder','Builder','','worker://local#2','processing',true],
+      ['Shader Builder','Builder','','worker://local#3','processing',true],
+      ['Pixel 8','Game','android','192.0.2.42:22229','connected',true],
+      ['Aether Launcher','Game','pc','127.0.0.1:45644','idle',false]
+    ].map(a=>({name:a[0],type:a[1],platform:a[2],address:a[3],status:a[4],auto:a[5]}));
+
+    this.allowList = ['127.0.0.1','192.0.2.0/24','worker://local'];
+    this.rejectList = ['198.51.100.0/24 · untrusted'];
+
+    this.state = {
+      tab: this.props.defaultTab || 'jobs',
+      selJob:'j03', selAsset:'a4', filter:'', statusFilter:'all', platform:'all',
+      logTab:'all', assetQuery:'', overrides:{}
+    };
+  }
+
+  accent(){ return this.props.accent || '#4188e0'; }
+  jobStatus(j){ return this.state.overrides[j.id] || j.status; }
+  plStyle(pid){ const m=this.platMeta[pid]||{label:pid,color:'#7a8aa0'}; return {label:m.label,color:m.color,
+    style:{fontSize:'10px',fontFamily:"'IBM Plex Mono',monospace",color:m.color,background:m.color+'1f',padding:'2px 8px',borderRadius:'4px',fontWeight:500}}; }
+  sevMeta(sev){ return ({
+    debug:{tag:'DBG',color:'#6b7280',msg:'#8b919c',bg:'#22262c'},
+    message:{tag:'MSG',color:'#7aa2d6',msg:'#c2c8d0',bg:'rgba(65,136,224,0.14)'},
+    warning:{tag:'WARN',color:'#d6a23b',msg:'#e0b667',bg:'rgba(214,162,59,0.15)'},
+    error:{tag:'ERR',color:'#e0524b',msg:'#ec8078',bg:'rgba(224,82,75,0.16)'}
+  })[sev]; }
+  tagStyle(sev){ const m=this.sevMeta(sev); return {fontSize:'9.5px',fontWeight:600,color:m.color,background:m.bg,padding:'1px 6px',borderRadius:'4px',flex:'0 0 auto',letterSpacing:'.4px',minWidth:'40px',textAlign:'center',fontFamily:"'IBM Plex Sans',sans-serif"}; }
+
+  buildEvents(j){
+    const st=this.jobStatus(j); const base='14:32:0'; let n=1; const evs=[];
+    const push=(sev,msg)=>{ evs.push({t:base+n+'.'+String(120+evs.length*47).slice(0,3),sev,msg}); };
+    push('message','Job request received — '+j.source);
+    push('debug','Builder "'+j.builder+'"  ·  platform "'+this.platMeta[j.platform].label+'"  ·  key "'+j.jobKey+'"');
+    push('debug','Fingerprint 0x'+(j.id.charCodeAt(1)*7351).toString(16).slice(0,8)+'  ·  source '+j.size);
+    if(st==='completed'){ push('message','Loading source & resolving dependencies'); push('message','Compiling…'); push('message','Wrote product '+j.product); push('message','Job completed successfully in '+j.duration); }
+    else if(st==='processing'){ push('message','Loading source & resolving dependencies'); push('message','Compiling… (worker '+j.builder+')'); push('debug','Waiting on builder worker to finish…'); }
+    else if(st==='pending'){ push('debug','Queued — waiting for an available builder slot'); }
+    else if(st==='warning'){ push('warning',j.msg); push('message','Wrote product '+j.product); push('message','Job completed with warnings in '+j.duration); }
+    else if(st==='failed'){ push('message','Loading source ('+j.size+')'); push('error',j.msg); push('error','Job failed — 0 products emitted'); }
+    return evs;
+  }
+
+  renderVals(){
+    const st=this.state; const AC=this.accent();
+    const zebra = this.props.zebra !== false;
+
+    const counts={completed:0,processing:0,pending:0,warning:0,failed:0};
+    this.jobs.forEach(j=>{ counts[this.jobStatus(j)]++; });
+    const total=this.jobs.length;
+    const toProcess=counts.processing+counts.pending;
+    const pct=Math.round(counts.completed/total*100);
+
+    const busy=toProcess>0;
+    const headState={
+      icon: busy?'sync':'check_circle',
+      title: busy?'Processing assets':'All assets up to date',
+      sub: busy?(toProcess+' of '+total+' jobs remaining · '+counts.processing+' active'):(total+' assets · idle'),
+      iconStyle:{fontSize:'26px',color:busy?AC:'#57b97e',animation:busy?'ap-spin 1.4s linear infinite':'none'}
+    };
+    const progressStyle={height:'100%',width:pct+'%',borderRadius:'4px',background:'linear-gradient(90deg,'+AC+','+AC+'cc)',transition:'width .3s'};
+
+    const chipDef=[['completed','check_circle'],['processing','sync'],['pending','schedule'],['warning','warning'],['failed','error']];
+    const statChips=chipDef.map(([k,icon])=>{ const m=this.statusMeta[k]; const v=counts[k]; const on=v>0; return {key:k,icon,color:on?m.color:'#3a4048',value:String(v),label:m.label,textColor:on?'#e4e7ec':'#5f6670',
+      style:{display:'flex',alignItems:'center',gap:'6px',height:'30px',padding:'0 11px',background:'#1b1e23',border:'1px solid #2c313a',borderRadius:'7px',opacity:on?1:0.55}}; });
+
+    // tabs
+    const tabDef=[['jobs','Jobs','work_history'],['assets','Assets','inventory_2'],['logs','Logs','description'],['connections','Connections','lan']];
+    const connConnected=this.conns.filter(c=>c.status==='connected').length;
+    const errWarn=this.logs.filter(l=>l.sev==='error'||l.sev==='warning').length;
+    const badges={jobs:{n:toProcess,tone:AC},logs:{n:errWarn,tone:'#e0524b'},connections:{n:connConnected,tone:'#57b97e'}};
+    const tabs=tabDef.map(([id,label,icon])=>{ const a=st.tab===id; const b=badges[id]; const hasBadge=!!(b&&b.n>0); return {key:id,label,icon,selected:a,hasBadge,badge:b?String(b.n):'',
+      onClick:()=>this.setState({tab:id}),
+      style:{display:'flex',alignItems:'center',gap:'10px',height:'38px',padding:'0 11px',borderRadius:'8px',marginBottom:'3px',fontSize:'12.5px',cursor:'default',color:a?'#e8ebef':'#9aa1ac',background:a?AC+'24':'transparent',boxShadow:a?('inset 2px 0 0 '+AC):'none',fontWeight:a?600:400},
+      badgeStyle:{fontSize:'10px',fontFamily:"'IBM Plex Mono',monospace",fontWeight:600,color:a?'#fff':(b?b.tone:'#8b919c'),background:a?(b?b.tone:'#3a4048'):'#22262c',padding:'1px 7px',borderRadius:'10px',minWidth:'18px',textAlign:'center'}}; });
+
+    // ---- JOBS ----
+    const platformOpts=[{id:'all',label:'All platforms'}].concat(Object.keys(this.platMeta).map(k=>({id:k,label:this.platMeta[k].label})));
+    const scDef=[['all','All'],['completed','Done'],['processing','Active'],['pending','Queued'],['warning','Warn'],['failed','Failed']];
+    const statusChips=scDef.map(([k,label])=>{ const a=st.statusFilter===k; const cnt=k==='all'?total:counts[k]; return {key:k,label,onClick:()=>this.setState({statusFilter:k}),hasCount:true,count:String(cnt),
+      style:{display:'flex',alignItems:'center',gap:'6px',height:'32px',padding:'0 11px',borderRadius:'7px',fontSize:'11.5px',cursor:'default',border:a?('1px solid '+AC):'1px solid #2c313a',background:a?AC+'1c':'#1b1e23',color:a?'#e4e7ec':'#9aa1ac',fontWeight:a?500:400},
+      countStyle:{fontSize:'10px',fontFamily:"'IBM Plex Mono',monospace",color:a?'#e4e7ec':'#6b7280'}}; });
+
+    const q=st.filter.trim().toLowerCase();
+    const filtered=this.jobs.filter(j=>{
+      const s=this.jobStatus(j);
+      if(st.statusFilter!=='all' && s!==st.statusFilter) return false;
+      if(st.platform!=='all' && j.platform!==st.platform) return false;
+      if(q && !(j.source.toLowerCase().includes(q)||j.jobKey.toLowerCase().includes(q))) return false;
+      return true;
+    });
+    const jobRows=filtered.map((j,i)=>{ const s=this.jobStatus(j); const m=this.statusMeta[s]; const sel=st.selJob===j.id; const pl=this.plStyle(j.platform);
+      return {key:j.id,icon:m.icon,color:m.color,statusLabel:m.label,jobKey:j.jobKey,source:j.source,platLabel:pl.label,platStyle:pl.style,
+        completed:s==='completed'||s==='warning'?'just now':(s==='failed'?'—':(s==='processing'?'in progress':'queued')),
+        duration:j.duration,
+        onClick:()=>this.setState({selJob:j.id}),
+        dotStyle:{fontSize:'16px',color:m.color,animation:s==='processing'?'ap-spin 1.4s linear infinite':'none'},
+        rowStyle:{display:'flex',alignItems:'center',height:'40px',padding:'0 16px',cursor:'default',borderBottom:'1px solid #1c2026',background:sel?AC+'1a':(zebra&&i%2?'#17191e':'transparent'),boxShadow:sel?('inset 2px 0 0 '+AC):'none'}}; });
+
+    const selJobObj=this.jobs.find(j=>j.id===st.selJob)||this.jobs[0];
+    const selPl=this.plStyle(selJobObj.platform);
+    const selEvents=this.buildEvents(selJobObj).map((e,i)=>{ const m=this.sevMeta(e.sev); return {key:i,t:e.t,tag:m.tag,tagStyle:this.tagStyle(e.sev),msg:e.msg,msgColor:m.msg}; });
+    const logActions=[['Reprocess','restart_alt',()=>this.setState(s=>({overrides:{...s.overrides,[selJobObj.id]:'pending'}}))],['View Source','description',()=>{}],['Open Location','folder_open',()=>{}],['Copy Path','content_copy',()=>{}]]
+      .map(a=>({key:a[0],label:a[0],icon:a[1],onClick:a[2]}));
+
+    // ---- ASSETS ----
+    const aq=st.assetQuery.trim().toLowerCase();
+    const af=this.assets.filter(a=>!aq||a.name.toLowerCase().includes(aq)||a.folder.toLowerCase().includes(aq));
+    const folders=[]; const byFolder={};
+    af.forEach(a=>{ const f=a.folder.split('/').pop(); if(!byFolder[f]){byFolder[f]=[];folders.push(f);} byFolder[f].push(a); });
+    const assetGroups=folders.map(f=>({key:f,folder:f,items:byFolder[f].map(a=>{ const m=this.statusMeta[a.status]; const sel=st.selAsset===a.id;
+      return {key:a.id,name:a.name,icon:a.icon,iconColor:a.iconColor,stIcon:m.icon,stColor:m.color,onClick:()=>this.setState({selAsset:a.id}),
+        rowStyle:{display:'flex',alignItems:'center',gap:'9px',height:'32px',padding:'0 14px',cursor:'default',background:sel?AC+'1e':'transparent',boxShadow:sel?('inset 2px 0 0 '+AC):'none'}}; })}));
+
+    const aObj=this.assets.find(a=>a.id===st.selAsset)||this.assets[0];
+    const am=this.statusMeta[aObj.status];
+    const selAsset={
+      name:aObj.name, folder:aObj.folder, icon:aObj.icon, iconColor:aObj.iconColor,
+      stIcon:am.icon, stLabel:am.label,
+      stBadgeStyle:{display:'inline-flex',alignItems:'center',gap:'6px',fontSize:'11px',fontWeight:500,color:am.color,background:am.color+'1c',border:'1px solid '+am.color+'40',padding:'4px 10px',borderRadius:'7px'},
+      meta:[
+        {key:'id',label:'Asset ID',value:aObj.uuid},
+        {key:'jk',label:'Job Key',value:aObj.jobKey},
+        {key:'src',label:'Source',value:aObj.folder+'/'+aObj.name},
+        {key:'pr',label:'Last Processed',value:aObj.processed}
+      ],
+      productCount:String(aObj.products.length), hasProducts:aObj.products.length>0, noProducts:aObj.products.length===0,
+      products:aObj.products.map((p,i)=>{ const pl=this.plStyle(p[1]); return {key:i,name:p[0],platLabel:pl.label,platStyle:pl.style,size:p[2]}; }),
+      depCount:String(aObj.deps.length), hasDeps:aObj.deps.length>0, noDeps:aObj.deps.length===0, deps:aObj.deps.map((d,i)=>({key:i,value:d}))
+    };
+    // deps template uses {{ d }} directly -> pass strings
+    selAsset.deps = aObj.deps;
+
+    // ---- LOGS ----
+    const ltCount={all:this.logs.length,message:0,warning:0,error:0};
+    this.logs.forEach(l=>{ if(ltCount[l.sev]!==undefined)ltCount[l.sev]++; });
+    const ltDef=[['all','All'],['message','Messages'],['warning','Warnings'],['error','Errors']];
+    const logTabs=ltDef.map(([k,label])=>{ const a=st.logTab===k; const tone=k==='error'?'#e0524b':(k==='warning'?'#d6a23b':AC); return {key:k,label,selected:a,onClick:()=>this.setState({logTab:k}),
+      style:{display:'flex',alignItems:'center',gap:'7px',height:'30px',padding:'0 13px',borderRadius:'7px',fontSize:'12px',cursor:'default',color:a?'#e8ebef':'#9aa1ac',background:a?'#22262c':'transparent',fontWeight:a?600:400},
+      countStyle:{fontSize:'10px',fontFamily:"'IBM Plex Mono',monospace",fontWeight:600,color:a?tone:'#6b7280',background:a?tone+'22':'#1b1e23',padding:'1px 7px',borderRadius:'9px'}}; });
+    const logRows=this.logs.filter(l=>st.logTab==='all'||l.sev===st.logTab).map((l,i)=>{ const m=this.sevMeta(l.sev); return {key:i,t:l.t,tag:m.tag,tagStyle:this.tagStyle(l.sev),source:l.source,msg:l.msg,msgColor:m.msg}; });
+
+    // ---- CONNECTIONS ----
+    const typeColor={Editor:'#4188e0',Builder:'#b78fd6',Game:'#8fc97e'};
+    const connStColor={connected:'#57b97e',processing:AC,idle:'#6b7280'};
+    const connStLabel={connected:'Connected',processing:'Processing',idle:'Idle'};
+    const connIcon={Editor:'edit_document',Builder:'precision_manufacturing',Game:'sports_esports'};
+    const connRows=this.conns.map((c,i)=>{ const pl=c.platform?this.plStyle(c.platform):null; return {key:i,name:c.name,type:c.type,icon:connIcon[c.type],iconColor:typeColor[c.type],
+      typeStyle:{fontSize:'10px',fontFamily:"'IBM Plex Mono',monospace",fontWeight:500,color:typeColor[c.type],background:typeColor[c.type]+'1c',padding:'2px 8px',borderRadius:'4px'},
+      hasPlatform:!!c.platform, noPlatform:!c.platform, platLabel:pl?pl.label:'', platStyle:pl?pl.style:{},
+      address:c.address, stColor:connStColor[c.status], stLabel:connStLabel[c.status],
+      stDotStyle:{width:'7px',height:'7px',borderRadius:'50%',background:connStColor[c.status],flex:'0 0 auto',animation:c.status==='processing'?'ap-pulse 1.2s ease-in-out infinite':'none'},
+      autoIcon:c.auto?'toggle_on':'toggle_off', autoColor:c.auto?'#57b97e':'#4a5058'}; });
+
+    return {
+      headState, progressStyle, progressLabel:counts.completed+' of '+total+' completed', progressPctLabel:pct+'%',
+      statChips, onScan:()=>this.setState({overrides:{}}),
+      tabs,
+      isJobs:st.tab==='jobs', isAssets:st.tab==='assets', isLogs:st.tab==='logs', isConns:st.tab==='connections',
+
+      filter:st.filter, onFilter:(e)=>this.setState({filter:e.target.value}),
+      statusChips, platform:st.platform, platformOpts, onPlatform:(e)=>this.setState({platform:e.target.value}),
+      onReprocess:()=>this.setState(s=>({overrides:{...s.overrides,[s.selJob]:'pending'}})),
+      jobRows, noJobs:jobRows.length===0,
+      selJob:{source:selJobObj.source,platLabel:selPl.label,platStyle:selPl.style}, selEvents, logActions,
+
+      assetQuery:st.assetQuery, onAssetQuery:(e)=>this.setState({assetQuery:e.target.value}),
+      assetGroups, hasAsset:true, selAsset,
+
+      logTabs, logRows,
+
+      connSub:connConnected+' connected · '+this.conns.length+' known endpoints',
+      onAddConn:()=>{}, connRows, allowList:this.allowList, rejectList:this.rejectList,
+
+      barDotStyle:{width:'7px',height:'7px',borderRadius:'50%',background:busy?AC:'#57b97e',animation:busy?'ap-pulse 1.2s ease-in-out infinite':'none'},
+      barStatus:busy?'Asset Builder · running':'Asset Builder · idle',
+      barCounts:total+' jobs · '+counts.completed+' done · '+counts.failed+' failed'
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-gem-rock-n-roll"
+version = "0.1.0"
+edition = "2024"
+description = "RockNRoll physics contracts, assets, and Bevy integration"
+
+
+[lints]
+workspace = true
+
+[features]
+default = []
+render = ["bevy/3d_bevy_render"]
+
+[dependencies]
+az-asset = { workspace = true }
+az-core = { workspace = true, features = ["bevy", "serde"] }
+az-derive = { workspace = true }
+az-framework = { path = "../../crates/az/framework", default-features = false }
+az-gem-contract = { workspace = true }
+az-prefab = { workspace = true }
+az-physics = { workspace = true }
+az-terrain-runtime = { workspace = true, features = ["bevy"] }
+bevy = { workspace = true, features = ["default_app"] }
+serde = { workspace = true, features = ["derive"] }
+thiserror = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+az-physics-rapier = { workspace = true }
+azoth-rock-n-roll-ids = { path = "ids" }
+tempfile = "3"

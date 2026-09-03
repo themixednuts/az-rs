@@ -1,0 +1,25 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-proto-asset"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Cap'n Proto protocol types for Azoth asset-processor services"
+
+
+[lints]
+workspace = true
+[dependencies]
+az-proto-authoring = { path = "../authoring" }
+az-proto-core = { path = "../core" }
+capnp = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }
+
+[build-dependencies]
+az-proto-build = { path = "../build" }
+
+[dev-dependencies]
+blake3 = { workspace = true }
+tempfile = "3"

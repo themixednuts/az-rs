@@ -1,0 +1,52 @@
+error[E0308]: mismatched types
+  --> tests/ui/fail/a_fence_is_not_an_identity.rs:13:20
+   |
+13 |     takes_instance(fence);
+   |     -------------- ^^^^^ expected `WorldInstanceId`, found `PlacementFence`
+   |     |
+   |     arguments to this function are incorrect
+   |
+note: function defined here
+  --> tests/ui/fail/a_fence_is_not_an_identity.rs:7:4
+   |
+ 7 | fn takes_instance(_: WorldInstanceId) {}
+   |    ^^^^^^^^^^^^^^ ------------------
+
+error[E0308]: mismatched types
+  --> tests/ui/fail/a_fence_is_not_an_identity.rs:14:22
+   |
+14 |     takes_generation(fence);
+   |     ---------------- ^^^^^ expected `PlacementGeneration`, found `PlacementFence`
+   |     |
+   |     arguments to this function are incorrect
+   |
+note: function defined here
+  --> tests/ui/fail/a_fence_is_not_an_identity.rs:8:4
+   |
+ 8 | fn takes_generation(_: PlacementGeneration) {}
+   |    ^^^^^^^^^^^^^^^^ ----------------------
+
+error[E0308]: mismatched types
+  --> tests/ui/fail/a_fence_is_not_an_identity.rs:16:29
+   |
+16 |     let _ = fence.authorize(FencedEffect::AdmitPlayer);
+   |                   --------- ^^^^^^^^^^^^^^^^^^^^^^^^^ expected `FenceClaim`, found `FencedEffect`
+   |                   |
+   |                   arguments to this method are incorrect
+   |
+note: method defined here
+  --> src/identity.rs
+   |
+   |     pub fn authorize(self, claim: FenceClaim) -> Result<(), StalePlacement> {
+   |            ^^^^^^^^^
+
+error[E0616]: field `generation` of struct `PlacementFence` is private
+  --> tests/ui/fail/a_fence_is_not_an_identity.rs:17:19
+   |
+17 |     let _ = fence.generation;
+   |                   ^^^^^^^^^^ private field
+   |
+help: a method `generation` also exists, call it with parentheses
+   |
+17 |     let _ = fence.generation();
+   |                             ++

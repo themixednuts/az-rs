@@ -1,0 +1,37 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-observability"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Tracing integration helpers for Azoth observability"
+
+
+[lints]
+workspace = true
+[features]
+default = []
+otlp = [
+  "dep:opentelemetry",
+  "dep:opentelemetry-otlp",
+  "dep:opentelemetry_sdk",
+  "dep:tracing-opentelemetry",
+]
+
+[dependencies]
+az-proto-core = { path = "../proto/core" }
+az-proto-observability = { path = "../proto/observability" }
+blake3 = { workspace = true }
+capnp = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter", "fmt"] }
+opentelemetry = { version = "0.27", optional = true }
+opentelemetry-otlp = { version = "0.27", features = ["grpc-tonic"], optional = true }
+opentelemetry_sdk = { version = "0.27", features = ["rt-tokio"], optional = true }
+tracing-opentelemetry = { version = "0.28", optional = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3"

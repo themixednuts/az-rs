@@ -1,0 +1,5 @@
+error[E0425]: cannot find function `runtime_contribution` in module `gem_vegetation`
+  --> tests/ui/missing_entry_item.rs:12:25
+   |
+12 |         gem_vegetation::runtime_contribution(),
+   |                         ^^^^^^^^^^^^^^^^^^^^ not found in `gem_vegetation`

@@ -1,0 +1,1708 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{background:#15171b;}
+  ::selection{background:rgba(65,136,224,0.35);}
+  .ms{font-family:'Material Symbols Outlined';font-weight:400;font-style:normal;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;direction:ltr;-webkit-font-smoothing:antialiased;font-variation-settings:'opsz' 20,'wght' 400,'GRAD' 0,'FILL' 0;vertical-align:middle;user-select:none;}
+  ::-webkit-scrollbar{width:11px;height:11px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:#33394300;border:3px solid transparent;background-clip:padding-box;border-radius:8px;}
+  *:hover::-webkit-scrollbar-thumb{background:#39404b;background-clip:padding-box;}
+  ::-webkit-scrollbar-thumb:hover{background:#454d59;background-clip:padding-box;}
+  ::-webkit-scrollbar-corner{background:transparent;}
+  @keyframes recPulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+  @keyframes spin{to{transform:rotate(360deg);}}
+</style>
+<script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/controls/TransformControls.js"></script>
+</helmet>
+
+<div style="display:flex;flex-direction:column;height:100vh;width:100vw;overflow:hidden;background:#15171b;color:#d6dae0;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:12px;line-height:1.35;-webkit-font-smoothing:antialiased;user-select:none;position:relative;">
+
+  <!-- ================= MENU / TITLE BAR ================= -->
+  <div style="height:34px;flex:0 0 34px;display:flex;align-items:center;background:#202429;border-bottom:1px solid #2c313a;padding:0 8px;position:relative;z-index:60;">
+    <div style="width:13px;height:13px;background:#4188e0;transform:rotate(45deg);border-radius:2px;margin-right:12px;"></div>
+    <sc-for list="{{ menus }}" as="m" hint-placeholder-count="8">
+      <div style="position:relative;height:34px;">
+        <div onClick="{{ m.onOpen }}" onMouseEnter="{{ m.onEnter }}" style="{{ m.btnStyle }}" style-hover="background:#2c313a;color:#d6dae0;">{{ m.name }}</div>
+        <sc-if value="{{ m.open }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;top:34px;left:0;min-width:228px;background:#23272e;border:1px solid #363c46;border-radius:6px;box-shadow:0 12px 30px rgba(0,0,0,0.5);padding:5px;z-index:80;">
+            <sc-for list="{{ m.items }}" as="it" hint-placeholder-count="6">
+              <sc-if value="{{ it.sep }}" hint-placeholder-val="{{ false }}">
+                <div style="height:1px;background:#363c46;margin:5px 6px;"></div>
+              </sc-if>
+              <sc-if value="{{ it.notsep }}" hint-placeholder-val="{{ true }}">
+                <div onClick="{{ it.onClick }}" style="{{ it.style }}" style-hover="background:#3160a8;color:#fff;">
+                  <span style="display:flex;align-items:center;gap:8px;"><span class="ms" style="font-size:16px;width:16px;color:#8b919c;">{{ it.icon }}</span>{{ it.label }}</span>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#6b7280;letter-spacing:.3px;">{{ it.shortcut }}</span>
+                </div>
+              </sc-if>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </sc-for>
+
+    <div style="flex:1 1 auto;min-width:0;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:8px;color:#7c838f;font-size:11.5px;white-space:nowrap;padding:0 12px;">
+      <span class="ms" style="font-size:14px;color:#5f6670;flex:0 0 auto;">grid_view</span>
+      <span style="color:#aeb4bd;overflow:hidden;text-overflow:ellipsis;">RiftRunner.aeproj</span>
+      <span style="color:#4b515b;flex:0 0 auto;">—</span>
+      <span style="overflow:hidden;text-overflow:ellipsis;">Canyon_01</span>
+      <span style="width:6px;height:6px;border-radius:50%;background:#d6a23b;display:inline-block;flex:0 0 auto;" title="Unsaved changes"></span>
+    </div>
+
+    <div style="flex:0 0 auto;display:flex;align-items:center;gap:2px;">
+      <div onClick="{{ cycleLayout }}" style="display:flex;align-items:center;gap:6px;height:24px;padding:0 9px;border-radius:5px;color:#aeb4bd;font-size:11px;cursor:default;border:1px solid #2c313a;" style-hover="background:#2c313a;">
+        <span class="ms" style="font-size:15px;">dashboard</span>{{ layout }}<span class="ms" style="font-size:16px;color:#6b7280;">arrow_drop_down</span>
+      </div>
+      <div style="width:1px;height:18px;background:#2c313a;margin:0 6px;"></div>
+      <div style="width:26px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:5px;color:#8b919c;cursor:default;" style-hover="background:#2c313a;"><span class="ms" style="font-size:15px;">remove</span></div>
+      <div style="width:26px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:5px;color:#8b919c;cursor:default;" style-hover="background:#2c313a;"><span class="ms" style="font-size:13px;">crop_square</span></div>
+      <div style="width:26px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:5px;color:#8b919c;cursor:default;" style-hover="background:#c0453f;color:#fff;"><span class="ms" style="font-size:16px;">close</span></div>
+    </div>
+  </div>
+
+  <!-- ================= TOOLBAR ================= -->
+  <div style="height:42px;flex:0 0 42px;display:flex;align-items:center;gap:3px;background:#1c2025;border-bottom:1px solid #2c313a;padding:0 8px;position:relative;z-index:40;">
+    <!-- left tools (shrink + clip gracefully when space is tight) -->
+    <div style="flex:1 1 0;min-width:0;overflow:hidden;display:flex;align-items:center;gap:3px;">
+    <div style="width:30px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:5px;color:#9aa1ac;cursor:default;" style-hover="background:#2a2f37;color:#d6dae0;" title="Save"><span class="ms" style="font-size:18px;">save</span></div>
+    <div style="width:30px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:5px;color:#9aa1ac;cursor:default;" style-hover="background:#2a2f37;color:#d6dae0;" title="Undo"><span class="ms" style="font-size:18px;">undo</span></div>
+    <div style="width:30px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:5px;color:#9aa1ac;cursor:default;" style-hover="background:#2a2f37;color:#d6dae0;" title="Redo"><span class="ms" style="font-size:18px;">redo</span></div>
+
+    <div style="width:1px;height:22px;background:#2c313a;margin:0 5px;"></div>
+
+    <div style="display:flex;gap:2px;background:#16181c;border-radius:7px;padding:3px;">
+      <sc-for list="{{ tools }}" as="t" hint-placeholder-count="5">
+        <div onClick="{{ t.onClick }}" title="{{ t.title }}" style="{{ t.style }}" style-hover="color:#d6dae0;"><span class="ms" style="font-size:18px;">{{ t.icon }}</span></div>
+      </sc-for>
+    </div>
+
+    <div style="width:1px;height:22px;background:#2c313a;margin:0 5px;"></div>
+
+    <div style="display:flex;background:#16181c;border-radius:7px;padding:3px;">
+      <sc-for list="{{ pivotOpts }}" as="o" hint-placeholder-count="2">
+        <div onClick="{{ o.onClick }}" style="{{ o.style }}" style-hover="color:#d6dae0;">{{ o.label }}</div>
+      </sc-for>
+    </div>
+    <div style="display:flex;background:#16181c;border-radius:7px;padding:3px;margin-left:3px;">
+      <sc-for list="{{ spaceOpts }}" as="o" hint-placeholder-count="2">
+        <div onClick="{{ o.onClick }}" style="{{ o.style }}" style-hover="color:#d6dae0;">{{ o.label }}</div>
+      </sc-for>
+    </div>
+
+    <div style="width:1px;height:22px;background:#2c313a;margin:0 5px;"></div>
+
+    <div onClick="{{ toggleGridSnap }}" style="{{ gridSnapStyle }}" style-hover="background:#2a2f37;" title="Grid snapping">
+      <span class="ms" style="font-size:17px;">grid_on</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;">{{ snapVal }}</span>
+    </div>
+    <div onClick="{{ toggleAngleSnap }}" style="{{ angleSnapStyle }}" style-hover="background:#2a2f37;" title="Angle snapping">
+      <span class="ms" style="font-size:17px;">architecture</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;">{{ angleVal }}°</span>
+    </div>
+
+    </div><!-- /left tools -->
+
+    <!-- play controls (always centered between equal side sections) -->
+    <div style="flex:0 0 auto;display:flex;align-items:center;gap:3px;background:#16181c;border:1px solid #2c313a;border-radius:8px;padding:3px;">
+      <div onClick="{{ onPlay }}" style="{{ playBtnStyle }}" style-hover="filter:brightness(1.12);" title="Play (Ctrl+P)"><span class="ms" style="font-size:19px;">{{ playIcon }}</span></div>
+      <div onClick="{{ onStop }}" style="{{ stopBtnStyle }}" style-hover="background:#2a2f37;color:#d6dae0;" title="Stop"><span class="ms" style="font-size:18px;">stop</span></div>
+      <div onClick="{{ onStep }}" style="width:30px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:5px;color:#9aa1ac;cursor:default;" style-hover="background:#2a2f37;color:#d6dae0;" title="Step frame"><span class="ms" style="font-size:18px;">skip_next</span></div>
+      <div style="width:1px;height:18px;background:#2c313a;margin:0 2px;"></div>
+      <div onClick="{{ onSimulate }}" style="{{ simBtnStyle }}" style-hover="background:#2a2f37;color:#d6dae0;" title="Simulate physics"><span class="ms" style="font-size:17px;">smart_toy</span></div>
+    </div>
+
+    <div style="flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:flex-end;gap:3px;">
+      <div style="position:relative;flex:0 0 auto;">
+        <div onClick="{{ toggleBuild }}" style="{{ buildBtnStyle }}" style-hover="filter:brightness(1.1);"><span class="ms" style="font-size:17px;">build</span>Build<span style="opacity:.7;font-weight:400;">· {{ buildConfigShort }}</span><span class="ms" style="font-size:16px;opacity:.8;">arrow_drop_down</span></div>
+        <sc-if value="{{ buildOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;top:33px;right:0;width:280px;background:#23272e;border:1px solid #363c46;border-radius:8px;box-shadow:0 14px 36px rgba(0,0,0,0.55);padding:6px;z-index:90;">
+            <div style="font-size:9.5px;text-transform:uppercase;letter-spacing:.6px;color:#5f6670;padding:5px 8px 4px;">Configuration</div>
+            <sc-for list="{{ buildConfigs }}" as="c" hint-placeholder-count="4">
+              <div onClick="{{ c.onClick }}" style="{{ c.style }}" style-hover="background:#2a2f37;">
+                <span style="{{ c.dotStyle }}"></span>
+                <span style="flex:1 1 auto;min-width:0;"><span style="display:block;font-size:11.5px;color:#e4e7ec;font-weight:500;">{{ c.name }}</span><span style="display:block;font-size:10px;color:#7c838f;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ c.desc }}</span></span>
+                <sc-if value="{{ c.selected }}" hint-placeholder-val="{{ false }}"><span class="ms" style="font-size:16px;color:#4188e0;flex:0 0 auto;">check</span></sc-if>
+              </div>
+            </sc-for>
+            <div style="height:1px;background:#363c46;margin:5px 6px;"></div>
+            <div style="font-size:9.5px;text-transform:uppercase;letter-spacing:.6px;color:#5f6670;padding:3px 8px 4px;">Target Platform</div>
+            <sc-for list="{{ buildTargets }}" as="t" hint-placeholder-count="5">
+              <div onClick="{{ t.onClick }}" style="{{ t.style }}" style-hover="background:#2a2f37;">
+                <span class="ms" style="font-size:15px;color:#8b919c;flex:0 0 auto;width:18px;">{{ t.icon }}</span>
+                <span style="flex:1 1 auto;font-size:11.5px;color:#cfd4db;">{{ t.name }}</span>
+                <sc-if value="{{ t.selected }}" hint-placeholder-val="{{ false }}"><span class="ms" style="font-size:16px;color:#4188e0;flex:0 0 auto;">check</span></sc-if>
+              </div>
+            </sc-for>
+            <div style="height:1px;background:#363c46;margin:5px 6px;"></div>
+            <sc-for list="{{ buildActions }}" as="a" hint-placeholder-count="6">
+              <div onClick="{{ a.onClick }}" style="{{ a.style }}" style-hover="background:#3160a8;color:#fff;">
+                <span style="display:flex;align-items:center;gap:9px;"><span class="ms" style="font-size:16px;color:{{ a.iconColor }};width:16px;">{{ a.icon }}</span>{{ a.label }}</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#6b7280;">{{ a.shortcut }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+      <div onClick="{{ openSettings }}" style="width:30px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:5px;color:#9aa1ac;cursor:default;flex:0 0 auto;" style-hover="background:#2a2f37;color:#d6dae0;" title="Editor preferences"><span class="ms" style="font-size:18px;">settings</span></div>
+    </div>
+    <sc-if value="{{ buildOpen }}" hint-placeholder-val="{{ false }}"><div onClick="{{ closeBuild }}" style="position:fixed;inset:0;z-index:85;"></div></sc-if>
+  </div>
+
+  <!-- ================= WORKSPACE ================= -->
+  <div style="flex:1 1 auto;display:flex;min-height:0;">
+
+    <!-- activity rail -->
+    <div style="width:46px;flex:0 0 46px;background:#181b20;border-right:1px solid #2c313a;display:flex;flex-direction:column;align-items:center;padding:7px 0;gap:3px;">
+      <sc-for list="{{ modes }}" as="md" hint-placeholder-count="5">
+        <div onClick="{{ md.onClick }}" title="{{ md.title }}" style="{{ md.style }}" style-hover="color:#d6dae0;"><span class="ms" style="font-size:21px;">{{ md.icon }}</span></div>
+      </sc-for>
+      <div style="margin-top:auto;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:7px;color:#7c838f;cursor:default;" style-hover="color:#d6dae0;"><span class="ms" style="font-size:21px;">help</span></div>
+      <div onClick="{{ openSettings }}" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:7px;color:#7c838f;cursor:default;" style-hover="color:#d6dae0;" title="Preferences"><span class="ms" style="font-size:21px;">settings</span></div>
+    </div>
+
+    <!-- ============ SCENE MODE (default workspace) ============ -->
+    <sc-if value="{{ modeScene }}" hint-placeholder-val="{{ true }}">
+    <!-- MAIN AREA: upper docks row, then full-width bottom dock -->
+    <div style="flex:1 1 auto;display:flex;flex-direction:column;min-width:0;min-height:0;">
+    <div style="flex:1 1 auto;display:flex;min-height:0;">
+
+    <!-- LEFT DOCK : hierarchy -->
+    <div style="{{ leftDockStyle }}">
+      <div style="height:32px;flex:0 0 32px;display:flex;align-items:center;background:#1a1d22;border-bottom:1px solid #2c313a;padding-left:2px;">
+        <sc-for list="{{ leftTabs }}" as="tb" hint-placeholder-count="2">
+          <div onClick="{{ tb.onClick }}" style="{{ tb.style }}" style-hover="color:#d6dae0;"><span class="ms" style="font-size:15px;">{{ tb.icon }}</span>{{ tb.label }}</div>
+        </sc-for>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:1px;padding-right:4px;">
+          <div style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:4px;color:#8b919c;cursor:default;" style-hover="background:#2a2f37;color:#d6dae0;"><span class="ms" style="font-size:16px;">add</span></div>
+          <div style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:4px;color:#8b919c;cursor:default;" style-hover="background:#2a2f37;color:#d6dae0;"><span class="ms" style="font-size:16px;">more_horiz</span></div>
+        </div>
+      </div>
+      <sc-if value="{{ leftHierarchy }}" hint-placeholder-val="{{ true }}">
+      <div style="height:30px;flex:0 0 30px;display:flex;align-items:center;gap:6px;padding:0 8px;border-bottom:1px solid #23272e;background:#1b1e23;">
+        <span class="ms" style="font-size:15px;color:#6b7280;">search</span>
+        <span style="color:#5f6670;font-size:11px;">Search hierarchy…</span>
+        <span class="ms" style="margin-left:auto;font-size:15px;color:#6b7280;">filter_list</span>
+      </div>
+      <div style="flex:1 1 auto;overflow-y:auto;overflow-x:hidden;padding:3px 0;">
+        <sc-for list="{{ hierarchyRows }}" as="r" hint-placeholder-count="14">
+          <div onClick="{{ r.onRowClick }}" style="{{ r.style }}" style-hover="background:rgba(255,255,255,0.035);">
+            <span onClick="{{ r.onCaret }}" class="ms" style="{{ r.caretStyle }}">{{ r.caret }}</span>
+            <span class="ms" style="{{ r.iconStyle }}">{{ r.icon }}</span>
+            <span style="{{ r.nameStyle }}">{{ r.name }}</span>
+            <sc-if value="{{ r.hasTag }}" hint-placeholder-val="{{ false }}">
+              <span style="{{ r.tagStyle }}">{{ r.tag }}</span>
+            </sc-if>
+            <span onClick="{{ r.onVis }}" class="ms" style="{{ r.visStyle }}">{{ r.visIcon }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="height:24px;flex:0 0 24px;display:flex;align-items:center;padding:0 10px;border-top:1px solid #23272e;background:#1a1d22;color:#6b7280;font-size:10.5px;font-family:'IBM Plex Mono',monospace;">{{ entityCountLabel }}</div>
+      </sc-if>
+
+      <sc-if value="{{ leftLayers }}" hint-placeholder-val="{{ false }}">
+      <div style="height:30px;flex:0 0 30px;display:flex;align-items:center;gap:6px;padding:0 10px;border-bottom:1px solid #23272e;background:#1b1e23;">
+        <span style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#6b7280;">Scene Layers</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#5f6670;">{{ layerCount }}</span>
+        <span class="ms" style="margin-left:auto;font-size:16px;color:#6b7280;cursor:default;" style-hover="color:#d6dae0;">add</span>
+      </div>
+      <div style="flex:1 1 auto;overflow-y:auto;overflow-x:hidden;padding:4px 0;">
+        <sc-for list="{{ layerRows }}" as="l" hint-placeholder-count="7">
+          <div onClick="{{ l.onSelect }}" style="{{ l.style }}" style-hover="background:rgba(255,255,255,0.04);">
+            <span style="{{ l.dotStyle }}"></span>
+            <span style="{{ l.nameStyle }}">{{ l.name }}</span>
+            <sc-if value="{{ l.active }}" hint-placeholder-val="{{ false }}"><span style="font-size:8.5px;font-weight:600;letter-spacing:.3px;color:#7fb0ec;background:rgba(65,136,224,0.16);padding:1px 5px;border-radius:3px;flex:0 0 auto;">ACTIVE</span></sc-if>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#5f6670;flex:0 0 auto;margin-left:auto;">{{ l.count }}</span>
+            <span onClick="{{ l.onLock }}" class="ms" style="{{ l.lockStyle }}">{{ l.lockIcon }}</span>
+            <span onClick="{{ l.onVis }}" class="ms" style="{{ l.visStyle }}">{{ l.visIcon }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="height:24px;flex:0 0 24px;display:flex;align-items:center;gap:6px;padding:0 10px;border-top:1px solid #23272e;background:#1a1d22;color:#6b7280;font-size:10.5px;font-family:'IBM Plex Mono',monospace;"><span class="ms" style="font-size:13px;color:#4188e0;">edit</span>Active · {{ activeLayer }}</div>
+      </sc-if>
+    </div>
+
+    <div onMouseDown="{{ onLeftDrag }}" style="{{ leftSplitStyle }}" style-hover="background:#3160a8;"></div>
+
+    <!-- CENTER COLUMN -->
+    <div style="flex:1 1 auto;display:flex;flex-direction:column;min-width:0;min-height:0;">
+      <!-- viewport tabs -->
+      <div style="height:31px;flex:0 0 31px;display:flex;align-items:center;background:#1a1d22;border-bottom:1px solid #2c313a;padding-left:2px;">
+        <sc-for list="{{ viewTabs }}" as="vt" hint-placeholder-count="2">
+          <div onClick="{{ vt.onClick }}" style="{{ vt.style }}" style-hover="color:#d6dae0;"><span class="ms" style="font-size:15px;">{{ vt.icon }}</span>{{ vt.label }}<span class="ms" style="font-size:14px;color:#5f6670;margin-left:2px;">close</span></div>
+        </sc-for>
+        <div style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;margin-left:3px;border-radius:4px;color:#8b919c;cursor:default;" style-hover="background:#2a2f37;color:#d6dae0;"><span class="ms" style="font-size:16px;">add</span></div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:1px;padding-right:5px;color:#8b919c;">
+          <div style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:4px;cursor:default;" style-hover="background:#2a2f37;color:#d6dae0;"><span class="ms" style="font-size:16px;">grid_view</span></div>
+          <div style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:4px;cursor:default;" style-hover="background:#2a2f37;color:#d6dae0;"><span class="ms" style="font-size:16px;">open_in_full</span></div>
+        </div>
+      </div>
+
+      <!-- viewport -->
+      <div style="{{ viewportStyle }}">
+        <!-- three.js viewport -->
+        <canvas id="ae-viewport-canvas" style="position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;"></canvas>
+
+        <!-- top-left view option pills -->
+        <div style="position:absolute;top:9px;left:9px;display:flex;gap:5px;">
+          <sc-for list="{{ viewPills }}" as="p" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:5px;height:24px;padding:0 9px;background:rgba(22,24,28,0.82);backdrop-filter:blur(6px);border:1px solid #2c313a;border-radius:5px;color:#c2c8d0;font-size:11px;cursor:default;" style-hover="border-color:#4188e0;"><span class="ms" style="font-size:14px;color:#8b919c;">{{ p.icon }}</span>{{ p.label }}<span class="ms" style="font-size:15px;color:#6b7280;">arrow_drop_down</span></div>
+          </sc-for>
+        </div>
+
+        <!-- top-right stats -->
+        <div style="position:absolute;top:9px;right:9px;background:rgba(18,20,24,0.78);backdrop-filter:blur(6px);border:1px solid #2c313a;border-radius:6px;padding:7px 10px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:1.7;color:#9aa1ac;min-width:128px;">
+          <div style="display:flex;justify-content:space-between;"><span>FPS</span><span id="ae-fps" style="{{ fpsStyle }}">{{ stat_fps }}</span></div>
+          <div style="display:flex;justify-content:space-between;"><span>Frame</span><span style="color:#c2c8d0;"><span id="ae-ms">{{ stat_ms }}</span> ms</span></div>
+          <div style="display:flex;justify-content:space-between;"><span>Tris</span><span id="ae-tris" style="color:#c2c8d0;">{{ stat_tris }}</span></div>
+          <div style="display:flex;justify-content:space-between;"><span>Draws</span><span id="ae-draws" style="color:#c2c8d0;">{{ stat_draws }}</span></div>
+          <div style="display:flex;justify-content:space-between;"><span>Verts</span><span id="ae-verts" style="color:#c2c8d0;">{{ stat_verts }}</span></div>
+        </div>
+
+        <!-- simulating badge -->
+        <sc-if value="{{ isPlaying }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;inset:0;border:2px solid #c0453f;pointer-events:none;"></div>
+          <div style="position:absolute;top:9px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:7px;height:26px;padding:0 12px;background:rgba(192,69,63,0.92);border-radius:6px;color:#fff;font-size:11px;font-weight:600;letter-spacing:.4px;">
+            <span style="width:8px;height:8px;border-radius:50%;background:#fff;animation:recPulse 1.1s infinite;"></span>SIMULATING
+          </div>
+        </sc-if>
+
+        <!-- bottom-left nav info -->
+        <div style="position:absolute;bottom:9px;left:9px;display:flex;gap:6px;align-items:center;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#7c838f;">
+          <div style="display:flex;align-items:center;gap:5px;height:23px;padding:0 9px;background:rgba(22,24,28,0.82);border:1px solid #2c313a;border-radius:5px;"><span class="ms" style="font-size:14px;">videocam</span>Cam Speed 4.0</div>
+          <div style="display:flex;align-items:center;gap:5px;height:23px;padding:0 9px;background:rgba(22,24,28,0.82);border:1px solid #2c313a;border-radius:5px;">{{ gizmoModeLabel }}</div>
+        </div>
+
+        <!-- bottom-right orientation triad -->
+        <div style="position:absolute;bottom:14px;right:18px;width:54px;height:54px;">
+          <div style="position:absolute;left:50%;top:50%;width:22px;height:2px;background:#d9645e;transform-origin:left center;transform:rotate(8deg);"></div>
+          <div style="position:absolute;left:calc(50% + 22px);top:calc(50% - 5px);color:#d9645e;font-family:'IBM Plex Mono',monospace;font-size:10px;transform:rotate(8deg);">X</div>
+          <div style="position:absolute;left:50%;top:50%;width:2px;height:22px;background:#67b96a;transform-origin:top center;transform:translateY(-22px);"></div>
+          <div style="position:absolute;left:calc(50% - 3px);top:calc(50% - 32px);color:#67b96a;font-family:'IBM Plex Mono',monospace;font-size:10px;">Y</div>
+          <div style="position:absolute;left:50%;top:50%;width:18px;height:2px;background:#5b8fd6;transform-origin:left center;transform:rotate(200deg);"></div>
+          <div style="position:absolute;left:calc(50% - 22px);top:calc(50% + 6px);color:#5b8fd6;font-family:'IBM Plex Mono',monospace;font-size:10px;">Z</div>
+          <div style="position:absolute;left:50%;top:50%;width:6px;height:6px;border-radius:50%;background:#aeb4bd;transform:translate(-50%,-50%);"></div>
+        </div>
+      </div>
+
+    </div>
+
+    </div><!-- /upper docks row -->
+
+    <!-- BOTTOM DOCK (full width, spans under left+center+right) -->
+      <div onMouseDown="{{ onBottomDrag }}" style="{{ bottomSplitStyle }}" style-hover="background:#3160a8;"></div>
+
+      <!-- BOTTOM DOCK -->
+      <div style="{{ bottomDockStyle }}">
+        <div style="height:32px;flex:0 0 32px;display:flex;align-items:center;background:#1a1d22;border-bottom:1px solid #2c313a;padding-left:2px;">
+          <sc-for list="{{ bottomTabs }}" as="bt" hint-placeholder-count="5">
+            <div onClick="{{ bt.onClick }}" style="{{ bt.style }}" style-hover="color:#d6dae0;">
+              <span class="ms" style="font-size:15px;">{{ bt.icon }}</span>{{ bt.label }}
+              <sc-if value="{{ bt.hasBadge }}" hint-placeholder-val="{{ false }}"><span style="{{ bt.badgeStyle }}">{{ bt.badge }}</span></sc-if>
+            </div>
+          </sc-for>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:1px;padding-right:5px;color:#8b919c;">
+            <div style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:4px;cursor:default;" style-hover="background:#2a2f37;color:#d6dae0;"><span class="ms" style="font-size:16px;">filter_list</span></div>
+            <div style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:4px;cursor:default;" style-hover="background:#2a2f37;color:#d6dae0;"><span class="ms" style="font-size:16px;">more_horiz</span></div>
+          </div>
+        </div>
+
+        <!-- ASSET BROWSER -->
+        <sc-if value="{{ tabAssets }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:1 1 auto;display:flex;min-height:0;">
+          <div style="width:172px;flex:0 0 172px;border-right:1px solid #23272e;overflow-y:auto;padding:5px 0;background:#191c21;">
+            <sc-for list="{{ assetFolders }}" as="fo" hint-placeholder-count="9">
+              <div onClick="{{ fo.onClick }}" style="{{ fo.style }}" style-hover="background:rgba(255,255,255,0.035);">
+                <span class="ms" style="font-size:15px;color:{{ fo.color }};">{{ fo.icon }}</span>
+                <span style="flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;">{{ fo.name }}</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#5f6670;">{{ fo.count }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="flex:1 1 auto;display:flex;flex-direction:column;min-width:0;">
+            <div style="height:31px;flex:0 0 31px;display:flex;align-items:center;gap:8px;padding:0 10px;border-bottom:1px solid #23272e;background:#1b1e23;">
+              <span class="ms" style="font-size:15px;color:#6b7280;">arrow_back</span>
+              <span class="ms" style="font-size:15px;color:#6b7280;">arrow_forward</span>
+              <div style="display:flex;align-items:center;gap:3px;color:#9aa1ac;font-size:11px;">
+                <span>Assets</span><span class="ms" style="font-size:14px;color:#5f6670;">chevron_right</span><span style="color:#d6dae0;">{{ assetFolder }}</span>
+              </div>
+              <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+                <div style="display:flex;align-items:center;gap:6px;height:23px;padding:0 9px;background:#16181c;border:1px solid #2c313a;border-radius:5px;color:#5f6670;font-size:11px;width:160px;"><span class="ms" style="font-size:14px;">search</span>Search assets…</div>
+                <div style="display:flex;background:#16181c;border-radius:5px;padding:2px;">
+                  <div onClick="{{ onGridView }}" style="{{ gridViewStyle }}"><span class="ms" style="font-size:16px;">grid_view</span></div>
+                  <div onClick="{{ onListView }}" style="{{ listViewStyle }}"><span class="ms" style="font-size:16px;">view_list</span></div>
+                </div>
+              </div>
+            </div>
+
+            <sc-if value="{{ assetGrid }}" hint-placeholder-val="{{ true }}">
+            <div style="flex:1 1 auto;overflow-y:auto;padding:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;align-content:start;">
+              <sc-for list="{{ assetFiles }}" as="a" hint-placeholder-count="10">
+                <div onClick="{{ a.onClick }}" style="{{ a.cardStyle }}" style-hover="border-color:#3a4150;">
+                  <div style="{{ a.thumbStyle }}"><span class="ms" style="font-size:30px;color:{{ a.color }};opacity:.85;">{{ a.icon }}</span><span style="position:absolute;bottom:4px;right:5px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:{{ a.color }};background:rgba(0,0,0,0.4);padding:1px 4px;border-radius:3px;">{{ a.ext }}</span></div>
+                  <div style="font-size:10.5px;color:#c2c8d0;text-align:center;line-height:1.25;word-break:break-word;max-width:100%;">{{ a.name }}</div>
+                </div>
+              </sc-for>
+            </div>
+            </sc-if>
+            <sc-if value="{{ assetList }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:1 1 auto;overflow-y:auto;">
+              <div style="display:flex;align-items:center;height:24px;padding:0 12px;border-bottom:1px solid #23272e;background:#191c21;color:#6b7280;font-size:10px;text-transform:uppercase;letter-spacing:.6px;position:sticky;top:0;">
+                <span style="flex:1 1 auto;">Name</span><span style="width:80px;">Type</span><span style="width:80px;text-align:right;">Size</span><span style="width:90px;text-align:right;">Modified</span>
+              </div>
+              <sc-for list="{{ assetFiles }}" as="a" hint-placeholder-count="10">
+                <div onClick="{{ a.onClick }}" style="{{ a.rowStyle }}" style-hover="background:rgba(255,255,255,0.035);">
+                  <span style="flex:1 1 auto;display:flex;align-items:center;gap:8px;overflow:hidden;"><span class="ms" style="font-size:16px;color:{{ a.color }};">{{ a.icon }}</span><span style="overflow:hidden;text-overflow:ellipsis;">{{ a.name }}</span></span>
+                  <span style="width:80px;color:#8b919c;font-family:'IBM Plex Mono',monospace;font-size:10.5px;">{{ a.ext }}</span>
+                  <span style="width:80px;text-align:right;color:#8b919c;font-family:'IBM Plex Mono',monospace;font-size:10.5px;">{{ a.size }}</span>
+                  <span style="width:90px;text-align:right;color:#6b7280;font-size:10.5px;">{{ a.mod }}</span>
+                </div>
+              </sc-for>
+            </div>
+            </sc-if>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- CONSOLE -->
+        <sc-if value="{{ tabConsole }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1 1 auto;display:flex;flex-direction:column;min-height:0;">
+          <div style="height:31px;flex:0 0 31px;display:flex;align-items:center;gap:5px;padding:0 8px;border-bottom:1px solid #23272e;background:#1b1e23;">
+            <div onClick="{{ onClearConsole }}" style="display:flex;align-items:center;gap:5px;height:23px;padding:0 9px;border-radius:5px;color:#9aa1ac;font-size:11px;cursor:default;" style-hover="background:#2a2f37;color:#d6dae0;"><span class="ms" style="font-size:15px;">block</span>Clear</div>
+            <div style="width:1px;height:16px;background:#2c313a;margin:0 3px;"></div>
+            <sc-for list="{{ consoleFilters }}" as="cf" hint-placeholder-count="4">
+              <div onClick="{{ cf.onClick }}" style="{{ cf.style }}" style-hover="color:#d6dae0;"><span class="ms" style="font-size:14px;color:{{ cf.color }};">{{ cf.icon }}</span>{{ cf.label }}<span style="opacity:.7;">{{ cf.count }}</span></div>
+            </sc-for>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:6px;height:23px;padding:0 9px;background:#16181c;border:1px solid #2c313a;border-radius:5px;color:#5f6670;font-size:11px;width:170px;"><span class="ms" style="font-size:14px;">search</span>Filter…</div>
+          </div>
+          <div style="flex:1 1 auto;overflow-y:auto;font-family:'IBM Plex Mono',monospace;font-size:11px;">
+            <sc-for list="{{ consoleEntries }}" as="c" hint-placeholder-count="10">
+              <div style="{{ c.style }}" style-hover="background:rgba(255,255,255,0.03);">
+                <span class="ms" style="font-size:14px;color:{{ c.color }};flex:0 0 auto;">{{ c.icon }}</span>
+                <span style="color:#5f6670;flex:0 0 auto;">{{ c.time }}</span>
+                <span style="color:#7c838f;flex:0 0 auto;">[{{ c.src }}]</span>
+                <span style="{{ c.msgStyle }}">{{ c.msg }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- OUTPUT LOG -->
+        <sc-if value="{{ tabOutput }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1 1 auto;overflow-y:auto;font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.6;padding:8px 12px;background:#16181c;">
+          <sc-for list="{{ outputLines }}" as="o" hint-placeholder-count="12">
+            <div style="{{ o.style }}">{{ o.text }}</div>
+          </sc-for>
+        </div>
+        </sc-if>
+
+        <!-- PROFILER -->
+        <sc-if value="{{ tabProfiler }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1 1 auto;overflow-y:auto;padding:12px 14px;">
+          <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+            <sc-for list="{{ profStats }}" as="p" hint-placeholder-count="6">
+              <div style="flex:1 1 110px;background:#16181c;border:1px solid #23272e;border-radius:6px;padding:9px 11px;">
+                <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#6b7280;margin-bottom:4px;">{{ p.label }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:500;color:{{ p.color }};">{{ p.value }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#6b7280;margin-bottom:8px;">Frame Breakdown — CPU 6.1 ms</div>
+          <sc-for list="{{ profBars }}" as="b" hint-placeholder-count="7">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+              <span style="width:90px;flex:0 0 90px;font-size:11px;color:#aeb4bd;">{{ b.label }}</span>
+              <div style="flex:1 1 auto;height:14px;background:#16181c;border-radius:3px;overflow:hidden;"><div style="{{ b.barStyle }}"></div></div>
+              <span style="width:54px;flex:0 0 54px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9aa1ac;">{{ b.ms }} ms</span>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+
+        <!-- GEMS / PLUGINS -->
+        <sc-if value="{{ tabGems }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1 1 auto;display:flex;min-height:0;">
+          <div style="flex:1 1 auto;overflow-y:auto;min-width:0;">
+            <div style="display:flex;align-items:center;height:28px;padding:0 12px;border-bottom:1px solid #23272e;background:#191c21;color:#6b7280;font-size:10px;text-transform:uppercase;letter-spacing:.5px;position:sticky;top:0;z-index:2;">
+              <span style="width:28px;flex:0 0 28px;"></span><span style="flex:1 1 auto;min-width:0;">Gem</span><span style="width:92px;flex:0 0 92px;">Category</span><span style="width:54px;flex:0 0 54px;">Ver</span><span style="width:50px;flex:0 0 50px;text-align:center;">On</span>
+            </div>
+            <sc-for list="{{ gemsList }}" as="g" hint-placeholder-count="10">
+              <div onClick="{{ g.onSelect }}" style="{{ g.rowStyle }}" style-hover="background:rgba(255,255,255,0.035);">
+                <span style="width:28px;flex:0 0 28px;display:flex;justify-content:center;"><span class="ms" style="font-size:17px;color:{{ g.iconColor }};">{{ g.icon }}</span></span>
+                <span style="flex:1 1 auto;min-width:0;color:{{ g.nameColor }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ g.name }}</span>
+                <span style="width:92px;flex:0 0 92px;color:#8b919c;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ g.cat }}</span>
+                <span style="width:54px;flex:0 0 54px;color:#7c838f;font-family:'IBM Plex Mono',monospace;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ g.ver }}</span>
+                <span style="width:50px;flex:0 0 50px;display:flex;justify-content:center;"><span onClick="{{ g.onToggle }}" style="{{ g.trackStyle }}"><span style="{{ g.knobStyle }}"></span></span></span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="width:248px;flex:0 0 248px;border-left:1px solid #23272e;background:#191c21;padding:14px;overflow-y:auto;">
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:10px;">
+              <div style="width:34px;height:34px;border-radius:8px;background:#22262c;display:flex;align-items:center;justify-content:center;"><span class="ms" style="font-size:20px;color:{{ gemDetailColor }};">{{ gemDetailIcon }}</span></div>
+              <div><div style="font-size:13px;font-weight:600;color:#d6dae0;">{{ gemDetailName }}</div><div style="font-size:10.5px;color:#6b7280;font-family:'IBM Plex Mono',monospace;">{{ gemDetailVer }} · {{ gemDetailCat }}</div></div>
+            </div>
+            <div style="font-size:11.5px;color:#aeb4bd;line-height:1.55;margin-bottom:14px;">{{ gemDetailDesc }}</div>
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#6b7280;margin-bottom:6px;">Dependencies</div>
+            <sc-for list="{{ gemDetailDeps }}" as="d" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:7px;height:24px;font-size:11px;color:#9aa1ac;"><span class="ms" style="font-size:14px;color:#57b97e;">check_circle</span>{{ d.name }}</div>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+      </div>
+    </div><!-- /main area -->
+    <div onMouseDown="{{ onRightDrag }}" style="{{ rightSplitStyle }}" style-hover="background:#3160a8;"></div>
+
+    <!-- RIGHT DOCK : inspector -->
+    <div style="{{ rightDockStyle }}">
+      <div style="height:32px;flex:0 0 32px;display:flex;align-items:center;background:#1a1d22;border-bottom:1px solid #2c313a;padding-left:2px;">
+        <sc-for list="{{ rightTabs }}" as="tb" hint-placeholder-count="2">
+          <div onClick="{{ tb.onClick }}" style="{{ tb.style }}" style-hover="color:#d6dae0;"><span class="ms" style="font-size:15px;">{{ tb.icon }}</span>{{ tb.label }}</div>
+        </sc-for>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:1px;padding-right:4px;color:#8b919c;">
+          <div style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:4px;cursor:default;" style-hover="background:#2a2f37;color:#d6dae0;"><span class="ms" style="font-size:16px;">lock_open</span></div>
+          <div style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:4px;cursor:default;" style-hover="background:#2a2f37;color:#d6dae0;"><span class="ms" style="font-size:16px;">more_horiz</span></div>
+        </div>
+      </div>
+
+      <!-- entity header -->
+      <div style="flex:0 0 auto;padding:9px 11px;border-bottom:1px solid #23272e;background:#1b1e23;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="width:15px;height:15px;border-radius:3px;background:#3160a8;display:flex;align-items:center;justify-content:center;flex:0 0 auto;"><span class="ms" style="font-size:13px;color:#fff;">check</span></span>
+          <span class="ms" style="font-size:17px;color:{{ entIconColor }};">{{ entIcon }}</span>
+          <span style="font-size:13px;font-weight:600;color:#e4e7ec;flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;">{{ entName }}</span>
+          <sc-if value="{{ entIsPrefab }}" hint-placeholder-val="{{ false }}"><span style="font-size:9.5px;font-weight:600;color:#b78fd6;background:rgba(183,143,214,0.16);padding:2px 6px;border-radius:4px;letter-spacing:.4px;">{{ entKind }}</span></sc-if>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:8px;font-size:10.5px;">
+          <div style="flex:1 1 0;"><div style="color:#6b7280;margin-bottom:3px;">Tag</div><div style="display:flex;align-items:center;justify-content:space-between;height:22px;padding:0 7px;background:#16181c;border:1px solid #2c313a;border-radius:4px;color:#c2c8d0;">{{ entTag }}<span class="ms" style="font-size:15px;color:#6b7280;">arrow_drop_down</span></div></div>
+          <div style="flex:1 1 0;"><div style="color:#6b7280;margin-bottom:3px;">Layer</div><div style="display:flex;align-items:center;justify-content:space-between;height:22px;padding:0 7px;background:#16181c;border:1px solid #2c313a;border-radius:4px;color:#c2c8d0;">{{ entLayer }}<span class="ms" style="font-size:15px;color:#6b7280;">arrow_drop_down</span></div></div>
+          <div style="flex:0 0 auto;"><div style="color:#6b7280;margin-bottom:3px;">Static</div><div style="display:flex;align-items:center;justify-content:center;width:30px;height:22px;background:#16181c;border:1px solid #2c313a;border-radius:4px;"><span class="ms" style="font-size:15px;color:#57b97e;">check_box</span></div></div>
+        </div>
+      </div>
+
+      <!-- components -->
+      <div style="flex:1 1 auto;overflow-y:auto;">
+        <sc-for list="{{ components }}" as="c" hint-placeholder-count="4">
+          <div style="border-bottom:1px solid #20242a;">
+            <div onClick="{{ c.onToggle }}" style="display:flex;align-items:center;gap:6px;height:30px;padding:0 9px;background:#1e2228;cursor:default;" style-hover="background:#22262c;">
+              <span class="ms" style="font-size:17px;color:#6b7280;">{{ c.caret }}</span>
+              <span class="ms" style="font-size:16px;color:{{ c.color }};">{{ c.icon }}</span>
+              <span style="font-size:11.5px;font-weight:600;color:#d6dae0;flex:1 1 auto;">{{ c.name }}</span>
+              <span onClick="{{ c.onEnable }}" style="{{ c.trackStyle }}"><span style="{{ c.knobStyle }}"></span></span>
+              <span class="ms" style="font-size:16px;color:#5f6670;">more_vert</span>
+            </div>
+            <sc-if value="{{ c.open }}" hint-placeholder-val="{{ true }}">
+            <div style="padding:7px 9px 9px;background:#1b1e23;">
+              <sc-for list="{{ c.props }}" as="p" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;min-height:24px;margin-bottom:3px;">
+                  <div style="width:38%;flex:0 0 38%;font-size:11px;color:#9aa1ac;padding-right:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ p.label }}</div>
+                  <div style="flex:1 1 auto;min-width:0;">
+                    <sc-if value="{{ p.isVec3 }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;gap:4px;">
+                        <div style="flex:1 1 0;display:flex;align-items:center;background:#16181c;border:1px solid #2c313a;border-radius:4px;overflow:hidden;" style-hover="border-color:#3a4150;"><span style="width:14px;flex:0 0 14px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#fff;background:#a8524d;align-self:stretch;display:flex;align-items:center;justify-content:center;">X</span><input value="{{ p.x }}" onInput="{{ p.onX }}" style="flex:1 1 auto;min-width:0;padding:0 5px;background:none;border:none;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#c2c8d0;height:21px;" style-focus="color:#fff;"/></div>
+                        <div style="flex:1 1 0;display:flex;align-items:center;background:#16181c;border:1px solid #2c313a;border-radius:4px;overflow:hidden;" style-hover="border-color:#3a4150;"><span style="width:14px;flex:0 0 14px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#fff;background:#4d8a4f;align-self:stretch;display:flex;align-items:center;justify-content:center;">Y</span><input value="{{ p.y }}" onInput="{{ p.onY }}" style="flex:1 1 auto;min-width:0;padding:0 5px;background:none;border:none;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#c2c8d0;height:21px;" style-focus="color:#fff;"/></div>
+                        <div style="flex:1 1 0;display:flex;align-items:center;background:#16181c;border:1px solid #2c313a;border-radius:4px;overflow:hidden;" style-hover="border-color:#3a4150;"><span style="width:14px;flex:0 0 14px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#fff;background:#436a9e;align-self:stretch;display:flex;align-items:center;justify-content:center;">Z</span><input value="{{ p.z }}" onInput="{{ p.onZ }}" style="flex:1 1 auto;min-width:0;padding:0 5px;background:none;border:none;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#c2c8d0;height:21px;" style-focus="color:#fff;"/></div>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ p.isNum }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;align-items:center;background:#16181c;border:1px solid #2c313a;border-radius:4px;height:23px;padding:0 7px;" style-hover="border-color:#3a4150;"><span style="flex:1 1 auto;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#c2c8d0;">{{ p.val }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#5f6670;">{{ p.unit }}</span></div>
+                    </sc-if>
+                    <sc-if value="{{ p.isSlider }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;align-items:center;gap:8px;"><div style="flex:1 1 auto;height:4px;background:#2c313a;border-radius:2px;position:relative;"><div style="{{ p.fillStyle }}"></div></div><span style="width:38px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#c2c8d0;">{{ p.val }}</span></div>
+                    </sc-if>
+                    <sc-if value="{{ p.isBool }}" hint-placeholder-val="{{ false }}">
+                      <span onClick="{{ p.onToggle }}" style="{{ p.trackStyle }}"><span style="{{ p.knobStyle }}"></span></span>
+                    </sc-if>
+                    <sc-if value="{{ p.isEnum }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;align-items:center;justify-content:space-between;background:#16181c;border:1px solid #2c313a;border-radius:4px;height:23px;padding:0 8px;font-size:11px;color:#c2c8d0;" style-hover="border-color:#3a4150;">{{ p.val }}<span class="ms" style="font-size:15px;color:#6b7280;">arrow_drop_down</span></div>
+                    </sc-if>
+                    <sc-if value="{{ p.isColor }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;align-items:center;gap:7px;background:#16181c;border:1px solid #2c313a;border-radius:4px;height:23px;padding:3px;" style-hover="border-color:#3a4150;"><span style="{{ p.swatchStyle }}"></span><span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#9aa1ac;">{{ p.hex }}</span></div>
+                    </sc-if>
+                    <sc-if value="{{ p.isAsset }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;align-items:center;gap:6px;background:#16181c;border:1px solid #2c313a;border-radius:4px;height:23px;padding:0 4px 0 7px;" style-hover="border-color:#3a4150;"><span class="ms" style="font-size:15px;color:{{ p.iconColor }};">{{ p.icon }}</span><span style="flex:1 1 auto;font-size:11px;color:#c2c8d0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ p.name }}</span><span class="ms" style="font-size:15px;color:#6b7280;">radio_button_unchecked</span></div>
+                    </sc-if>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            </sc-if>
+          </div>
+        </sc-for>
+
+        <div style="padding:11px;display:flex;justify-content:center;">
+          <div style="display:flex;align-items:center;gap:7px;height:28px;padding:0 16px;background:#22262c;border:1px solid #2c313a;border-radius:6px;color:#c2c8d0;font-size:11.5px;font-weight:500;cursor:default;" style-hover="background:#2a2f37;border-color:#3160a8;color:#fff;"><span class="ms" style="font-size:17px;">add</span>Add Component</div>
+        </div>
+      </div>
+    </div>
+    </sc-if><!-- /scene mode -->
+
+    <!-- ============ MATERIAL EDITOR MODE ============ -->
+    <sc-if value="{{ modeMaterials }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1 1 auto;display:flex;flex-direction:column;min-width:0;min-height:0;background:#15171b;">
+      <!-- mat toolbar -->
+      <div style="height:32px;flex:0 0 32px;display:flex;align-items:center;background:#1a1d22;border-bottom:1px solid #2c313a;padding:0 4px;">
+        <div style="display:flex;align-items:center;gap:6px;height:32px;padding:0 12px;font-size:11.5px;color:#e4e7ec;background:#1b1e23;box-shadow:inset 0 -2px 0 #d6a23b;"><span class="ms" style="font-size:15px;color:#d6a23b;">gradient</span>metal_brushed.mat<span class="ms" style="font-size:14px;color:#5f6670;margin-left:2px;">close</span></div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:3px;padding-right:6px;">
+          <div style="display:flex;align-items:center;gap:5px;height:24px;padding:0 10px;border-radius:5px;color:#9aa1ac;font-size:11px;cursor:default;" style-hover="background:#2a2f37;color:#d6dae0;"><span class="ms" style="font-size:15px;">save</span>Save</div>
+          <div style="display:flex;align-items:center;gap:5px;height:24px;padding:0 10px;border-radius:5px;background:#2f6ad0;color:#fff;font-size:11px;font-weight:500;cursor:default;" style-hover="filter:brightness(1.1);"><span class="ms" style="font-size:15px;">check</span>Apply</div>
+        </div>
+      </div>
+      <div style="flex:1 1 auto;display:flex;min-height:0;">
+        <!-- node palette -->
+        <div style="width:178px;flex:0 0 178px;background:#181b20;border-right:1px solid #2c313a;display:flex;flex-direction:column;min-height:0;">
+          <div style="height:30px;flex:0 0 30px;display:flex;align-items:center;gap:6px;padding:0 10px;border-bottom:1px solid #23272e;color:#6b7280;font-size:11px;"><span class="ms" style="font-size:14px;">search</span>Add node…</div>
+          <div style="flex:1 1 auto;overflow-y:auto;padding:6px 0;">
+            <sc-for list="{{ matPalette }}" as="p" hint-placeholder-count="6">
+              <div style="{{ p.headStyle }}">{{ p.cat }}</div>
+              <sc-for list="{{ p.items }}" as="it" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:8px;height:26px;padding:0 12px;cursor:default;color:#aeb4bd;font-size:11px;" style-hover="background:rgba(255,255,255,0.04);color:#d6dae0;"><span class="ms" style="font-size:14px;color:{{ it.color }};">{{ it.icon }}</span>{{ it.name }}</div>
+              </sc-for>
+            </sc-for>
+          </div>
+        </div>
+        <!-- node graph canvas -->
+        <div style="flex:1 1 auto;position:relative;overflow:auto;min-width:0;background:#15171b;background-image:radial-gradient(circle, #232830 1px, transparent 1px);background-size:22px 22px;">
+          <div style="position:relative;width:1000px;height:600px;">
+            <svg width="1000" height="600" style="position:absolute;inset:0;pointer-events:none;">
+              <path d="M236,150 C300,150 300,182 360,182" stroke="#5a6470" stroke-width="2" fill="none"/>
+              <path d="M510,182 C575,182 575,214 640,214" stroke="#8fc97e" stroke-width="2" fill="none"/>
+              <path d="M236,388 C300,388 300,398 360,398" stroke="#5a6470" stroke-width="2" fill="none"/>
+              <path d="M510,398 C575,398 575,300 640,300" stroke="#7aa0d6" stroke-width="2" fill="none"/>
+            </svg>
+            <sc-for list="{{ matNodes }}" as="n" hint-placeholder-count="5">
+              <div style="{{ n.style }}">
+                <div style="{{ n.headStyle }}"><span class="ms" style="font-size:14px;color:{{ n.accent }};">{{ n.icon }}</span>{{ n.title }}</div>
+                <sc-for list="{{ n.rows }}" as="row" hint-placeholder-count="3">
+                  <div style="{{ row.style }}"><sc-if value="{{ row.inPort }}" hint-placeholder-val="{{ false }}"><span style="{{ row.portInStyle }}"></span></sc-if><span style="flex:1 1 auto;{{ row.align }}">{{ row.label }}</span><sc-if value="{{ row.outPort }}" hint-placeholder-val="{{ false }}"><span style="{{ row.portOutStyle }}"></span></sc-if></div>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <!-- preview + params -->
+        <div style="width:262px;flex:0 0 262px;background:#181b20;border-left:1px solid #2c313a;display:flex;flex-direction:column;min-height:0;">
+          <div style="flex:0 0 auto;padding:12px;border-bottom:1px solid #23272e;">
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#5f6670;margin-bottom:9px;">Preview</div>
+            <div style="height:150px;border-radius:8px;background:radial-gradient(120% 120% at 35% 25%, #2b3340, #14161a);display:flex;align-items:center;justify-content:center;border:1px solid #23272e;">
+              <div style="width:104px;height:104px;border-radius:50%;background:radial-gradient(circle at 34% 28%, #c9ccd2 0%, #8a909a 30%, #4a4f57 62%, #24272c 100%);box-shadow:inset -10px -12px 26px rgba(0,0,0,0.6), 0 8px 20px rgba(0,0,0,0.4);"></div>
+            </div>
+            <div style="display:flex;gap:5px;margin-top:8px;">
+              <sc-for list="{{ matPreviewShapes }}" as="s" hint-placeholder-count="4"><div style="{{ s.style }}"><span class="ms" style="font-size:16px;">{{ s.icon }}</span></div></sc-for>
+            </div>
+          </div>
+          <div style="flex:1 1 auto;overflow-y:auto;padding:12px;">
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#5f6670;margin-bottom:9px;">Material Parameters</div>
+            <sc-for list="{{ matParams }}" as="p" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;min-height:28px;margin-bottom:5px;">
+                <div style="width:40%;flex:0 0 40%;font-size:11px;color:#9aa1ac;padding-right:8px;">{{ p.label }}</div>
+                <div style="flex:1 1 auto;min-width:0;">
+                  <sc-if value="{{ p.isSlider }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:8px;"><div style="flex:1 1 auto;height:4px;background:#2c313a;border-radius:2px;position:relative;"><div style="{{ p.fillStyle }}"></div></div><span style="width:34px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#c2c8d0;">{{ p.val }}</span></div></sc-if>
+                  <sc-if value="{{ p.isColor }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:7px;background:#16181c;border:1px solid #2c313a;border-radius:4px;height:23px;padding:3px;"><span style="{{ p.swatchStyle }}"></span><span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#9aa1ac;">{{ p.hex }}</span></div></sc-if>
+                  <sc-if value="{{ p.isTex }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:6px;background:#16181c;border:1px solid #2c313a;border-radius:4px;height:23px;padding:0 6px;"><span class="ms" style="font-size:14px;color:#8fc97e;">image</span><span style="flex:1 1 auto;font-size:10.5px;color:#c2c8d0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ p.val }}</span></div></sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+    </sc-if><!-- /material editor -->
+
+    <!-- ============ SCRIPT EDITOR MODE ============ -->
+    <sc-if value="{{ modeScripting }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1 1 auto;display:flex;min-width:0;min-height:0;background:#1a1c20;">
+      <!-- file tree -->
+      <div style="width:200px;flex:0 0 200px;background:#181b20;border-right:1px solid #2c313a;display:flex;flex-direction:column;min-height:0;">
+        <div style="height:32px;flex:0 0 32px;display:flex;align-items:center;gap:7px;padding:0 12px;border-bottom:1px solid #2c313a;color:#aeb4bd;font-size:11px;text-transform:uppercase;letter-spacing:.5px;"><span class="ms" style="font-size:15px;color:#6b7280;">folder_open</span>scripts</div>
+        <div style="flex:1 1 auto;overflow-y:auto;padding:4px 0;">
+          <sc-for list="{{ scriptFileRows }}" as="f" hint-placeholder-count="6">
+            <div onClick="{{ f.onClick }}" style="{{ f.style }}" style-hover="background:rgba(255,255,255,0.04);color:#d6dae0;"><span class="ms" style="font-size:15px;color:{{ f.color }};">description</span>{{ f.name }}</div>
+          </sc-for>
+        </div>
+      </div>
+      <!-- code -->
+      <div style="flex:1 1 auto;display:flex;flex-direction:column;min-width:0;min-height:0;">
+        <div style="height:32px;flex:0 0 32px;display:flex;align-items:center;background:#1a1d22;border-bottom:1px solid #2c313a;padding-left:2px;">
+          <div style="display:flex;align-items:center;gap:7px;height:32px;padding:0 12px;font-size:11.5px;color:#e4e7ec;background:#1e2024;box-shadow:inset 0 -2px 0 #4188e0;"><span style="width:7px;height:7px;border-radius:50%;background:#d6a23b;"></span><span class="ms" style="font-size:14px;color:#e06c75;">description</span>player_controller.rs<span class="ms" style="font-size:14px;color:#5f6670;margin-left:2px;">close</span></div>
+          <div style="display:flex;align-items:center;gap:7px;height:32px;padding:0 12px;font-size:11.5px;color:#8b919c;" style-hover="color:#d6dae0;"><span class="ms" style="font-size:14px;color:#e5c07b;">description</span>enemy_ai.rs<span class="ms" style="font-size:14px;color:#5f6670;margin-left:2px;">close</span></div>
+        </div>
+        <div style="height:26px;flex:0 0 26px;display:flex;align-items:center;gap:5px;padding:0 14px;border-bottom:1px solid #20242a;background:#1a1c20;color:#6b7280;font-size:11px;"><span>src</span><span class="ms" style="font-size:14px;">chevron_right</span><span>player</span><span class="ms" style="font-size:14px;">chevron_right</span><span style="color:#aeb4bd;">player_controller.rs</span></div>
+        <div style="flex:1 1 auto;overflow:auto;min-height:0;background:#1a1c20;padding:8px 0;font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.55;">
+          <sc-for list="{{ codeRows }}" as="ln" hint-placeholder-count="20">
+            <div style="display:flex;" style-hover="background:rgba(255,255,255,0.02);">
+              <span style="width:46px;flex:0 0 46px;text-align:right;padding-right:14px;color:#454b54;user-select:none;">{{ ln.n }}</span>
+              <span style="flex:1 1 auto;white-space:pre;padding-right:16px;"><sc-for list="{{ ln.tokens }}" as="tk" hint-placeholder-count="2"><span style="{{ tk.style }}">{{ tk.text }}</span></sc-for></span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="height:24px;flex:0 0 24px;display:flex;align-items:center;gap:16px;padding:0 14px;border-top:1px solid #20242a;background:#202429;color:#7c838f;font-size:10.5px;font-family:'IBM Plex Mono',monospace;">
+          <span style="display:flex;align-items:center;gap:5px;color:#57b97e;"><span class="ms" style="font-size:13px;">check_circle</span>rust-analyzer</span>
+          <span>Ln 18, Col 34</span><span>Spaces: 4</span><span>UTF-8</span><span>Rust</span>
+          <span style="margin-left:auto;display:flex;align-items:center;gap:4px;"><span class="ms" style="font-size:13px;color:#d6a23b;">bolt</span>hot-reload on save</span>
+        </div>
+      </div>
+      <!-- outline -->
+      <div style="width:188px;flex:0 0 188px;background:#181b20;border-left:1px solid #2c313a;display:flex;flex-direction:column;min-height:0;">
+        <div style="height:32px;flex:0 0 32px;display:flex;align-items:center;gap:7px;padding:0 12px;border-bottom:1px solid #2c313a;color:#aeb4bd;font-size:11px;text-transform:uppercase;letter-spacing:.5px;"><span class="ms" style="font-size:15px;color:#6b7280;">list</span>Outline</div>
+        <div style="flex:1 1 auto;overflow-y:auto;padding:4px 0;">
+          <sc-for list="{{ scriptOutlineRows }}" as="o" hint-placeholder-count="6">
+            <div style="{{ o.style }}" style-hover="background:rgba(255,255,255,0.04);color:#d6dae0;"><span class="ms" style="font-size:14px;color:{{ o.color }};">{{ o.icon }}</span>{{ o.name }}</div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+    </sc-if><!-- /script editor -->
+  </div>
+
+  <!-- ================= STATUS BAR ================= -->
+  <div style="height:27px;flex:0 0 27px;display:flex;align-items:stretch;background:#202429;border-top:1px solid #2c313a;font-size:10.5px;color:#8b919c;position:relative;z-index:30;overflow:hidden;">
+
+    <!-- left panel toggle (mapped to the left dock it controls) -->
+    <div style="display:flex;align-items:center;padding:0 7px;border-right:1px solid #2c313a;flex:0 0 auto;">
+      <div onClick="{{ leftToggle.onClick }}" title="{{ leftToggle.title }}" style="{{ leftToggle.style }}" style-hover="background:#2a2f37;"><span class="ms" style="font-size:16px;">{{ leftToggle.icon }}</span></div>
+    </div>
+
+    <!-- shrinkable info cluster (clips before it can leak) -->
+    <div style="display:flex;align-items:stretch;flex:1 1 auto;min-width:0;overflow:hidden;">
+
+    <!-- compiler / build status -->
+    <div onClick="{{ goOutput }}" style="{{ buildSegStyle }}" style-hover="background:#2a2f37;color:#d6dae0;" title="Compiler — open Output Log">
+      <span style="{{ buildDotStyle }}"></span>
+      <span style="color:#aeb4bd;font-weight:500;">{{ buildLabel }}</span>
+      <span style="color:#6b7280;font-family:'IBM Plex Mono',monospace;">{{ buildSub }}</span>
+    </div>
+
+    <!-- asset pipeline -->
+    <div onClick="{{ togglePipe }}" style="{{ pipeSegStyle }}" style-hover="background:#2a2f37;color:#d6dae0;" title="Asset pipeline jobs">
+      <span class="ms" style="{{ pipeIconStyle }}">{{ pipeIcon }}</span>
+      <span style="color:#aeb4bd;">Pipeline</span>
+      <span style="{{ pipeBadgeStyle }}">{{ pipeBadge }}</span>
+      <sc-if value="{{ pipeActive }}" hint-placeholder-val="{{ false }}">
+        <span style="width:36px;height:4px;border-radius:2px;background:#2c313a;overflow:hidden;display:inline-block;"><span style="{{ pipeBarStyle }}"></span></span>
+      </sc-if>
+    </div>
+
+    <!-- source control -->
+    <div style="{{ scmSegStyle }}" style-hover="background:#2a2f37;color:#d6dae0;" title="Source control">
+      <span class="ms" style="font-size:14px;color:#7a8aa0;">commit</span>
+      <span>main</span>
+      <span style="color:#d6a23b;font-family:'IBM Plex Mono',monospace;">±{{ scmDirty }}</span>
+    </div>
+
+    <!-- selection + file type -->
+    <div onClick="{{ goAssets }}" style="{{ selSegStyle }}" style-hover="background:#2a2f37;color:#d6dae0;" title="Reveal in Asset Browser">
+      <span class="ms" style="font-size:14px;color:#4188e0;">ads_click</span>
+      <span style="color:#c2c8d0;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ entName }}</span>
+      <span style="{{ fileTypeChipStyle }}"><span class="ms" style="font-size:12px;color:{{ fileTypeColor }};">{{ fileTypeIcon }}</span>{{ fileTypeLabel }}</span>
+    </div>
+
+    <!-- diagnostics -->
+    <div onClick="{{ goConsole }}" style="{{ diagSegStyle }}" style-hover="background:#2a2f37;color:#d6dae0;" title="Open Console">
+      <span style="display:flex;align-items:center;gap:3px;"><span class="ms" style="font-size:14px;color:#e0625c;">error</span>{{ errCount }}</span>
+      <span style="display:flex;align-items:center;gap:3px;"><span class="ms" style="font-size:14px;color:#d6a23b;">warning</span>{{ warnCount }}</span>
+    </div>
+    </div><!-- /info cluster -->
+
+    <!-- ============ RIGHT CLUSTER ============ -->
+    <div style="flex:0 0 auto;display:flex;align-items:stretch;">
+      <div style="display:flex;align-items:center;gap:7px;padding:0 12px;font-family:'IBM Plex Mono',monospace;border-left:1px solid #2c313a;">
+        <span style="color:#a8524d;">X {{ cur_x }}</span><span style="color:#4d8a4f;">Y {{ cur_y }}</span><span style="color:#436a9e;">Z {{ cur_z }}</span>
+        <span style="color:#5f6670;">m</span>
+      </div>
+      <div onClick="{{ goProfiler }}" style="display:flex;align-items:center;gap:10px;padding:0 12px;font-family:'IBM Plex Mono',monospace;border-left:1px solid #2c313a;cursor:default;" style-hover="background:#2a2f37;color:#d6dae0;" title="Open Profiler">
+        <span style="color:#57b97e;">{{ stat_fps }} fps</span>
+        <span style="color:#9aa1ac;">{{ stat_ms }} ms</span>
+        <span style="color:#6b7280;">{{ stat_tris }} tris · {{ stat_draws }} dc</span>
+        <span style="color:#6b7280;">{{ stat_vram }}</span>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:7px;padding:0 12px;border-left:1px solid #2c313a;color:#5f6670;">
+        <span class="ms" style="font-size:13px;">memory</span>RTX 4070
+        <span style="color:#3a4150;">·</span>
+        <span>Aether 0.4.2</span>
+      </div>
+
+      <!-- panel show/hide toggles — pinned to the far right of the status bar -->
+      <div style="display:flex;align-items:center;gap:1px;padding:0 6px;border-left:1px solid #2c313a;">
+        <sc-for list="{{ rightToggles }}" as="pt" hint-placeholder-count="2">
+          <div onClick="{{ pt.onClick }}" title="{{ pt.title }}" style="{{ pt.style }}" style-hover="background:#2a2f37;"><span class="ms" style="font-size:16px;">{{ pt.icon }}</span></div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- pipeline popover -->
+    <sc-if value="{{ pipeOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;bottom:30px;left:188px;width:312px;background:#23272e;border:1px solid #363c46;border-radius:8px;box-shadow:0 -10px 30px rgba(0,0,0,0.5);z-index:70;overflow:hidden;">
+        <div style="display:flex;align-items:center;height:30px;padding:0 12px;border-bottom:1px solid #2c313a;background:#1e2228;">
+          <span class="ms" style="font-size:15px;color:#4188e0;margin-right:7px;">conveyor_belt</span>
+          <span style="font-size:11.5px;font-weight:600;color:#d6dae0;">Asset Pipeline</span>
+          <span style="margin-left:auto;font-size:10px;color:#6b7280;font-family:'IBM Plex Mono',monospace;">{{ pipeSummary }}</span>
+        </div>
+        <div style="max-height:220px;overflow-y:auto;padding:5px 0;">
+          <sc-for list="{{ pipeJobs }}" as="j" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:9px;padding:5px 12px;" style-hover="background:rgba(255,255,255,0.03);">
+              <span class="ms" style="font-size:16px;color:{{ j.color }};flex:0 0 auto;">{{ j.icon }}</span>
+              <div style="flex:1 1 auto;min-width:0;">
+                <div style="font-size:11px;color:#d6dae0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ j.name }}</div>
+                <div style="font-size:9.5px;color:#6b7280;font-family:'IBM Plex Mono',monospace;">{{ j.stage }}</div>
+              </div>
+              <sc-if value="{{ j.running }}" hint-placeholder-val="{{ true }}">
+                <span style="width:46px;height:4px;border-radius:2px;background:#2c313a;overflow:hidden;flex:0 0 auto;"><span style="{{ j.barStyle }}"></span></span>
+              </sc-if>
+              <span style="{{ j.statusStyle }}">{{ j.status }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div onClick="{{ goOutput }}" style="display:flex;align-items:center;justify-content:center;gap:6px;height:30px;border-top:1px solid #2c313a;background:#1e2228;font-size:11px;color:#9aa1ac;cursor:default;" style-hover="color:#d6dae0;background:#22262c;"><span class="ms" style="font-size:15px;">subject</span>Open Asset Processor log</div>
+      </div>
+      <div onClick="{{ closePipe }}" style="position:fixed;inset:0;z-index:65;"></div>
+    </sc-if>
+  </div>
+
+  <!-- ================= MODALS (Preferences / Project Settings / About) ================= -->
+  <sc-if value="{{ modalOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeModal }}" style="position:fixed;inset:0;z-index:200;background:rgba(8,9,11,0.62);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;">
+
+      <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ true }}">
+        <div onClick="{{ stopProp }}" style="width:784px;max-width:92vw;height:566px;max-height:88vh;background:#1b1e23;border:1px solid #363c46;border-radius:12px;box-shadow:0 30px 80px rgba(0,0,0,0.6);display:flex;flex-direction:column;overflow:hidden;">
+          <div style="height:52px;flex:0 0 52px;display:flex;align-items:center;gap:12px;padding:0 18px;border-bottom:1px solid #2c313a;background:#202429;">
+            <span class="ms" style="font-size:22px;color:#4188e0;">{{ modalIcon }}</span>
+            <div><div style="font-size:14px;font-weight:600;color:#e8ebef;">{{ modalTitle }}</div><div style="font-size:10.5px;color:#6b7280;">{{ modalSubtitle }}</div></div>
+            <div onClick="{{ closeModal }}" style="margin-left:auto;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:7px;color:#9aa1ac;cursor:default;" style-hover="background:#2c313a;color:#fff;"><span class="ms" style="font-size:19px;">close</span></div>
+          </div>
+          <div style="flex:1 1 auto;display:flex;min-height:0;">
+            <div style="width:190px;flex:0 0 190px;border-right:1px solid #2c313a;background:#181b20;padding:10px 9px;overflow-y:auto;">
+              <sc-for list="{{ modalCats }}" as="c" hint-placeholder-count="6">
+                <div onClick="{{ c.onClick }}" style="{{ c.style }}" style-hover="background:#22262c;color:#d6dae0;"><span class="ms" style="font-size:17px;">{{ c.icon }}</span>{{ c.label }}</div>
+              </sc-for>
+            </div>
+            <div style="flex:1 1 auto;overflow-y:auto;padding:8px 20px 16px;">
+              <sc-for list="{{ modalRows }}" as="r" hint-placeholder-count="6">
+                <sc-if value="{{ r.isHead }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#6b7280;margin:14px 0 4px;">{{ r.label }}</div>
+                </sc-if>
+                <sc-if value="{{ r.isRow }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;align-items:center;gap:14px;min-height:40px;padding:6px 0;border-bottom:1px solid #20242a;">
+                    <div style="flex:1 1 auto;min-width:0;">
+                      <div style="font-size:12px;color:#d6dae0;">{{ r.label }}</div>
+                      <sc-if value="{{ r.desc }}" hint-placeholder-val="{{ false }}"><div style="font-size:10.5px;color:#6b7280;margin-top:1px;">{{ r.desc }}</div></sc-if>
+                    </div>
+                    <div style="flex:0 0 auto;display:flex;align-items:center;justify-content:flex-end;">
+                      <sc-if value="{{ r.isToggle }}" hint-placeholder-val="{{ false }}"><span onClick="{{ r.onToggle }}" style="{{ r.trackStyle }}"><span style="{{ r.knobStyle }}"></span></span></sc-if>
+                      <sc-if value="{{ r.isSeg }}" hint-placeholder-val="{{ false }}"><div style="display:flex;background:#16181c;border-radius:7px;padding:2px;"><sc-for list="{{ r.opts }}" as="o" hint-placeholder-count="3"><div onClick="{{ o.onClick }}" style="{{ o.style }}" style-hover="color:#d6dae0;">{{ o.label }}</div></sc-for></div></sc-if>
+                      <sc-if value="{{ r.isSelect }}" hint-placeholder-val="{{ false }}"><div onClick="{{ r.onClick }}" style="display:flex;align-items:center;gap:8px;justify-content:space-between;min-width:150px;height:28px;padding:0 10px;background:#16181c;border:1px solid #2c313a;border-radius:6px;color:#cfd4db;font-size:11.5px;cursor:default;" style-hover="border-color:#3a4150;">{{ r.value }}<span class="ms" style="font-size:16px;color:#6b7280;">unfold_more</span></div></sc-if>
+                      <sc-if value="{{ r.isSlider }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:10px;width:196px;"><div style="flex:1 1 auto;height:4px;background:#2c313a;border-radius:3px;position:relative;"><div style="{{ r.fillStyle }}"></div><div style="{{ r.handleStyle }}"></div></div><span style="width:74px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#c2c8d0;">{{ r.display }}</span></div></sc-if>
+                      <sc-if value="{{ r.isColor }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:7px;"><sc-for list="{{ r.opts }}" as="o" hint-placeholder-count="5"><span onClick="{{ o.onClick }}" style="{{ o.style }}"></span></sc-for><span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#7c838f;margin-left:3px;">{{ r.value }}</span></div></sc-if>
+                      <sc-if value="{{ r.isKeybind }}" hint-placeholder-val="{{ false }}"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#cfd4db;background:#16181c;border:1px solid #2c313a;border-radius:5px;padding:3px 11px;" style-hover="border-color:#3a4150;">{{ r.keys }}</span></sc-if>
+                      <sc-if value="{{ r.isText }}" hint-placeholder-val="{{ false }}"><input value="{{ r.value }}" onInput="{{ r.onInput }}" style="width:200px;height:28px;padding:0 10px;background:#16181c;border:1px solid #2c313a;border-radius:6px;color:#e4e7ec;font-size:11.5px;font-family:'IBM Plex Mono',monospace;" style-focus="border-color:#3160a8;"/></sc-if>
+                      <sc-if value="{{ r.isChips }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;max-width:280px;"><sc-for list="{{ r.chips }}" as="ch" hint-placeholder-count="4"><span style="font-size:10.5px;color:#aeb4bd;background:#22262c;border:1px solid #2c313a;padding:3px 9px;border-radius:5px;">{{ ch.label }}</span></sc-for><span style="display:flex;align-items:center;gap:3px;font-size:10.5px;color:#7c838f;border:1px dashed #363c46;padding:3px 9px;border-radius:5px;cursor:default;" style-hover="color:#d6dae0;border-color:#4a525e;"><span class="ms" style="font-size:13px;">add</span>Add</span></div></sc-if>
+                    </div>
+                  </div>
+                </sc-if>
+              </sc-for>
+            </div>
+          </div>
+          <div style="height:50px;flex:0 0 50px;display:flex;align-items:center;gap:10px;padding:0 18px;border-top:1px solid #2c313a;background:#181b20;">
+            <div onClick="{{ resetModal }}" style="display:flex;align-items:center;gap:5px;font-size:11.5px;color:#7c838f;cursor:default;" style-hover="color:#d6dae0;"><span class="ms" style="font-size:15px;">restart_alt</span>Reset to defaults</div>
+            <div style="margin-left:auto;display:flex;gap:8px;">
+              <div onClick="{{ closeModal }}" style="height:32px;padding:0 16px;display:flex;align-items:center;border-radius:7px;background:#22262c;border:1px solid #2c313a;color:#c2c8d0;font-size:12px;cursor:default;" style-hover="background:#2a2f37;">Cancel</div>
+              <div onClick="{{ closeModal }}" style="height:32px;padding:0 18px;display:flex;align-items:center;border-radius:7px;background:#2f6ad0;color:#fff;font-size:12px;font-weight:600;cursor:default;" style-hover="filter:brightness(1.1);">Done</div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isAbout }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ stopProp }}" style="width:420px;max-width:90vw;background:#1b1e23;border:1px solid #363c46;border-radius:12px;box-shadow:0 30px 80px rgba(0,0,0,0.6);padding:30px;text-align:center;">
+          <div style="width:64px;height:64px;margin:0 auto 16px;border-radius:16px;background:linear-gradient(135deg,#3160a8,#5ac0c0);display:flex;align-items:center;justify-content:center;"><div style="width:26px;height:26px;background:#fff;transform:rotate(45deg);border-radius:5px;"></div></div>
+          <div style="font-size:20px;font-weight:600;color:#e8ebef;">Aether Engine</div>
+          <div style="font-size:12px;color:#6b7280;font-family:'IBM Plex Mono',monospace;margin-top:3px;">Version 0.4.2 · build 2418</div>
+          <div style="font-size:11.5px;color:#9aa1ac;line-height:1.6;margin:16px 0;">A data-oriented game engine &amp; editor<br/>written in Rust, with a GPUI front-end.</div>
+          <div style="display:flex;justify-content:center;gap:14px;font-size:10.5px;color:#6b7280;font-family:'IBM Plex Mono',monospace;border-top:1px solid #2c313a;padding-top:14px;">
+            <span>Vulkan 1.3</span><span style="color:#3a4150;">·</span><span>GPUI</span><span style="color:#3a4150;">·</span><span>MIT License</span>
+          </div>
+          <div onClick="{{ closeModal }}" style="margin-top:20px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:#2f6ad0;color:#fff;font-size:12px;font-weight:600;cursor:default;" style-hover="filter:brightness(1.1);">Close</div>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <!-- select dropdown popover (fixed, escapes the modal scroll area) -->
+  <sc-if value="{{ selectPopoverOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeSelect }}" style="position:fixed;inset:0;z-index:205;"></div>
+    <div style="{{ selectPopoverStyle }}">
+      <sc-for list="{{ selectItems }}" as="it" hint-placeholder-count="4">
+        <div onClick="{{ it.onClick }}" style="{{ it.style }}" style-hover="background:#2a2f37;color:#fff;"><span>{{ it.label }}</span><sc-if value="{{ it.selected }}" hint-placeholder-val="{{ false }}"><span class="ms" style="font-size:15px;color:#4188e0;flex:0 0 auto;">check</span></sc-if></div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <!-- menu outside-click catcher -->
+  <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeMenu }}" style="position:fixed;inset:0;z-index:55;"></div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.typeMeta = {
+      mesh:{color:'#7a8aa0',icon:'deployed_code',ext:'.mesh'},
+      mat:{color:'#d6a23b',icon:'gradient',ext:'.mat'},
+      tex:{color:'#8fc97e',icon:'image',ext:'.png'},
+      prefab:{color:'#b78fd6',icon:'widgets',ext:'.prefab'},
+      script:{color:'#5ac0c0',icon:'code',ext:'.rs'},
+      audio:{color:'#d68fb0',icon:'graphic_eq',ext:'.wav'},
+      level:{color:'#e0a060',icon:'map',ext:'.level'},
+      anim:{color:'#7ad6a6',icon:'animation',ext:'.anim'}
+    };
+    this.tree = [
+      {id:'root',name:'Canyon_01',type:'level',children:[
+        {id:'env',name:'Environment',type:'group',children:[
+          {id:'terrain',name:'Terrain',type:'terrain',comps:[
+            this.C('Terrain','terrain','#8fc97e',[{t:'asset',l:'Heightmap',v:'canyon_height.png',type:'tex'},{t:'vec3',l:'World Size',v:[1024,256,1024]},{t:'asset',l:'Material',v:'terrain_blend.mat',type:'mat'},{t:'slider',l:'Tessellation',v:0.6}]),
+            this.C('Mesh Collider','select_all','#8fc97e',[{t:'bool',l:'Convex',v:false},{t:'bool',l:'Is Trigger',v:false}])]},
+          {id:'sun',name:'SkyAtmosphere',type:'sun',comps:[
+            this.C('Directional Light','wb_sunny','#d6a23b',[{t:'color',l:'Color',v:'#ffe6b8'},{t:'slider',l:'Intensity',v:3.2,min:0,max:10},{t:'bool',l:'Cast Shadows',v:true},{t:'enum',l:'Shadow Res',v:'2048'},{t:'num',l:'Temperature',v:5600,u:'K'}]),
+            this.C('Sky Atmosphere','cloud','#7a8aa0',[{t:'slider',l:'Turbidity',v:0.3},{t:'color',l:'Ground Albedo',v:'#6b6155'},{t:'slider',l:'Mie Scatter',v:0.8}])]},
+          {id:'water',name:'OceanVolume',type:'volume'},
+          {id:'fog',name:'HeightFog',type:'fog'}
+        ]},
+        {id:'geo',name:'Geometry',type:'group',children:[
+          {id:'crate1',name:'Crate_Prefab',type:'prefab',tag:'Interactable',t:[12.4,0,-8.2],comps:[
+            this.C('Transform','open_with','#7a8aa0',[{t:'vec3',l:'Position',v:[12.4,0,-8.2]},{t:'vec3',l:'Rotation',v:[0,35,0]},{t:'vec3',l:'Scale',v:[1,1,1]}]),
+            this.C('Mesh Renderer','deployed_code','#7a8aa0',[{t:'asset',l:'Mesh',v:'crate_wood.mesh',type:'mesh'},{t:'asset',l:'Material',v:'metal_brushed.mat',type:'mat'},{t:'bool',l:'Cast Shadows',v:true},{t:'bool',l:'Receive Decals',v:true},{t:'slider',l:'LOD Bias',v:0.5,min:0,max:2}]),
+            this.C('Box Collider','select_all','#8fc97e',[{t:'vec3',l:'Center',v:[0,0.5,0]},{t:'vec3',l:'Size',v:[1,1,1]},{t:'bool',l:'Is Trigger',v:false},{t:'asset',l:'Phys Material',v:'wood_phys.mat',type:'mat'}]),
+            this.C('Rigid Body','fitness_center','#d6a23b',[{t:'num',l:'Mass',v:12,u:'kg'},{t:'num',l:'Linear Drag',v:0.05},{t:'num',l:'Angular Drag',v:0.05},{t:'bool',l:'Use Gravity',v:true},{t:'bool',l:'Is Kinematic',v:false},{t:'enum',l:'Interpolate',v:'Interpolate'}]),
+            this.C('Lua Script','code','#5ac0c0',[{t:'asset',l:'Script',v:'interactable.rs',type:'script'},{t:'num',l:'Health',v:100},{t:'num',l:'Interact Range',v:2.5,u:'m'},{t:'bool',l:'Enabled',v:true}])]},
+          {id:'crate2',name:'Crate_Prefab (1)',type:'prefab',tag:'Interactable',t:[13.9,0,-7.1]},
+          {id:'barrel',name:'Barrel_Prefab',type:'prefab',t:[10.2,0,-9.6]},
+          {id:'bridge',name:'Bridge_Static',type:'mesh',t:[0,2,-20]},
+          {id:'rocks',name:'RockCluster_A',type:'mesh',t:[-14,0,4]}
+        ]},
+        {id:'light',name:'Lighting',type:'group',children:[
+          {id:'pl1',name:'PointLight_Torch',type:'light'},
+          {id:'pl2',name:'PointLight_Torch (1)',type:'light'},
+          {id:'sl1',name:'SpotLight_Lantern',type:'light'},
+          {id:'probe',name:'ReflectionProbe',type:'probe'}
+        ]},
+        {id:'gameplay',name:'Gameplay',type:'group',children:[
+          {id:'player',name:'Player',type:'slice',tag:'Player',t:[0,1,0],comps:[
+            this.C('Transform','open_with','#7a8aa0',[{t:'vec3',l:'Position',v:[0,1,0]},{t:'vec3',l:'Rotation',v:[0,0,0]},{t:'vec3',l:'Scale',v:[1,1,1]}]),
+            this.C('Character Controller','directions_run','#7a8aa0',[{t:'num',l:'Height',v:1.8,u:'m'},{t:'num',l:'Radius',v:0.4,u:'m'},{t:'num',l:'Step Offset',v:0.3},{t:'slider',l:'Slope Limit',v:0.5}]),
+            this.C('Player Controller','code','#5ac0c0',[{t:'asset',l:'Script',v:'player_controller.rs',type:'script'},{t:'num',l:'Move Speed',v:6,u:'m/s'},{t:'num',l:'Sprint Mult',v:1.6},{t:'num',l:'Jump Force',v:7},{t:'slider',l:'Air Control',v:0.4}]),
+            this.C('Health','favorite','#e0625c',[{t:'num',l:'Max HP',v:100},{t:'num',l:'Regen',v:2.5,u:'/s'},{t:'bool',l:'Invulnerable',v:false}])]},
+          {id:'camera',name:'Main_Camera',type:'camera',t:[0,1.7,0],comps:[
+            this.C('Transform','open_with','#7a8aa0',[{t:'vec3',l:'Position',v:[0,1.7,0]},{t:'vec3',l:'Rotation',v:[-8,0,0]},{t:'vec3',l:'Scale',v:[1,1,1]}]),
+            this.C('Camera','videocam','#7a8aa0',[{t:'enum',l:'Projection',v:'Perspective'},{t:'slider',l:'Field of View',v:0.4},{t:'num',l:'Near Clip',v:0.1},{t:'num',l:'Far Clip',v:2000},{t:'enum',l:'Clear Flags',v:'Skybox'}]),
+            this.C('Post Process','auto_awesome','#b78fd6',[{t:'slider',l:'Exposure',v:0.5},{t:'bool',l:'Bloom',v:true},{t:'slider',l:'Vignette',v:0.3},{t:'enum',l:'Tone Mapping',v:'ACES'}])]},
+          {id:'enemy1',name:'Enemy_Grunt',type:'slice',tag:'Enemy',t:[24,0,-12]},
+          {id:'enemy2',name:'Enemy_Grunt (1)',type:'slice',tag:'Enemy',t:[28,0,-15]},
+          {id:'spawn',name:'SpawnPoint_A',type:'empty'},
+          {id:'trigger',name:'Trigger_Checkpoint',type:'volume',tag:'Trigger'}
+        ]},
+        {id:'ui',name:'UI',type:'group',children:[
+          {id:'hud',name:'HUD_Canvas',type:'ui'}
+        ]}
+      ]}
+    ];
+    this.index = {};
+    const walk = (n,p)=>{ this.index[n.id]={node:n,parent:p}; (n.children||[]).forEach(c=>walk(c,n)); };
+    this.tree.forEach(n=>walk(n,null));
+
+    this.menus = [
+      {name:'File',items:[i('New Scene','⌘N','note_add'),i('Open Scene…','⌘O','folder_open'),i('Open Recent','','history'),s(),i('Save','⌘S','save'),i('Save As…','⇧⌘S','save_as'),i('Save All','⌥⌘S','done_all'),s(),i('Import Asset…','','download'),i('Export','','upload'),s(),i('Project Settings…','','settings'),s(),i('Exit','⌘Q','logout')]},
+      {name:'Edit',items:[i('Undo','⌘Z','undo'),i('Redo','⇧⌘Z','redo'),s(),i('Cut','⌘X','content_cut'),i('Copy','⌘C','content_copy'),i('Paste','⌘V','content_paste'),i('Duplicate','⌘D','content_copy'),i('Delete','⌫','delete'),s(),i('Select All','⌘A','select_all'),i('Deselect','⇧⌘A','deselect'),s(),i('Preferences…','⌘,','tune')]},
+      {name:'Create',items:[i('Empty Entity','⇧⌘N','add_box'),s(),i('Mesh','','deployed_code'),i('Light','','lightbulb'),i('Camera','','videocam'),i('Audio Source','','volume_up'),s(),i('Prefab from Selection','','widgets'),i('Slice from Selection','','dataset'),s(),i('Volume','','crop_free'),i('Particle System','','grain')]},
+      {name:'Select',items:[i('All','','select_all'),i('None','','deselect'),i('Invert','','flip'),s(),i('By Type','','category'),i('By Layer','','layers'),i('By Tag','','label'),s(),i('Parent','','arrow_upward'),i('Children','','account_tree')]},
+      {name:'Tools',items:[i('Snap to Grid','','grid_on'),i('Align','','align_horizontal_left'),i('Distribute','','space_bar'),s(),i('Bake Lighting','','wb_incandescent'),i('Build Navigation','','route'),i('Generate LODs','','layers'),s(),i('Asset Processor…','','sync'),i('Material Editor','','gradient'),i('Script Editor','','code')]},
+      {name:'Build',items:[i('Build Project','⌘B','build'),i('Build & Run','⌘R','play_arrow'),s(),i('Profile','','speed'),i('Build Settings…','','tune'),i('Platforms','','devices'),s(),i('Clean','','cleaning_services'),i('Package…','','inventory_2')]},
+      {name:'Window',items:[i('Scene Hierarchy','','account_tree'),i('Inspector','','tune'),i('Asset Browser','','folder'),i('Console','','terminal'),i('Output Log','','subject'),i('Profiler','','speed'),i('Gems','','extension'),s(),i('Layouts','','dashboard'),i('Reset Layout','','restart_alt'),s(),i('Next Window','⌃⇥','tab')]},
+      {name:'Help',items:[i('Documentation','','menu_book'),i('API Reference','','data_object'),i('Keyboard Shortcuts','⌘/','keyboard'),s(),i('Report Issue','','bug_report'),i('About Aether','','info')]}
+    ];
+
+    this.assetData = {
+      Meshes:['crate_wood.mesh','barrel_metal.mesh','rock_cliff_01.mesh','rock_cliff_02.mesh','tree_pine_lod.mesh','bridge_truss.mesh','character_hero.mesh','enemy_grunt.mesh','terrain_chunk.mesh','streetlamp.mesh'].map(n=>['mesh',n]),
+      Materials:['metal_brushed.mat','wood_planks.mat','stone_wet.mat','foliage_pine.mat','terrain_blend.mat','water_ocean.mat','skin_hero.mat','glass_frosted.mat'].map(n=>['mat',n]),
+      Textures:['rock_albedo.png','rock_normal.png','rock_orm.png','metal_albedo.png','wood_albedo.png','canyon_height.png','noise_detail.png','hero_basecolor.png'].map(n=>['tex',n]),
+      Prefabs:['Crate_Prefab.prefab','Barrel_Prefab.prefab','Streetlamp.prefab','RockCluster_A.prefab','Bridge_Static.prefab'].map(n=>['prefab',n]),
+      Scripts:['player_controller.rs','enemy_ai.rs','interactable.rs','game_state.rs','inventory.lua','dialogue.lua'].map(n=>['script',n]),
+      Audio:['footstep_grass.wav','ambient_wind.ogg','impact_wood.wav','music_canyon.ogg','ui_click.wav'].map(n=>['audio',n]),
+      Levels:['Canyon_01.level','MainMenu.level','TestRoom.level'].map(n=>['level',n]),
+      Animations:['hero_run.anim','hero_idle.anim','hero_jump.anim','grunt_attack.anim'].map(n=>['anim',n])
+    };
+    this.folderMeta = [['Meshes','category','#7a8aa0'],['Materials','gradient','#d6a23b'],['Textures','image','#8fc97e'],['Prefabs','widgets','#b78fd6'],['Scripts','code','#5ac0c0'],['Audio','graphic_eq','#d68fb0'],['Levels','map','#e0a060'],['Animations','animation','#7ad6a6']];
+
+    this.consoleData = [
+      ['info','12:04:51.203','Editor','Project "RiftRunner" loaded — 1,284 assets indexed'],
+      ['log','12:04:51.844','AssetProcessor','Compiled shader variant lit_opaque (cached)'],
+      ['log','12:04:52.010','Renderer','Vulkan device: NVIDIA RTX 4070 — 12 GB'],
+      ['warn','12:04:53.118','Physics','RigidBody on "Barrel_Prefab" has mass 0 — using default 1.0 kg'],
+      ['log','12:04:53.402','SceneIO','Loaded Canyon_01.level (42 entities)'],
+      ['warn','12:04:54.007','Lighting','Lightmap UVs missing on "RockCluster_A" — generating'],
+      ['log','12:04:54.661','NavMesh','Baked navigation mesh in 318 ms'],
+      ['info','12:04:55.200','Script','interactable.rs hot-reloaded'],
+      ['log','12:04:55.890','Audio','Wwise bank "canyon_amb" registered'],
+      ['warn','12:04:56.443','Asset','Texture "noise_detail.png" not power-of-two — mips disabled'],
+      ['log','12:04:57.120','Renderer','Frame budget OK — 7.0 ms avg'],
+      ['log','12:04:58.004','Editor','Autosave complete']
+    ];
+    this.outputData = [
+      ['$ aether build --target editor --config dev','#5ac0c0'],
+      ['   Compiling aether-core v0.4.2','#9aa1ac'],
+      ['   Compiling aether-render v0.4.2 (vulkan)','#9aa1ac'],
+      ['   Compiling aether-physics v0.4.2','#9aa1ac'],
+      ['   Compiling game-riftrunner v0.1.0','#9aa1ac'],
+      ['warning: unused variable: `dt` in player_controller.rs:88','#d6a23b'],
+      ['    Finished dev [unoptimized + debuginfo] in 9.42s','#57b97e'],
+      ['   Running editor target...','#9aa1ac'],
+      ['[gpui] window surface acquired (1920x1080 @2x)','#7c838f'],
+      ['[asset] processor watching 1,284 files','#7c838f'],
+      ['[render] pipeline cache: 312 variants','#7c838f'],
+      ['[scene] Canyon_01 ready — 2.4M tris, 1284 draws','#7c838f'],
+      ['Ready.','#57b97e']
+    ];
+    this.profStats = [['FPS','142','#57b97e'],['Frame','7.04 ms','#c2c8d0'],['GPU','4.8 ms','#7a8aa0'],['Draw Calls','1,284','#c2c8d0'],['Triangles','2.4M','#c2c8d0'],['VRAM','3.2 GB','#d6a23b']];
+    this.profBarData = [['Render',3.1,'#4188e0'],['Physics',1.2,'#d6a23b'],['Scripting',0.9,'#5ac0c0'],['Animation',0.6,'#b78fd6'],['Culling',0.4,'#8fc97e'],['Audio',0.2,'#d68fb0'],['UI / Other',0.7,'#7c838f']];
+
+    this.gemsData = [
+      ['physx','PhysX 5','Physics','5.1.3',true,'Real-time rigid body, character controller, and cloth simulation backed by NVIDIA PhysX.',['aether-core','aether-math']],
+      ['atom','Atom Renderer','Rendering','0.4.2',true,'Multi-threaded forward+ renderer with a Vulkan backend, GPU-driven culling and a flexible pass pipeline.',['aether-core']],
+      ['scriptcanvas','Script Canvas','Scripting','1.2.0',true,'Node-based visual scripting graph that compiles to native bytecode at build time.',['lua-vm','aether-core']],
+      ['lua','Lua Scripting','Scripting','5.4.6',true,'Embedded Lua runtime with hot-reload and editor binding generation.',['aether-core']],
+      ['navmesh','Navigation Mesh','AI','0.4.0',true,'Recast-based navmesh baking with dynamic obstacle carving and crowd avoidance.',['aether-core']],
+      ['wwise','Audio Engine','Audio','2024.1',true,'Wwise integration with spatial audio, occlusion, and bus routing.',['aether-core']],
+      ['terrain','Terrain System','World','0.4.1',true,'Heightmap terrain with layer blending, tessellation and runtime sculpting.',['atom','aether-core']],
+      ['emotionfx','EmotionFX','Animation','0.4.0',false,'Skeletal animation graph, blend spaces, IK and ragdoll.',['physx','aether-core']],
+      ['multiplayer','Multiplayer','Networking','0.3.5',false,'Authoritative server replication with client prediction and rollback.',['aether-core']],
+      ['imgui','ImGui Debug','Debug','1.90',true,'Immediate-mode debug overlays and in-game tooling panels.',['aether-core']],
+      ['cesium','Cesium Geospatial','World','1.8.0',false,'Stream global 3D terrain and photogrammetry tilesets.',['atom','aether-core']]
+    ];
+    const g = {}; this.gemsData.forEach(x=>{ g[x[0]] = x[4]; });
+
+    // ---- scene layers ----
+    this.layersData = [
+      ['Default','#7a8aa0',18],['Environment','#8fc97e',9],['Gameplay','#d6a23b',11],
+      ['Lighting','#d6c14a',6],['VFX','#b78fd6',4],['UI','#5ac0c0',3],['Collision','#d9645e',7]
+    ];
+
+    // ---- script editor ----
+    this.scriptFiles = [
+      ['player_controller.rs','#e06c75',true],['enemy_ai.rs','#e5c07b',false],['game_state.rs','#e5c07b',false],
+      ['interactable.rs','#e5c07b',false],['camera_rig.rs','#e5c07b',false],['inventory.lua','#5ac0c0',false],['dialogue.lua','#5ac0c0',false]
+    ];
+    this.scriptOutline = [
+      ['struct','PlayerController','#e5c07b'],['fn','new','#61afef'],['fn','update','#61afef'],
+      ['fn','handle_input','#61afef'],['fn','apply_movement','#61afef'],['fn','jump','#61afef']
+    ];
+    const SY={kw:'#c678dd',fn:'#61afef',ty:'#56b6c2',st:'#98c379',nu:'#d19a66',co:'#7f848e',pl:'#abb2bf',ma:'#d19a66',pu:'#828997'};
+    this.codeLines = [
+      [['use ',SY.kw],['aether',SY.ty],['::',SY.pu],['prelude',SY.pl],['::*;',SY.pu]],
+      [],
+      [['#[derive(',SY.ma],['Component',SY.ty],[')]',SY.ma]],
+      [['pub struct ',SY.kw],['PlayerController',SY.ty],[' {',SY.pu]],
+      [['    pub ',SY.kw],['move_speed',SY.pl],[': ',SY.pu],['f32',SY.ty],[',',SY.pu]],
+      [['    pub ',SY.kw],['jump_force',SY.pl],[': ',SY.pu],['f32',SY.ty],[',',SY.pu]],
+      [['    grounded',SY.pl],[': ',SY.pu],['bool',SY.ty],[',',SY.pu]],
+      [['}',SY.pu]],
+      [],
+      [['impl ',SY.kw],['PlayerController',SY.ty],[' {',SY.pu]],
+      [['    pub fn ',SY.kw],['update',SY.fn],['(',SY.pu],['&mut self',SY.kw],[', ctx: ',SY.pl],['&mut Context',SY.ty],[', dt: ',SY.pl],['f32',SY.ty],[') {',SY.pu]],
+      [['        let ',SY.kw],['input',SY.pl],[' = ctx.',SY.pl],['input',SY.fn],['();',SY.pu]],
+      [['        ',SY.pl],['// horizontal movement from the input axis',SY.co]],
+      [['        let ',SY.kw],['dir',SY.pl],[' = input.',SY.pl],['move_axis',SY.fn],['().',SY.pu],['normalized',SY.fn],['();',SY.pu]],
+      [['        self.velocity.x = dir.x * self.move_speed;',SY.pl]],
+      [],
+      [['        if ',SY.kw],['input.',SY.pl],['pressed',SY.fn],['(',SY.pu],['Key',SY.ty],['::Space) && self.grounded {',SY.pu]],
+      [['            self.velocity.y = self.jump_force;',SY.pl]],
+      [['            self.grounded = ',SY.pl],['false',SY.kw],[';',SY.pu]],
+      [['        }',SY.pu]],
+      [],
+      [['        ctx.transform.',SY.pl],['translate',SY.fn],['(self.velocity * dt);',SY.pu]],
+      [['    }',SY.pu]],
+      [['}',SY.pu]]
+    ];
+
+    // ---- build dropdown ----
+    this.buildConfigDefs = [
+      ['Debug','Unoptimized · full symbols & asserts'],
+      ['Development','Optimized · editor & profiling hooks'],
+      ['Profile','Shipping code + profiler instrumentation'],
+      ['Shipping','Fully optimized · no debug — final build']
+    ];
+    this.buildTargetDefs = [['Windows','desktop_windows'],['Linux','dns'],['macOS','laptop_mac'],['Android','android'],['iOS','phone_iphone'],['Web (WASM)','language'],['Dedicated Server','storage']];
+    this.buildActionDefs = [
+      ['Build','build','⌘B','#5ac0c0'],['Build & Run','play_circle','⌘R','#57b97e'],
+      ['Rebuild All','refresh','','#9aa1ac'],['Clean Intermediate','cleaning_services','','#9aa1ac'],
+      ['Package…','inventory_2','','#d6a23b'],['Build Settings…','tune','','#9aa1ac']
+    ];
+
+    // ---- modal: editor Preferences + Project Settings ----
+    // row types: head | toggle | seg | select | slider | color | keybind | text
+    this.prefsCats = [
+      ['general','General','tune'],['appearance','Appearance','palette'],['viewport','Viewport','view_in_ar'],
+      ['shortcuts','Shortcuts','keyboard'],['build','Build & Run','build'],['pipeline','Asset Pipeline','conveyor_belt'],['tools','External Tools','terminal']
+    ];
+    this.prefsRows = {
+      general:[
+        {k:'autosave',t:'toggle',label:'Auto-save scene',desc:'Periodically save the open scene',value:true},
+        {k:'autosaveInt',t:'select',label:'Auto-save interval',value:'5 min',options:['2 min','5 min','10 min','15 min']},
+        {k:'restore',t:'toggle',label:'Restore last project on launch',value:true},
+        {k:'confirmDelete',t:'toggle',label:'Confirm before deleting entities',value:true},
+        {k:'recentCount',t:'select',label:'Recent projects to remember',value:'10',options:['5','10','20','50']},
+        {k:'telemetry',t:'toggle',label:'Send anonymous telemetry & crash reports',value:false}
+      ],
+      appearance:[
+        {k:'theme',t:'seg',label:'Theme',value:'Dark',options:['Dark','Darker','Midnight']},
+        {k:'accent',t:'color',label:'Accent color',value:'#4188e0',options:['#4188e0','#5ac0c0','#3a8f4e','#d6a23b','#b78fd6']},
+        {k:'uiscale',t:'slider',label:'UI scale',value:0.5,display:'100%'},
+        {k:'density',t:'seg',label:'Density',value:'Compact',options:['Compact','Cozy']},
+        {k:'monofont',t:'select',label:'Monospace font',value:'IBM Plex Mono',options:['IBM Plex Mono','JetBrains Mono','Fira Code','SF Mono']},
+        {k:'animations',t:'toggle',label:'Panel animations',value:true}
+      ],
+      viewport:[
+        {k:'fov',t:'slider',label:'Field of view',value:0.45,display:'72°'},
+        {k:'camspeed',t:'slider',label:'Camera fly speed',value:0.4,display:'4.0'},
+        {k:'gridsize',t:'select',label:'Grid size',value:'1 m',options:['0.25 m','0.5 m','1 m','2 m']},
+        {k:'showgrid',t:'toggle',label:'Show grid',value:true},
+        {k:'showgizmos',t:'toggle',label:'Show gizmos',value:true},
+        {k:'gizmoscale',t:'slider',label:'Gizmo size',value:0.5,display:'1.0×'},
+        {k:'aa',t:'seg',label:'Anti-aliasing',value:'TAA',options:['Off','FXAA','TAA','MSAA']}
+      ],
+      shortcuts:[
+        {k:'s1',t:'keybind',label:'Save scene',keys:'⌘S'},{k:'s2',t:'keybind',label:'Play / Stop',keys:'⌘P'},
+        {k:'s3',t:'keybind',label:'Frame selected',keys:'F'},{k:'s4',t:'keybind',label:'Focus selected',keys:'⇧F'},
+        {k:'s5',t:'keybind',label:'Move tool',keys:'W'},{k:'s6',t:'keybind',label:'Rotate tool',keys:'E'},
+        {k:'s7',t:'keybind',label:'Scale tool',keys:'R'},{k:'s8',t:'keybind',label:'Duplicate',keys:'⌘D'},
+        {k:'s9',t:'keybind',label:'Delete',keys:'⌫'},{k:'s10',t:'keybind',label:'Toggle full screen viewport',keys:'⇧Space'}
+      ],
+      build:[
+        {k:'config',t:'seg',label:'Default configuration',value:'Development',options:['Debug','Development','Profile','Shipping']},
+        {k:'jobs',t:'slider',label:'Parallel compile jobs',value:0.75,display:'12'},
+        {k:'incremental',t:'toggle',label:'Incremental builds',value:true},
+        {k:'runafter',t:'toggle',label:'Run after build',value:true},
+        {k:'hotreload',t:'toggle',label:'Hot-reload scripts',value:true},
+        {k:'unity',t:'toggle',label:'Unity (jumbo) builds',value:false}
+      ],
+      pipeline:[
+        {k:'autoimport',t:'toggle',label:'Auto-import on file change',value:true},
+        {k:'texcomp',t:'select',label:'Texture compression',value:'BC7',options:['BC7','BC5','ASTC','None']},
+        {k:'mips',t:'toggle',label:'Generate mipmaps',value:true},
+        {k:'maxtex',t:'select',label:'Max texture size',value:'4096',options:['1024','2048','4096','8192']},
+        {k:'workers',t:'slider',label:'Importer worker threads',value:0.6,display:'8'},
+        {k:'cache',t:'toggle',label:'Shared asset cache',value:true}
+      ],
+      tools:[
+        {k:'editor',t:'select',label:'Script editor',value:'VS Code',options:['VS Code','Zed','Neovim','RustRover']},
+        {k:'diff',t:'select',label:'Diff / merge tool',value:'Built-in',options:['Built-in','Beyond Compare','Meld','Kdiff3']},
+        {k:'scm',t:'select',label:'Source control',value:'Git',options:['Git','Perforce','Plastic SCM','None']},
+        {k:'profiler',t:'select',label:'External profiler',value:'Tracy',options:['Tracy','Superluminal','RenderDoc','None']}
+      ]
+    };
+    this.projCats = [
+      ['general','General','description'],['rendering','Rendering','palette'],['physics','Physics','fitness_center'],
+      ['audio','Audio','graphic_eq'],['layers','Layers & Tags','layers'],['packaging','Packaging','inventory_2']
+    ];
+    this.projRows = {
+      general:[
+        {k:'pname',t:'text',label:'Project name',value:'RiftRunner'},
+        {k:'company',t:'text',label:'Company',value:'Driftwood Studio'},
+        {k:'version',t:'text',label:'Version',value:'0.1.0'},
+        {k:'scene',t:'select',label:'Default scene',value:'Canyon_01',options:['Canyon_01','MainMenu','TestRoom']},
+        {k:'engine',t:'select',label:'Engine version',value:'0.4.2',options:['0.4.2','0.4.1','0.4.0']}
+      ],
+      rendering:[
+        {k:'pipeline',t:'seg',label:'Render pipeline',value:'Forward+',options:['Forward+','Deferred','Mobile']},
+        {k:'colorspace',t:'seg',label:'Color space',value:'Linear',options:['Linear','Gamma']},
+        {k:'shadows',t:'select',label:'Shadow quality',value:'High',options:['Low','Medium','High','Ultra']},
+        {k:'shadowres',t:'select',label:'Shadow resolution',value:'2048',options:['1024','2048','4096']},
+        {k:'bloom',t:'toggle',label:'Bloom',value:true},
+        {k:'ssao',t:'toggle',label:'Ambient occlusion (GTAO)',value:true},
+        {k:'motionblur',t:'toggle',label:'Motion blur',value:false}
+      ],
+      physics:[
+        {k:'gravity',t:'slider',label:'Gravity',value:0.49,display:'-9.81 m/s²'},
+        {k:'timestep',t:'select',label:'Fixed timestep',value:'1/60 s',options:['1/30 s','1/60 s','1/120 s']},
+        {k:'solver',t:'slider',label:'Solver iterations',value:0.4,display:'8'},
+        {k:'ccd',t:'toggle',label:'Continuous collision detection',value:true},
+        {k:'sleep',t:'toggle',label:'Allow bodies to sleep',value:true}
+      ],
+      audio:[
+        {k:'master',t:'slider',label:'Master volume',value:0.8,display:'80%'},
+        {k:'samplerate',t:'select',label:'Sample rate',value:'48 kHz',options:['44.1 kHz','48 kHz','96 kHz']},
+        {k:'spatial',t:'toggle',label:'Spatial audio',value:true},
+        {k:'occlusion',t:'toggle',label:'Occlusion & reverb zones',value:true},
+        {k:'voices',t:'slider',label:'Max voices',value:0.5,display:'64'}
+      ],
+      layers:[
+        {k:'h1',t:'head',label:'Tags'},
+        {k:'tags',t:'chips',label:'Tags',chips:['Untagged','Player','Enemy','Interactable','Trigger','Pickup']},
+        {k:'h2',t:'head',label:'Layers'},
+        {k:'layers',t:'chips',label:'Layers',chips:['Default','Ground','Water','Props','UI','Ignore Raycast']}
+      ],
+      packaging:[
+        {k:'platforms',t:'chips',label:'Target platforms',chips:['Windows','Linux','macOS']},
+        {k:'compression',t:'select',label:'Asset compression',value:'LZ4',options:['None','LZ4','Zstd','Oodle']},
+        {k:'output',t:'text',label:'Output directory',value:'~/dev/aether/RiftRunner/dist'},
+        {k:'strip',t:'toggle',label:'Strip unused assets',value:true},
+        {k:'encrypt',t:'toggle',label:'Encrypt asset bundles',value:false}
+      ]
+    };
+
+    this.state = {
+      openMenu:null, layout:'Default', tool:'translate', space:'World', pivot:'Pivot',
+      gridSnap:true, angleSnap:false, play:'stopped', sim:false,
+      leftW:264, rightW:340, bottomH:240, mode:'scene', leftTab:'hierarchy', rightTab:'details', bottomTab:'assets',
+      showLeft:true, showRight:true, showBottom:true, pipeOpen:false,
+      expanded:{root:true,env:true,geo:true,gameplay:true}, selected:'crate1',
+      collapsed:{}, compOff:{}, toggles:{}, hidden:{},
+      assetFolder:'Meshes', assetView:'grid', selectedAsset:'crate_wood.mesh',
+      consoleFilter:'all', consoleCleared:false, gems:g, selectedGem:'physx',
+      buildOpen:false, buildConfig:'Development', buildTarget:'Windows',
+      activeLayer:'Default', layerVis:{}, layerLock:{Collision:true},
+      xforms:{}, numEdits:{},
+      modal:null, modalCat:'general', settings:{}, selectOpen:null
+    };
+    function i(label,shortcut,icon){ return {label,shortcut:shortcut||'',icon:icon||''}; }
+    function s(){ return {sep:true}; }
+  }
+
+  C(name,icon,color,props){ return {name,icon,color,props:props||[]}; }
+  f(n){ return Number.isInteger(n)?String(n):(+n).toFixed(n>=100?1:3); }
+
+  // ===================== THREE.JS VIEWPORT =====================
+  _inScene(){ return ['scene','sequencer','profiler'].includes(this.state.mode); }
+  componentDidMount(){ this._tryInit(0); }
+  componentDidUpdate(prevProps,prevState){
+    if(!this._inScene()){ if(this._t) this.disposeThree(); return; }
+    this._tryInit(0);
+    if(this._t){
+      const p=this._prev||{};
+      if(p.tool!==this.state.tool) this.applyTool();
+      if(p.selected!==this.state.selected) this.applySelection();
+      if(p.play!==this.state.play) this.applyPlay();
+      this._prev={tool:this.state.tool,selected:this.state.selected,play:this.state.play};
+    }
+  }
+  componentWillUnmount(){ this.disposeThree(); }
+  _setStat(id,v){ const el=document.getElementById(id); if(el) el.textContent=v; }
+  _tryInit(tries){
+    if(!this._inScene()) return;
+    const cv=document.getElementById('ae-viewport-canvas');
+    if(this._t && this._t.canvas===cv) return;
+    if(!cv || !window.THREE || !THREE.OrbitControls || !THREE.TransformControls){ if(tries<200) setTimeout(()=>this._tryInit(tries+1),60); return; }
+    if(this._t) this.disposeThree();
+    this.initThree(cv);
+  }
+  initThree(cv){
+    const T=THREE, parent=cv.parentElement;
+    const w=parent.clientWidth||800, h=parent.clientHeight||500;
+    const renderer=new T.WebGLRenderer({canvas:cv,antialias:true});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+    renderer.setSize(w,h,false);
+    renderer.shadowMap.enabled=true; renderer.shadowMap.type=T.PCFSoftShadowMap;
+    renderer.outputEncoding=T.sRGBEncoding;
+    const scene=new T.Scene(); scene.background=new T.Color('#16181c'); scene.fog=new T.Fog('#16181c',30,72);
+    const camera=new T.PerspectiveCamera(52,w/h,0.1,600); camera.position.set(9,6.5,10.5);
+    const controls=new T.OrbitControls(camera,cv);
+    controls.enableDamping=true; controls.dampingFactor=0.08; controls.target.set(0,0.8,0); controls.maxPolarAngle=Math.PI*0.495; controls.minDistance=3; controls.maxDistance=60;
+    scene.add(new T.HemisphereLight('#9fb4d0','#2a2620',0.85));
+    const sun=new T.DirectionalLight('#ffe7c2',2.3); sun.position.set(7,13,6); sun.castShadow=true;
+    sun.shadow.mapSize.set(2048,2048); const sc=sun.shadow.camera; sc.near=1; sc.far=46; sc.left=-18; sc.right=18; sc.top=18; sc.bottom=-18; sun.shadow.bias=-0.0004; scene.add(sun);
+    const grid=new T.GridHelper(56,56,0x3b4350,0x252a31); grid.position.y=0.002; scene.add(grid);
+    const ground=new T.Mesh(new T.PlaneGeometry(56,56), new T.MeshStandardMaterial({color:'#1b1f25',roughness:1,metalness:0})); ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
+    const objs={};
+    const add=(id,geo,color,pos,rot,met)=>{ const m=new T.Mesh(geo,new T.MeshStandardMaterial({color,roughness:0.72,metalness:met||0.12})); m.position.set(pos[0],pos[1],pos[2]); if(rot)m.rotation.set(rot[0],rot[1],rot[2]); m.castShadow=true; m.receiveShadow=true; m.userData.id=id; m.userData.home={p:m.position.clone(),r:m.rotation.clone()}; scene.add(m); objs[id]=m; };
+    add('crate1',new T.BoxGeometry(1.4,1.4,1.4),'#8a7c63',[0,0.7,0],[0,0.6,0]);
+    add('crate2',new T.BoxGeometry(1.4,1.4,1.4),'#8a7c63',[2.1,0.7,0.7],[0,0.3,0]);
+    add('barrel',new T.CylinderGeometry(0.62,0.62,1.5,20),'#6f7682',[-2.3,0.75,0.6]);
+    add('rocks',new T.IcosahedronGeometry(0.95,0),'#6b7078',[-4.4,0.62,1.7]);
+    add('bridge',new T.BoxGeometry(6.2,0.3,1.7),'#7c6c57',[0,1.4,-4.4]);
+    add('player',new T.CylinderGeometry(0.42,0.42,1.7,16),'#4d7fb8',[3.7,0.85,1.5],null,0.05);
+    add('enemy1',new T.BoxGeometry(0.9,1.5,0.9),'#a85a55',[5.2,0.75,-1.4]);
+    const transform=new T.TransformControls(camera,cv); transform.setSize(0.82);
+    transform.addEventListener('dragging-changed',e=>{ controls.enabled=!e.value; });
+    transform.addEventListener('objectChange',()=>{ if(transform.object) this.syncXform(transform.object); });
+    scene.add(transform);
+    const ray=new T.Raycaster(), mouse=new T.Vector2();
+    const onDown=(e)=>{ this._t&&(this._t.down={x:e.clientX,y:e.clientY}); };
+    const onUp=(e)=>{ const t=this._t; if(!t||!t.down) return; const moved=Math.hypot(e.clientX-t.down.x,e.clientY-t.down.y); t.down=null; if(t.transform.dragging||moved>5) return;
+      const r=cv.getBoundingClientRect(); mouse.x=((e.clientX-r.left)/r.width)*2-1; mouse.y=-((e.clientY-r.top)/r.height)*2+1; ray.setFromCamera(mouse,t.camera);
+      const hits=ray.intersectObjects(Object.values(t.objs),false); if(hits.length){ const id=hits[0].object.userData.id; if(id&&id!==this.state.selected) this.setState({selected:id}); } };
+    cv.addEventListener('pointerdown',onDown); window.addEventListener('pointerup',onUp);
+    const ro=new ResizeObserver(()=>{ const t=this._t; if(!t)return; const p=cv.parentElement; if(!p||!p.clientWidth)return; t.camera.aspect=p.clientWidth/p.clientHeight; t.camera.updateProjectionMatrix(); t.renderer.setSize(p.clientWidth,p.clientHeight,false); }); ro.observe(parent);
+    this._t={canvas:cv,renderer,scene,camera,controls,transform,objs,box:null,onUp,ro,clock:new T.Clock(),playT:0,frames:0,acc:0,down:null};
+    const r2d=180/Math.PI, xf={}; Object.keys(objs).forEach(id=>{ const m=objs[id]; xf[id]={p:[m.position.x,m.position.y,m.position.z],r:[m.rotation.x*r2d,m.rotation.y*r2d,m.rotation.z*r2d],s:[m.scale.x,m.scale.y,m.scale.z]}; }); this.setState({xforms:xf});
+    this.applySelection(); this.applyTool();
+    this._prev={tool:this.state.tool,selected:this.state.selected,play:this.state.play};
+    const loop=()=>{ const t=this._t; if(!t) return; t.raf=requestAnimationFrame(loop); const dt=Math.min(t.clock.getDelta(),0.1); t.controls.update();
+      if(this.state.play==='playing'){ t.playT+=dt; const c=t.objs.crate2; if(c)c.rotation.y+=dt*0.8; const p=t.objs.player; if(p)p.position.y=p.userData.home.p.y+Math.sin(t.playT*2.4)*0.28; const en=t.objs.enemy1; if(en)en.position.x=en.userData.home.p.x+Math.sin(t.playT*1.3)*1.3; if(t.box)t.box.update(); }
+      t.renderer.render(t.scene,t.camera);
+      t.frames++; t.acc+=dt; if(t.acc>=0.5){ const fps=Math.round(t.frames/t.acc), ms=(t.acc/t.frames*1000).toFixed(2), info=t.renderer.info.render;
+        this._setStat('ae-fps',fps); this._setStat('ae-ms',ms); this._setStat('ae-tris',info.triangles.toLocaleString()); this._setStat('ae-draws',info.calls); this._setStat('ae-verts',(info.triangles*3).toLocaleString()); t.frames=0; t.acc=0; } };
+    loop();
+  }
+  applyTool(){ const t=this._t; if(!t) return; const tool=this.state.tool;
+    if(tool==='select'){ t.transform.detach(); } else { const m=t.objs[this.state.selected]; if(m){ t.transform.attach(m); t.transform.setMode(tool==='rotate'?'rotate':tool==='scale'?'scale':'translate'); } else { t.transform.detach(); } } }
+  applySelection(){ const t=this._t; if(!t) return; const m=t.objs[this.state.selected];
+    if(t.box){ t.scene.remove(t.box); t.box=null; }
+    if(m){ t.box=new THREE.BoxHelper(m,0x4188e0); t.scene.add(t.box); } 
+    this.applyTool(); }
+  applyPlay(){ const t=this._t; if(!t) return; if(this.state.play!=='playing'){ Object.keys(t.objs).forEach(id=>{ const m=t.objs[id]; const xf=this.state.xforms[id]; if(xf){ m.position.set(xf.p[0],xf.p[1],xf.p[2]); m.rotation.set(xf.r[0]*Math.PI/180,xf.r[1]*Math.PI/180,xf.r[2]*Math.PI/180); } else { m.position.copy(m.userData.home.p); m.rotation.copy(m.userData.home.r); } }); t.playT=0; if(t.box)t.box.update(); } }
+  disposeThree(){ const t=this._t; if(!t) return; if(t.raf)cancelAnimationFrame(t.raf); if(t.ro)t.ro.disconnect(); window.removeEventListener('pointerup',t.onUp); try{t.transform.dispose&&t.transform.dispose();}catch(e){} try{t.controls.dispose();}catch(e){} try{t.renderer.dispose();}catch(e){} this._t=null; }
+
+
+  sv(key,def){ const v=this.state.settings[key]; return v===undefined?def:v; }
+  setSetting(key,val){ this.setState(s=>({settings:{...s.settings,[key]:val}})); }
+  openPrefs(cat){ this.setState({modal:'prefs',modalCat:cat||'general',openMenu:null,buildOpen:false}); }
+  openProj(cat){ this.setState({modal:'proj',modalCat:cat||'general',openMenu:null,buildOpen:false}); }
+  openAbout(){ this.setState({modal:'about',openMenu:null}); }
+  closeModal(){ this.setState({modal:null}); }
+  routeMenu(label){
+    if(label==='Preferences…') return this.openPrefs('general');
+    if(label==='Project Settings…') return this.openProj('general');
+    if(label==='About Aether') return this.openAbout();
+    if(label==='Build Settings…') return this.openPrefs('build');
+    this.setState({openMenu:null});
+  }
+
+  convRow(scope,cat,r){
+    const key=scope+'.'+cat+'.'+r.k;
+    const o={key:r.k,label:r.label,desc:r.desc||'',isHead:r.t==='head',isRow:r.t!=='head',
+      isToggle:false,isSeg:false,isSelect:false,isSlider:false,isColor:false,isKeybind:false,isText:false,isChips:false};
+    const segStyle=(a)=>({height:'24px',padding:'0 11px',display:'flex',alignItems:'center',borderRadius:'5px',fontSize:'11px',cursor:'default',color:a?'#fff':'#9aa1ac',background:a?'#3160a8':'transparent'});
+    if(r.t==='toggle'){ const cur=this.sv(key,r.value); o.isToggle=true; o.trackStyle=this.track(cur,false); o.knobStyle=this.knob(cur); o.onToggle=()=>this.setSetting(key,!cur); }
+    else if(r.t==='seg'){ const cur=this.sv(key,r.value); o.isSeg=true; o.opts=r.options.map(op=>({key:op,label:op,onClick:()=>this.setSetting(key,op),style:segStyle(cur===op)})); }
+    else if(r.t==='select'){ const cur=this.sv(key,r.value); o.isSelect=true; o.value=cur;
+      o.onClick=(e)=>{ const rect=e.currentTarget.getBoundingClientRect(); this.setState({selectOpen:{sk:key,cur:cur,opts:r.options,x:rect.left,y:rect.bottom+4,w:rect.width}}); }; }
+    else if(r.t==='slider'){ o.isSlider=true; const v=r.value; o.display=r.display||''; o.fillStyle={position:'absolute',left:0,top:0,height:'100%',width:Math.round(v*100)+'%',background:'#4188e0',borderRadius:'3px'}; o.handleStyle={position:'absolute',top:'50%',left:'calc('+Math.round(v*100)+'% - 6px)',transform:'translateY(-50%)',width:'12px',height:'12px',borderRadius:'50%',background:'#cfd4db',border:'1px solid #15171b'}; }
+    else if(r.t==='color'){ const cur=this.sv(key,r.value); o.isColor=true; o.value=cur; o.opts=r.options.map(op=>({key:op,color:op,onClick:()=>this.setSetting(key,op),style:{width:'19px',height:'19px',borderRadius:'5px',background:op,cursor:'default',flex:'0 0 auto',boxShadow:cur===op?'0 0 0 2px #15171b, 0 0 0 3.5px '+op:'none'}})); }
+    else if(r.t==='keybind'){ o.isKeybind=true; o.keys=r.keys; }
+    else if(r.t==='text'){ const cur=this.sv(key,r.value); o.isText=true; o.value=cur; o.onInput=(e)=>this.setSetting(key,e.target.value); }
+    else if(r.t==='chips'){ o.isChips=true; o.chips=r.chips.map(c=>({key:c,label:c})); }
+    return o;
+  }
+
+  materialVals(){
+    const slFill=(v)=>({position:'absolute',left:0,top:0,height:'100%',width:Math.round(v*100)+'%',background:'#4188e0',borderRadius:'2px'});
+    const palette=[
+      ['Textures',[['Texture Sample','image','#8fc97e'],['Texture Coord','grid_on','#8fc97e']]],
+      ['Math',[['Multiply','close','#d6a23b'],['Add','add','#d6a23b'],['Lerp','tune','#d6a23b']]],
+      ['Vectors',[['Normal Map','terrain','#7aa0d6'],['Fresnel','blur_on','#7aa0d6']]],
+      ['Output',[['PBR Master','output','#b78fd6']]]
+    ];
+    const matPalette=palette.map(([cat,items])=>({key:cat,cat,headStyle:{padding:'7px 12px 4px',fontSize:'9.5px',textTransform:'uppercase',letterSpacing:'.6px',color:'#5f6670'},
+      items:items.map(([name,icon,color])=>({key:name,name,icon,color}))}));
+    const portIn={position:'absolute',left:'-5px',top:'50%',transform:'translateY(-50%)',width:'9px',height:'9px',borderRadius:'50%',background:'#3a4150',border:'2px solid #5a6470'};
+    const portOut={position:'absolute',right:'-5px',top:'50%',transform:'translateY(-50%)',width:'9px',height:'9px',borderRadius:'50%',background:'#5a6470'};
+    const rowBase={position:'relative',display:'flex',alignItems:'center',height:'22px',padding:'0 12px',fontSize:'10.5px',color:'#aeb4bd'};
+    const mkNode=(left,top,width,icon,accent,title,rows)=>({key:title,
+      style:{position:'absolute',left:left+'px',top:top+'px',width:width+'px',background:'#21252b',border:'1px solid #32383f',borderRadius:'7px',boxShadow:'0 6px 18px rgba(0,0,0,0.4)',overflow:'hidden'},
+      headStyle:{display:'flex',alignItems:'center',gap:'7px',height:'26px',padding:'0 10px',fontSize:'11px',fontWeight:600,color:'#e4e7ec',background:'#262b32',borderBottom:'1px solid #32383f'},
+      icon,accent,title,
+      rows:rows.map((r,i)=>({key:i,label:r[0],inPort:r[1]==='in',outPort:r[1]==='out',portInStyle:portIn,portOutStyle:portOut,
+        align:r[1]==='out'?'text-align:right;':'',style:rowBase}))});
+    const matNodes=[
+      mkNode(60,110,176,'image','#8fc97e','rock_albedo',[['RGB','out'],['Alpha','out']]),
+      mkNode(60,348,176,'image','#8fc97e','rock_normal',[['RGB','out']]),
+      mkNode(360,150,150,'close','#d6a23b','Multiply',[['A','in'],['B','in'],['Out','out']]),
+      mkNode(360,360,150,'terrain','#7aa0d6','Normal Map',[['In','in'],['Out','out']]),
+      mkNode(640,150,200,'output','#b78fd6','Standard PBR',[['Base Color','in'],['Metallic','in'],['Roughness','in'],['Normal','in'],['Emissive','in']])
+    ];
+    const matParams=[
+      {key:'bc',label:'Base Color',isColor:true,hex:'#8a8f96',swatchStyle:{width:'17px',height:'17px',borderRadius:'3px',background:'#8a8f96',flex:'0 0 auto',border:'1px solid rgba(0,0,0,0.4)'}},
+      {key:'me',label:'Metallic',isSlider:true,val:'0.90',fillStyle:slFill(0.9)},
+      {key:'ro',label:'Roughness',isSlider:true,val:'0.35',fillStyle:slFill(0.35)},
+      {key:'no',label:'Normal',isTex:true,val:'rock_normal.png'},
+      {key:'ao',label:'AO',isSlider:true,val:'1.00',fillStyle:slFill(1)},
+      {key:'em',label:'Emissive',isColor:true,hex:'#101012',swatchStyle:{width:'17px',height:'17px',borderRadius:'3px',background:'#101012',flex:'0 0 auto',border:'1px solid rgba(0,0,0,0.4)'}}
+    ];
+    const shapes=[['circle',true],['deployed_code',false],['crop_landscape',false],['view_in_ar',false]];
+    const matPreviewShapes=shapes.map(([icon,active])=>({key:icon,icon,style:{width:'30px',height:'28px',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'6px',cursor:'default',color:active?'#fff':'#8b919c',background:active?'#3160a8':'#16181c',border:'1px solid '+(active?'#3160a8':'#2c313a')}}));
+    return {matPalette,matNodes,matParams,matPreviewShapes};
+  }
+
+  modalVals(){
+    const st=this.state;
+    const so=st.selectOpen;
+    const cfgShort={Debug:'Debug',Development:'Dev',Profile:'Profile',Shipping:'Ship'}[st.buildConfig]||st.buildConfig;
+    const buildConfigs=this.buildConfigDefs.map(([name,desc])=>({key:name,name,desc,selected:st.buildConfig===name,
+      onClick:()=>this.setState({buildConfig:name}),
+      style:{display:'flex',alignItems:'center',gap:'9px',padding:'6px 8px',borderRadius:'6px',cursor:'default'},
+      dotStyle:{width:'9px',height:'9px',borderRadius:'50%',flex:'0 0 auto',border:st.buildConfig===name?'none':'1.5px solid #5a6068',background:st.buildConfig===name?'#4188e0':'transparent',boxShadow:st.buildConfig===name?'0 0 0 3px rgba(65,136,224,0.22)':'none'}}));
+    const buildTargets=this.buildTargetDefs.map(([name,icon])=>({key:name,name,icon,selected:st.buildTarget===name,
+      onClick:()=>this.setState({buildTarget:name}),
+      style:{display:'flex',alignItems:'center',gap:'9px',padding:'5px 8px',borderRadius:'6px',cursor:'default'}}));
+    const buildActions=this.buildActionDefs.map(([label,icon,shortcut,iconColor])=>({key:label,label,icon,shortcut,iconColor,
+      onClick:label==='Build Settings…'?()=>this.openPrefs('build'):()=>this.setState({buildOpen:false}),
+      style:{display:'flex',alignItems:'center',justifyContent:'space-between',height:'28px',padding:'0 8px',borderRadius:'6px',cursor:'default',color:'#cfd4db',fontSize:'11.5px'}}));
+
+    const isPrefs=st.modal==='prefs', isProj=st.modal==='proj', isAbout=st.modal==='about';
+    const cats=isPrefs?this.prefsCats:(isProj?this.projCats:[]);
+    const modalCats=cats.map(([id,label,icon])=>({key:id,label,icon,active:st.modalCat===id,
+      onClick:()=>this.setState({modalCat:id}),
+      style:{display:'flex',alignItems:'center',gap:'10px',height:'32px',padding:'0 11px',borderRadius:'7px',marginBottom:'1px',fontSize:'12px',cursor:'default',color:st.modalCat===id?'#e4e7ec':'#9aa1ac',background:st.modalCat===id?'rgba(65,136,224,0.14)':'transparent',boxShadow:st.modalCat===id?'inset 2px 0 0 #4188e0':'none',fontWeight:st.modalCat===id?500:400}}));
+    const rowsData=(isPrefs?this.prefsRows:(isProj?this.projRows:{}))[st.modalCat]||[];
+    const modalRows=rowsData.map(r=>this.convRow(st.modal,st.modalCat,r));
+
+    return {
+      // build dropdown
+      buildOpen:st.buildOpen, toggleBuild:()=>this.setState(s=>({buildOpen:!s.buildOpen})), closeBuild:()=>this.setState({buildOpen:false}),
+      buildConfigShort:cfgShort,
+      buildBtnStyle:{display:'flex',alignItems:'center',gap:'6px',height:'28px',padding:'0 11px',borderRadius:'6px',background:'#2f6ad0',color:'#fff',fontSize:'11.5px',fontWeight:500,cursor:'default',flex:'0 0 auto'},
+      buildConfigs, buildTargets, buildActions,
+      // modal
+      modalOpen:st.modal!=null, isPrefs, isProj, isAbout, isSettings:isPrefs||isProj,
+      modalTitle:isPrefs?'Preferences':(isProj?'Project Settings':'About Aether'),
+      modalIcon:isPrefs?'settings':(isProj?'tune':'info'),
+      modalSubtitle:isPrefs?'Editor preferences · all projects':(isProj?'RiftRunner · project-scoped':''),
+      modalCats, modalRows,
+      closeModal:()=>this.setState({modal:null}),
+      openSettings:()=>this.openPrefs('general'),
+      // select dropdown popover
+      selectPopoverOpen:!!so,
+      selectPopoverStyle:so?{position:'fixed',left:so.x+'px',top:so.y+'px',minWidth:so.w+'px',background:'#23272e',border:'1px solid #363c46',borderRadius:'8px',boxShadow:'0 14px 36px rgba(0,0,0,0.55)',padding:'5px',zIndex:210,maxHeight:'248px',overflowY:'auto'}:{},
+      selectItems:so?so.opts.map(op=>({key:op,label:op,selected:so.cur===op,
+        onClick:()=>{ this.setSetting(so.sk,op); this.setState({selectOpen:null}); },
+        style:{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'14px',height:'28px',padding:'0 9px',borderRadius:'6px',fontSize:'11.5px',cursor:'default',color:so.cur===op?'#e4e7ec':'#cfd4db'}})):[],
+      closeSelect:()=>this.setState({selectOpen:null}),
+      resetModal:()=>this.setState({settings:{}}),
+      stopProp:(e)=>e.stopPropagation()
+    };
+  }
+
+
+  startDrag(kind,e){
+    e.preventDefault();
+    const sx=e.clientX, sy=e.clientY, s={leftW:this.state.leftW,rightW:this.state.rightW,bottomH:this.state.bottomH};
+    const move=(ev)=>{
+      if(kind==='left') this.setState({leftW:Math.max(190,Math.min(480,s.leftW+(ev.clientX-sx)))});
+      if(kind==='right') this.setState({rightW:Math.max(250,Math.min(520,s.rightW-(ev.clientX-sx)))});
+      if(kind==='bottom') this.setState({bottomH:Math.max(120,Math.min(560,s.bottomH-(ev.clientY-sy)))});
+    };
+    const up=()=>{ window.removeEventListener('mousemove',move); window.removeEventListener('mouseup',up); document.body.style.cursor=''; };
+    window.addEventListener('mousemove',move); window.addEventListener('mouseup',up);
+    document.body.style.cursor = kind==='bottom'?'row-resize':'col-resize';
+  }
+
+  iconFor(node){
+    const m = {
+      level:['public','#7a8aa0'], group:['folder','#8b919c'], mesh:['deployed_code','#8a93a0'],
+      prefab:['widgets','#b78fd6'], slice:['dataset','#d6a23b'], light:['lightbulb','#d6c14a'],
+      sun:['wb_sunny','#d6a23b'], camera:['videocam','#7a8aa0'], volume:['crop_free','#5ac0c0'],
+      terrain:['terrain','#8fc97e'], empty:['flag','#8b919c'], ui:['dashboard','#b78fd6'],
+      fog:['cloud','#7a8aa0'], probe:['blur_on','#b78fd6']
+    };
+    return m[node.type] || ['circle','#8b919c'];
+  }
+
+  flatten(){
+    const rows=[]; const exp=this.state.expanded;
+    const walk=(nodes,depth)=>{
+      nodes.forEach(n=>{
+        const has=!!(n.children&&n.children.length);
+        const open=!!exp[n.id];
+        const sel=this.state.selected===n.id;
+        const ic=this.iconFor(n);
+        const vis=!this.state.hidden[n.id];
+        rows.push({
+          key:n.id, id:n.id, name:n.name, depth, hasChildren:has,
+          caret: has?(open?'arrow_drop_down':'arrow_right'):'',
+          caretStyle:{fontSize:'18px',width:'15px',flex:'0 0 15px',color:'#6b7280',cursor:'default'},
+          icon:ic[0], iconStyle:{fontSize:'15px',color:vis?ic[1]:'#5a6068',flex:'0 0 auto'},
+          name:n.name, nameStyle:{flex:'1 1 auto',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',color:sel?'#ffffff':(vis?'#cfd4db':'#6b7280'),fontWeight:sel?500:400},
+          hasTag:!!n.tag, tag:n.tag||'', tagStyle:{fontSize:'9px',color:'#7c838f',background:'#23272e',padding:'1px 5px',borderRadius:'3px',flex:'0 0 auto'},
+          visIcon: vis?'':'visibility_off', visStyle:{fontSize:'14px',color:'#5f6670',flex:'0 0 auto',cursor:'default',width:vis?'0px':'16px',overflow:'hidden',opacity:vis?0:1},
+          style:{display:'flex',alignItems:'center',gap:'5px',height:'23px',paddingLeft:(6+depth*13)+'px',paddingRight:'8px',cursor:'default',fontSize:'11.5px',borderLeft:sel?'2px solid #4188e0':'2px solid transparent',background:sel?'rgba(65,136,224,0.14)':'transparent'},
+          onRowClick:()=>this.setState({selected:n.id}),
+          onCaret:(e)=>{e.stopPropagation(); this.setState(st=>({expanded:{...st.expanded,[n.id]:!st.expanded[n.id]}}));},
+          onVis:(e)=>{e.stopPropagation(); this.setState(st=>({hidden:{...st.hidden,[n.id]:!st.hidden[n.id]}}));}
+        });
+        if(has&&open) walk(n.children,depth+1);
+      });
+    };
+    walk(this.tree,0);
+    return rows;
+  }
+
+  // editable live transform (bound to the three.js mesh)
+  xvec3(label,id,kind,vals){
+    return {key:label,label,isVec3:true,x:this.f(vals[0]),y:this.f(vals[1]),z:this.f(vals[2]),
+      onX:(e)=>this.setXform(id,kind,0,e.target.value),
+      onY:(e)=>this.setXform(id,kind,1,e.target.value),
+      onZ:(e)=>this.setXform(id,kind,2,e.target.value)};
+  }
+  setXform(id,kind,axis,val){
+    const num=parseFloat(val);
+    this.setState(s=>{ const cur=s.xforms[id]||{p:[0,0,0],r:[0,0,0],s:[1,1,1]}; const nx={p:[...cur.p],r:[...cur.r],s:[...cur.s]}; nx[kind][axis]=isNaN(num)?0:num; return {xforms:{...s.xforms,[id]:nx}}; }, ()=>this.applyXformToMesh(id));
+  }
+  applyXformToMesh(id){ const t=this._t; if(!t) return; const m=t.objs[id], xf=this.state.xforms[id]; if(!m||!xf) return;
+    m.position.set(xf.p[0],xf.p[1],xf.p[2]); m.rotation.set(xf.r[0]*Math.PI/180,xf.r[1]*Math.PI/180,xf.r[2]*Math.PI/180); m.scale.set(xf.s[0]||0.001,xf.s[1]||0.001,xf.s[2]||0.001); if(t.box)t.box.update(); }
+  syncXform(m){ const id=m&&m.userData.id; if(!id) return; const r2d=180/Math.PI;
+    this.setState(s=>({xforms:{...s.xforms,[id]:{p:[m.position.x,m.position.y,m.position.z],r:[m.rotation.x*r2d,m.rotation.y*r2d,m.rotation.z*r2d],s:[m.scale.x,m.scale.y,m.scale.z]}}}));
+    if(this._t&&this._t.box)this._t.box.update(); }
+
+  convProp(p,ei,comp){
+    const base={key:p.l,label:p.l,isVec3:false,isNum:false,isSlider:false,isBool:false,isEnum:false,isColor:false,isAsset:false};
+    if(p.t==='vec3'){ const key=ei+'|'+comp+'|'+p.l; const v=this.state.numEdits[key]||p.v; const mk=(i)=>(e)=>{ const raw=e.target.value; this.setState(s=>{ const cur=[...(s.numEdits[key]||p.v)]; cur[i]=raw; return {numEdits:{...s.numEdits,[key]:cur}}; }); }; return {...base,isVec3:true,x:this.f(v[0]),y:this.f(v[1]),z:this.f(v[2]),onX:mk(0),onY:mk(1),onZ:mk(2)}; }
+    if(p.t==='num') return {...base,isNum:true,val:this.f(p.v),unit:p.u||''};
+    if(p.t==='slider'){ const pct=Math.round(p.v*100); return {...base,isSlider:true,val:this.f(p.v),fillStyle:{position:'absolute',left:0,top:0,height:'100%',width:pct+'%',background:'#4188e0',borderRadius:'2px'}}; }
+    if(p.t==='bool'){ const k=ei+'|'+comp+'|'+p.l; const cur=this.state.toggles[k]!==undefined?this.state.toggles[k]:p.v; return {...base,isBool:true,val:cur,trackStyle:this.track(cur),knobStyle:this.knob(cur),onToggle:()=>this.setState(st=>({toggles:{...st.toggles,[k]:!(st.toggles[k]!==undefined?st.toggles[k]:p.v)}}))}; }
+    if(p.t==='enum') return {...base,isEnum:true,val:p.v};
+    if(p.t==='color') return {...base,isColor:true,hex:p.v,swatchStyle:{width:'17px',height:'17px',borderRadius:'3px',background:p.v,flex:'0 0 auto',border:'1px solid rgba(0,0,0,0.4)'}};
+    if(p.t==='asset'){ const tm=this.typeMeta[p.type]||{}; return {...base,isAsset:true,name:p.v,icon:tm.icon||'description',iconColor:tm.color||'#9aa1ac'}; }
+    return base;
+  }
+  track(on){ return {width:'26px',height:'15px',borderRadius:'8px',background:on?'#3160a8':'#3a3f48',position:'relative',flex:'0 0 auto',cursor:'default',transition:'background .12s'}; }
+  knob(on){ return {position:'absolute',top:'2px',left:'2px',width:'11px',height:'11px',borderRadius:'50%',background:on?'#fff':'#9aa1ac',transform:on?'translateX(11px)':'translateX(0)',transition:'transform .12s'}; }
+
+  tabStyle(active){ return {display:'flex',alignItems:'center',gap:'6px',height:'32px',padding:'0 12px',fontSize:'11.5px',cursor:'default',color:active?'#e4e7ec':'#8b919c',background:active?'#1b1e23':'transparent',boxShadow:active?'inset 0 -2px 0 #4188e0':'none',fontWeight:active?500:400}; }
+
+  renderVals(){
+    const st=this.state;
+    const sel=(this.index[st.selected]||{}).node || this.tree[0];
+    const isPlaying = st.play==='playing';
+
+    // menus
+    const menus=this.menus.map(m=>({
+      name:m.name, open:st.openMenu===m.name,
+      btnStyle:{display:'flex',alignItems:'center',height:'34px',padding:'0 9px',fontSize:'12px',cursor:'default',color:st.openMenu===m.name?'#e4e7ec':'#aeb4bd',background:st.openMenu===m.name?'#2c313a':'transparent'},
+      onOpen:()=>this.setState(s=>({openMenu:s.openMenu===m.name?null:m.name})),
+      onEnter:()=>{ if(this.state.openMenu) this.setState({openMenu:m.name}); },
+      items:m.items.map((it,ix)=>it.sep?{key:'s'+ix,sep:true,notsep:false}:{
+        key:it.label, sep:false, notsep:true, label:it.label, shortcut:it.shortcut, icon:it.icon,
+        style:{display:'flex',alignItems:'center',justifyContent:'space-between',height:'27px',padding:'0 9px',borderRadius:'4px',fontSize:'11.5px',color:'#cfd4db',cursor:'default'},
+        onClick:()=>this.routeMenu(it.label)
+      })
+    }));
+
+    // tools
+    const toolDefs=[['select','arrow_selector_tool','Select (Q)'],['translate','open_with','Move (W)'],['rotate','3d_rotation','Rotate (E)'],['scale','open_in_full','Scale (R)'],['universal','transform','Transform (T)']];
+    const tools=toolDefs.map(([id,icon,title])=>{ const a=st.tool===id; return {key:id,icon,title,onClick:()=>this.setState({tool:id}),
+      style:{width:'30px',height:'24px',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'5px',cursor:'default',color:a?'#fff':'#8b919c',background:a?'#3160a8':'transparent'}}; });
+
+    const seg=(val,key)=>({key,label:val,onClick:()=>this.setState({[key==='p'?'pivot':'space']:val}),
+      style:{height:'22px',padding:'0 11px',display:'flex',alignItems:'center',borderRadius:'5px',fontSize:'11px',cursor:'default',color:(key==='p'?st.pivot:st.space)===val?'#fff':'#8b919c',background:(key==='p'?st.pivot:st.space)===val?'#2c313a':'transparent'}});
+    const pivotOpts=[seg('Pivot','p'),seg('Center','p')];
+    const spaceOpts=[seg('World','x'),seg('Local','x')];
+
+    const snapBox=(on)=>({display:'flex',alignItems:'center',gap:'5px',height:'28px',padding:'0 9px',borderRadius:'5px',cursor:'default',color:on?'#cfd4db':'#6b7280',background:on?'#22262c':'transparent'});
+
+    // modes
+    const modeDefs=[['scene','view_in_ar','Scene'],['sequencer','movie','Sequencer'],['materials','palette','Material Editor'],['scripting','code','Script Editor'],['profiler','monitoring','Profiler']];
+    const modes=modeDefs.map(([id,icon,title])=>{ const a=st.mode===id; return {key:id,icon,title,onClick:()=>this.setState({mode:id}),
+      style:{width:'34px',height:'34px',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'7px',cursor:'default',color:a?'#fff':'#7c838f',background:a?'#2c313a':'transparent',boxShadow:a?'inset 2px 0 0 #4188e0':'none'}}; });
+
+    // dock tabs
+    const leftTabs=[['hierarchy','Hierarchy','account_tree'],['layers','Layers','layers']].map(([id,label,icon])=>({key:id,label,icon,onClick:()=>this.setState({leftTab:id}),style:this.tabStyle(st.leftTab===id)}));
+    const rightTabs=[['details','Details','tune'],['prefab','Prefab','widgets']].map(([id,label,icon])=>({key:id,label,icon,onClick:()=>this.setState({rightTab:id}),style:this.tabStyle(st.rightTab===id)}));
+    const viewTabs=[['persp','Perspective','view_in_ar'],['game','Game','sports_esports']].map(([id,label,icon])=>({key:id,label,icon,onClick:()=>{},style:this.tabStyle(id==='persp')}));
+
+    const warnCount=this.consoleData.filter(c=>c[0]==='warn').length;
+    const errCount=this.consoleData.filter(c=>c[0]==='error').length;
+    const bottomDefs=[['assets','Asset Browser','folder',0],['console','Console','terminal',warnCount+errCount],['output','Output Log','subject',0],['profiler','Profiler','speed',0],['gems','Gems','extension',0]];
+    const bottomTabs=bottomDefs.map(([id,label,icon,badge])=>({key:id,label,icon,onClick:()=>this.setState({bottomTab:id}),style:this.tabStyle(st.bottomTab===id),
+      hasBadge:badge>0, badge:String(badge), badgeStyle:{fontSize:'9px',fontWeight:600,color:'#fff',background:errCount>0?'#c0453f':'#bb8a2e',borderRadius:'8px',padding:'1px 5px',marginLeft:'1px'}}));
+
+    // assets
+    const folderCount=(f)=>(this.assetData[f]||[]).length;
+    const assetFolders=this.folderMeta.map(([name,icon,color])=>({key:name,name,icon,color,count:String(folderCount(name)),
+      onClick:()=>this.setState({assetFolder:name}),
+      style:{display:'flex',alignItems:'center',gap:'8px',height:'25px',padding:'0 10px',cursor:'default',fontSize:'11.5px',color:st.assetFolder===name?'#e4e7ec':'#aeb4bd',background:st.assetFolder===name?'rgba(65,136,224,0.13)':'transparent',borderLeft:st.assetFolder===name?'2px solid #4188e0':'2px solid transparent'}}));
+    const files=(this.assetData[st.assetFolder]||[]).map(([type,name],ix)=>{ const tm=this.typeMeta[type]; const a=st.selectedAsset===name; const sizes=['1.2 MB','648 KB','2.4 MB','312 KB','86 KB','4.1 MB','920 KB']; const mods=['2d ago','5h ago','1w ago','just now','3d ago','12h ago']; return {
+      key:name, name, color:tm.color, icon:tm.icon, ext:tm.ext, size:sizes[ix%sizes.length], mod:mods[ix%mods.length],
+      onClick:()=>this.setState({selectedAsset:name}),
+      cardStyle:{display:'flex',flexDirection:'column',gap:'6px',alignItems:'center',padding:'6px',borderRadius:'6px',cursor:'default',border:a?'1px solid #4188e0':'1px solid transparent',background:a?'rgba(65,136,224,0.10)':'transparent'},
+      thumbStyle:{position:'relative',width:'100%',aspectRatio:'1/1',borderRadius:'5px',display:'flex',alignItems:'center',justifyContent:'center',background:'repeating-linear-gradient(135deg,#1e2228 0 8px,#1a1d22 8px 16px)',border:'1px solid #2c313a'},
+      rowStyle:{display:'flex',alignItems:'center',height:'25px',padding:'0 12px',fontSize:'11.5px',cursor:'default',color:a?'#fff':'#cfd4db',background:a?'rgba(65,136,224,0.13)':'transparent'}
+    }; });
+
+    // console
+    const cFilterDefs=[['all','All','list','#8b919c'],['log','Logs','chat_bubble','#7a8aa0'],['warn','Warnings','warning','#d6a23b'],['error','Errors','error','#e0625c']];
+    const counts={all:this.consoleData.length,log:this.consoleData.filter(c=>c[0]==='log'||c[0]==='info').length,warn:warnCount,error:errCount};
+    const consoleFilters=cFilterDefs.map(([id,label,icon,color])=>({key:id,label,icon,color,count:String(counts[id]),onClick:()=>this.setState({consoleFilter:id}),
+      style:{display:'flex',alignItems:'center',gap:'5px',height:'23px',padding:'0 9px',borderRadius:'5px',fontSize:'11px',cursor:'default',color:st.consoleFilter===id?'#e4e7ec':'#8b919c',background:st.consoleFilter===id?'#2c313a':'transparent'}}));
+    const sevMeta={log:['chat_bubble','#7a8aa0'],info:['info','#4188e0'],warn:['warning','#d6a23b'],error:['error','#e0625c']};
+    const consoleEntries=(st.consoleCleared?[]:this.consoleData).filter(c=>{ if(st.consoleFilter==='all')return true; if(st.consoleFilter==='log')return c[0]==='log'||c[0]==='info'; return c[0]===st.consoleFilter; }).map((c,ix)=>{ const sm=sevMeta[c[0]]; return {
+      key:ix, icon:sm[0], color:sm[1], time:c[1], src:c[2], msg:c[3],
+      style:{display:'flex',alignItems:'center',gap:'8px',minHeight:'22px',padding:'2px 10px',borderBottom:'1px solid #1c1f24'},
+      msgStyle:{color:c[0]==='warn'?'#d8b066':(c[0]==='error'?'#e88a85':'#c2c8d0'),flex:'1 1 auto'}
+    }; });
+
+    const outputLines=this.outputData.map((o,ix)=>({key:ix,text:o[0],style:{color:o[1],whiteSpace:'pre'}}));
+
+    const profStats=this.profStats.map((p,ix)=>({key:ix,label:p[0],value:p[1],color:p[2]}));
+    const profBars=this.profBarData.map((b,ix)=>({key:ix,label:b[0],ms:b[1].toFixed(1),barStyle:{height:'100%',width:Math.round(b[1]/3.1*100)+'%',background:b[2],borderRadius:'3px'}}));
+
+    // gems
+    const gemsList=this.gemsData.map(g=>{ const on=st.gems[g[0]]; const a=st.selectedGem===g[0]; const gm=g[3]; return {
+      key:g[0], name:g[1], cat:g[2], ver:g[3], icon:'extension', iconColor:on?'#b78fd6':'#5f6670', nameColor:a?'#fff':(on?'#d6dae0':'#7c838f'),
+      onSelect:()=>this.setState({selectedGem:g[0]}),
+      onToggle:(e)=>{e.stopPropagation(); this.setState(s=>({gems:{...s.gems,[g[0]]:!s.gems[g[0]]}}));},
+      trackStyle:this.track(on), knobStyle:this.knob(on),
+      rowStyle:{display:'flex',alignItems:'center',height:'30px',padding:'0 12px',cursor:'default',fontSize:'12px',background:a?'rgba(65,136,224,0.12)':'transparent',borderLeft:a?'2px solid #4188e0':'2px solid transparent'}
+    }; });
+    const gd=this.gemsData.find(g=>g[0]===st.selectedGem)||this.gemsData[0];
+
+    // inspector components
+    const ei=sel.id;
+    const meshIds={crate1:1,crate2:1,barrel:1,rocks:1,bridge:1,player:1,enemy1:1};
+    const has3D=!!meshIds[sel.id];
+    const compSpecs = sel.comps || [this.C('Transform','open_with','#7a8aa0',[{t:'vec3',l:'Position',v:sel.t||[0,0,0]},{t:'vec3',l:'Rotation',v:[0,0,0]},{t:'vec3',l:'Scale',v:[1,1,1]}])];
+    const components=compSpecs.map(spec=>{ const k=ei+':'+spec.name; const open=!st.collapsed[k]; const en=!st.compOff[k];
+      let cprops;
+      if(spec.name==='Transform' && has3D){ const xf=st.xforms[sel.id]||{p:sel.t||[0,0,0],r:[0,0,0],s:[1,1,1]};
+        cprops=[this.xvec3('Position',sel.id,'p',xf.p),this.xvec3('Rotation',sel.id,'r',xf.r),this.xvec3('Scale',sel.id,'s',xf.s)]; }
+      else { cprops=spec.props.map(p=>this.convProp(p,ei,spec.name)); }
+      return {
+      key:k, name:spec.name, icon:spec.icon, color:spec.color, open, caret:open?'expand_more':'chevron_right',
+      onToggle:()=>this.setState(s=>({collapsed:{...s.collapsed,[k]:!s.collapsed[k]}})),
+      onEnable:(e)=>{e.stopPropagation(); this.setState(s=>({compOff:{...s.compOff,[k]:!s.compOff[k]}}));},
+      trackStyle:this.track(en), knobStyle:this.knob(en),
+      props:cprops
+    }; });
+
+    const ic=this.iconFor(sel);
+    const kindLabel={prefab:'PREFAB',slice:'SLICE'}[sel.type]||'';
+
+    // ---- status bar helpers ----
+    const segB={display:'flex',alignItems:'center',gap:'6px',padding:'0 12px',cursor:'default',borderLeft:'1px solid #2c313a'};
+    const pBtn=(on)=>({width:'26px',height:'20px',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'4px',cursor:'default',color:on?'#4188e0':'#5a6068'});
+    const jobsData=[
+      ['Compiling lit_opaque.shader','Shader · variant 3 / 12','code','#5ac0c0',true,0.55,'55%'],
+      ['Importing rock_cliff_02.mesh','Mesh · generating LOD 2','deployed_code','#7a8aa0',true,0.30,'30%'],
+      ['Baking lightmap — Canyon_01','Lighting · in queue','wb_incandescent','#d6a23b',false,0,'Queued'],
+      ['Compressing hero_basecolor.png','Texture · BC7 block','image','#8fc97e',false,0,'Queued'],
+      ['terrain_blend.mat','Material · compiled','gradient','#d6a23b',false,1,'Done']
+    ];
+    const pipeActiveN=jobsData.filter(j=>j[4]).length;
+    const pipeQueuedN=jobsData.filter(j=>!j[4]&&j[6]==='Queued').length;
+    const pipeJobs=jobsData.map((j,ix)=>({key:ix,name:j[0],stage:j[1],icon:j[2],color:j[3],running:j[4],
+      barStyle:{display:'block',height:'100%',width:Math.round(j[5]*100)+'%',background:'#4188e0',borderRadius:'2px'},
+      status:j[6],
+      statusStyle:{fontFamily:"'IBM Plex Mono',monospace",fontSize:'9.5px',width:'42px',textAlign:'right',flex:'0 0 auto',color:j[6]==='Done'?'#57b97e':(j[4]?'#7fb0ec':'#6b7280')}}));
+    const ftype={prefab:['widgets','#b78fd6','Prefab Instance'],slice:['dataset','#d6a23b','Slice'],level:['map','#e0a060','Level'],mesh:['deployed_code','#7a8aa0','Static Mesh'],terrain:['terrain','#8fc97e','Terrain'],camera:['videocam','#7a8aa0','Camera'],light:['lightbulb','#d6c14a','Light'],sun:['wb_sunny','#d6a23b','Light'],volume:['crop_free','#5ac0c0','Volume'],group:['folder','#8b919c','Group'],ui:['dashboard','#b78fd6','UI Canvas']}[sel.type]||['category','#8b919c','Entity'];
+
+    return {
+      ...this.modalVals(),
+      ...this.materialVals(),
+      menus, menuOpen:st.openMenu!=null, closeMenu:()=>this.setState({openMenu:null}),
+      layout:st.layout, cycleLayout:()=>this.setState(s=>({layout:s.layout==='Default'?'Animation':s.layout==='Animation'?'Scripting':'Default'})),
+      tools, pivotOpts, spaceOpts,
+      gridSnap:st.gridSnap, snapVal:'0.25', gridSnapStyle:snapBox(st.gridSnap), toggleGridSnap:()=>this.setState(s=>({gridSnap:!s.gridSnap})),
+      angleSnap:st.angleSnap, angleVal:'15', angleSnapStyle:snapBox(st.angleSnap), toggleAngleSnap:()=>this.setState(s=>({angleSnap:!s.angleSnap})),
+      playIcon:isPlaying?'pause':'play_arrow',
+      playBtnStyle:{width:'34px',height:'26px',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'5px',cursor:'default',color:'#fff',background:isPlaying?'#bb8a2e':'#3a8f4e'},
+      stopBtnStyle:{width:'30px',height:'26px',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'5px',cursor:'default',color:st.play==='stopped'?'#5f6670':'#cfd4db'},
+      simBtnStyle:{width:'30px',height:'26px',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'5px',cursor:'default',color:st.sim?'#4188e0':'#9aa1ac',background:st.sim?'rgba(65,136,224,0.16)':'transparent'},
+      onPlay:()=>this.setState(s=>({play:s.play==='playing'?'paused':'playing'})),
+      onStop:()=>this.setState({play:'stopped'}),
+      onStep:()=>{}, onSimulate:()=>this.setState(s=>({sim:!s.sim})),
+      isPlaying, showGizmo:st.tool!=='select',
+      gizmoModeLabel:{translate:'Move',rotate:'Rotate',scale:'Scale',universal:'Transform',select:'Select'}[st.tool],
+
+      modes, leftTabs, rightTabs, viewTabs, bottomTabs,
+      leftDockStyle:{width:st.leftW+'px',flex:'0 0 '+st.leftW+'px',display:st.showLeft?'flex':'none',flexDirection:'column',background:'#1b1e23',borderRight:'1px solid #2c313a',minHeight:0},
+      rightDockStyle:{width:st.rightW+'px',flex:'0 0 '+st.rightW+'px',display:st.showRight?'flex':'none',flexDirection:'column',background:'#1b1e23',borderLeft:'1px solid #2c313a',minHeight:0},
+      bottomDockStyle:{height:st.bottomH+'px',flex:'0 0 '+st.bottomH+'px',display:st.showBottom?'flex':'none',flexDirection:'column',background:'#1b1e23',minHeight:0},
+      viewportStyle:{flex:'1 1 auto',position:'relative',background:'#15171b',minHeight:0,overflow:'hidden'},
+      leftSplitStyle:{width:'5px',flex:'0 0 5px',cursor:'col-resize',background:'#15171b',display:st.showLeft?'block':'none'},
+      rightSplitStyle:{width:'5px',flex:'0 0 5px',cursor:'col-resize',background:'#15171b',display:st.showRight?'block':'none'},
+      bottomSplitStyle:{height:'5px',flex:'0 0 5px',cursor:'row-resize',background:'#15171b',display:st.showBottom?'block':'none'},
+      onLeftDrag:(e)=>this.startDrag('left',e), onRightDrag:(e)=>this.startDrag('right',e), onBottomDrag:(e)=>this.startDrag('bottom',e),
+
+      hierarchyRows:this.flatten(),
+      entityCountLabel:'42 entities · '+this.flatten().length+' visible',
+      leftHierarchy:st.leftTab==='hierarchy', leftLayers:st.leftTab==='layers',
+      modeScene:st.mode==='scene'||st.mode==='sequencer'||st.mode==='profiler', modeMaterials:st.mode==='materials', modeScripting:st.mode==='scripting',
+      scriptFileRows:this.scriptFiles.map(([name,color,active])=>({key:name,name,color,active,
+        onClick:()=>{},
+        style:{display:'flex',alignItems:'center',gap:'8px',height:'26px',padding:'0 10px',cursor:'default',fontSize:'11.5px',color:active?'#e4e7ec':'#aeb4bd',background:active?'rgba(65,136,224,0.13)':'transparent',borderLeft:active?'2px solid #4188e0':'2px solid transparent'}})),
+      codeRows:this.codeLines.map((toks,ix)=>({key:ix,n:ix+1,tokens:toks.map((t,ti)=>({key:ti,text:t[0],style:{color:t[1]}})), empty:toks.length===0})),
+      scriptOutlineRows:this.scriptOutline.map(([kind,name,color],ix)=>({key:ix,kind,name,color,
+        icon:kind==='struct'?'data_object':'function',
+        style:{display:'flex',alignItems:'center',gap:'8px',height:'24px',padding:'0 10px 0 '+(kind==='struct'?10:22)+'px',cursor:'default',fontSize:'11px',color:'#aeb4bd'}})),
+      layerCount:this.layersData.length+' layers', activeLayer:st.activeLayer,
+      layerRows:this.layersData.map(([name,color,count])=>{ const vis=st.layerVis[name]!==false; const locked=!!st.layerLock[name]; const active=st.activeLayer===name; return {
+        key:name, name, count:String(count), active,
+        onSelect:()=>this.setState({activeLayer:name}),
+        onVis:(e)=>{e.stopPropagation(); this.setState(s=>{const c=s.layerVis[name]!==false; return {layerVis:{...s.layerVis,[name]:!c}};});},
+        onLock:(e)=>{e.stopPropagation(); this.setState(s=>({layerLock:{...s.layerLock,[name]:!s.layerLock[name]}}));},
+        style:{display:'flex',alignItems:'center',gap:'8px',height:'30px',padding:'0 10px 0 8px',cursor:'default',borderLeft:active?'2px solid #4188e0':'2px solid transparent',background:active?'rgba(65,136,224,0.12)':'transparent'},
+        dotStyle:{width:'10px',height:'10px',borderRadius:'3px',background:vis?color:'#3a3f48',flex:'0 0 auto',border:'1px solid rgba(0,0,0,0.3)'},
+        nameStyle:{fontSize:'11.5px',color:active?'#fff':(vis?'#cfd4db':'#6b7280'),fontWeight:active?500:400,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'},
+        visIcon:vis?'visibility':'visibility_off', visStyle:{fontSize:'15px',color:vis?'#8b919c':'#5a6068',flex:'0 0 auto',cursor:'default'},
+        lockIcon:locked?'lock':'lock_open', lockStyle:{fontSize:'14px',color:locked?'#d6a23b':'#5a6068',flex:'0 0 auto',cursor:'default'}
+      }; }),
+
+      viewPills:[{key:'p',icon:'videocam',label:'Perspective'},{key:'l',icon:'wb_sunny',label:'Lit'},{key:'s',icon:'visibility',label:'Show'},{key:'g',icon:'category',label:'Gizmos'}],
+      stat_fps:'142', stat_ms:'7.04', stat_tris:'2.4M', stat_draws:'1,284', stat_verts:'3.1M',
+      fpsStyle:{color:'#57b97e'},
+      cur_x:'12.4', cur_y:'0.0', cur_z:'-8.2',
+
+      tabAssets:st.bottomTab==='assets', tabConsole:st.bottomTab==='console', tabOutput:st.bottomTab==='output', tabProfiler:st.bottomTab==='profiler', tabGems:st.bottomTab==='gems',
+      assetFolders, assetFolder:st.assetFolder, assetFiles:files,
+      assetGrid:st.assetView==='grid', assetList:st.assetView==='list',
+      onGridView:()=>this.setState({assetView:'grid'}), onListView:()=>this.setState({assetView:'list'}),
+      gridViewStyle:{width:'24px',height:'19px',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'4px',cursor:'default',color:st.assetView==='grid'?'#fff':'#8b919c',background:st.assetView==='grid'?'#3160a8':'transparent'},
+      listViewStyle:{width:'24px',height:'19px',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'4px',cursor:'default',color:st.assetView==='list'?'#fff':'#8b919c',background:st.assetView==='list'?'#3160a8':'transparent'},
+
+      consoleFilters, consoleEntries, onClearConsole:()=>this.setState(s=>({consoleCleared:!s.consoleCleared})),
+      outputLines, profStats, profBars,
+      gemsList, gemDetailName:gd[1], gemDetailCat:gd[2], gemDetailVer:gd[3], gemDetailDesc:gd[5], gemDetailColor:st.gems[gd[0]]?'#b78fd6':'#5f6670', gemDetailIcon:'extension',
+      gemDetailDeps:gd[6].map((d,ix)=>({key:ix,name:d})),
+      goConsole:()=>this.setState({bottomTab:'console'}),
+      goOutput:()=>this.setState({bottomTab:'output',showBottom:true,pipeOpen:false}),
+      goProfiler:()=>this.setState({bottomTab:'profiler',showBottom:true}),
+      goAssets:()=>this.setState({bottomTab:'assets',showBottom:true}),
+
+      // ---- status bar ----
+      buildSegStyle:{display:'flex',alignItems:'center',gap:'6px',padding:'0 12px',cursor:'default'},
+      buildDotStyle:{width:'7px',height:'7px',borderRadius:'50%',background:'#57b97e',flex:'0 0 auto',boxShadow:'0 0 5px rgba(87,185,126,0.6)'},
+      buildLabel:'Build', buildSub:'dev · up to date',
+      pipeSegStyle:segB, scmSegStyle:segB, selSegStyle:segB, diagSegStyle:{...segB,gap:'9px'},
+      pipeActive:pipeActiveN>0, pipeIcon:pipeActiveN>0?'sync':'check_circle',
+      pipeIconStyle:pipeActiveN>0?{fontSize:'15px',color:'#4188e0',animation:'spin 1.05s linear infinite'}:{fontSize:'15px',color:'#57b97e'},
+      pipeBadge:pipeActiveN>0?(pipeActiveN+' jobs'):'idle',
+      pipeBadgeStyle:{fontFamily:"'IBM Plex Mono',monospace",fontSize:'10px',color:pipeActiveN>0?'#7fb0ec':'#5f6670'},
+      pipeBarStyle:{display:'block',height:'100%',width:'55%',background:'#4188e0',borderRadius:'2px'},
+      pipeOpen:st.pipeOpen, togglePipe:()=>this.setState(s=>({pipeOpen:!s.pipeOpen})), closePipe:()=>this.setState({pipeOpen:false}),
+      pipeSummary:pipeActiveN+' running · '+pipeQueuedN+' queued',
+      pipeJobs:pipeJobs,
+      scmDirty:'3', errCount:String(errCount), warnCount:String(warnCount),
+      fileTypeIcon:ftype[0], fileTypeColor:ftype[1], fileTypeLabel:ftype[2],
+      fileTypeChipStyle:{display:'flex',alignItems:'center',gap:'4px',fontSize:'9.5px',color:'#9aa1ac',background:'#23272e',border:'1px solid #2c313a',borderRadius:'3px',padding:'1px 6px'},
+      stat_vram:'3.2 GB',
+      leftToggle:{icon:'dock_to_left',title:'Toggle left panel (Hierarchy)',onClick:()=>this.setState(s=>({showLeft:!s.showLeft})),style:pBtn(st.showLeft)},
+      rightToggles:[
+        {key:'b',icon:'dock_to_bottom',title:'Toggle bottom panel',onClick:()=>this.setState(s=>({showBottom:!s.showBottom})),style:pBtn(st.showBottom)},
+        {key:'r',icon:'dock_to_right',title:'Toggle right panel (Inspector)',onClick:()=>this.setState(s=>({showRight:!s.showRight})),style:pBtn(st.showRight)}
+      ],
+
+      entName:sel.name, entIcon:ic[0], entIconColor:ic[1], entIsPrefab:!!kindLabel, entKind:kindLabel,
+      entTag:sel.tag||'Untagged', entLayer:'Default',
+      components
+    };
+  }
+}
+</script>
+</body>
+</html>

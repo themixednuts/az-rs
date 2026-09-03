@@ -1,0 +1,2441 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "id": "79367e10-41b8-4314-9b66-2d3d95f02ce7",
+  "prevIds": [
+    "00000000-0000-0000-0000-000000000000"
+  ],
+  "ddl": [
+    {
+      "entityType": "tables",
+      "name": "roots",
+      "strict": true
+    },
+    {
+      "entityType": "columns",
+      "table": "roots",
+      "name": "root_id",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "roots",
+      "name": "key",
+      "type": "TEXT",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "uniques",
+      "table": "roots",
+      "name": "roots_key_unique",
+      "columns": [
+        "key"
+      ],
+      "nameExplicit": false
+    },
+    {
+      "entityType": "pks",
+      "table": "roots",
+      "name": "roots_pk",
+      "columns": [
+        "root_id"
+      ],
+      "nameExplicit": false
+    },
+    {
+      "entityType": "tables",
+      "name": "workspaces",
+      "strict": true
+    },
+    {
+      "entityType": "columns",
+      "table": "workspaces",
+      "name": "workspace_id",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "workspaces",
+      "name": "project",
+      "type": "TEXT",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "workspaces",
+      "name": "root",
+      "type": "TEXT",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "workspaces",
+      "name": "branch",
+      "type": "TEXT",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "workspaces",
+      "name": "builders",
+      "type": "BLOB",
+      "notNull": false,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "workspaces",
+      "name": "created",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "workspaces",
+      "name": "updated",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "pks",
+      "table": "workspaces",
+      "name": "workspaces_pk",
+      "columns": [
+        "workspace_id"
+      ],
+      "nameExplicit": false
+    },
+    {
+      "entityType": "tables",
+      "name": "workspace_roots",
+      "strict": true
+    },
+    {
+      "entityType": "columns",
+      "table": "workspace_roots",
+      "name": "workspace_root_id",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "workspace_roots",
+      "name": "workspace_pk",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "fks",
+      "table": "workspace_roots",
+      "name": "fk_workspace_roots_workspace_pk_workspaces_workspace_id_fk",
+      "columns": [
+        "workspace_pk"
+      ],
+      "tableTo": "workspaces",
+      "columnsTo": [
+        "workspace_id"
+      ],
+      "onDelete": "CASCADE",
+      "onUpdate": null,
+      "nameExplicit": false
+    },
+    {
+      "entityType": "columns",
+      "table": "workspace_roots",
+      "name": "root_pk",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "fks",
+      "table": "workspace_roots",
+      "name": "fk_workspace_roots_root_pk_roots_root_id_fk",
+      "columns": [
+        "root_pk"
+      ],
+      "tableTo": "roots",
+      "columnsTo": [
+        "root_id"
+      ],
+      "onDelete": "RESTRICT",
+      "onUpdate": null,
+      "nameExplicit": false
+    },
+    {
+      "entityType": "columns",
+      "table": "workspace_roots",
+      "name": "owner",
+      "type": "TEXT",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "workspace_roots",
+      "name": "path",
+      "type": "TEXT",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "workspace_roots",
+      "name": "exclusions",
+      "type": "TEXT",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "pks",
+      "table": "workspace_roots",
+      "name": "workspace_roots_pk",
+      "columns": [
+        "workspace_root_id"
+      ],
+      "nameExplicit": false
+    },
+    {
+      "entityType": "tables",
+      "name": "assets",
+      "strict": true
+    },
+    {
+      "entityType": "columns",
+      "table": "assets",
+      "name": "asset_id",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "assets",
+      "name": "guid",
+      "type": "BLOB",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "uniques",
+      "table": "assets",
+      "name": "assets_guid_unique",
+      "columns": [
+        "guid"
+      ],
+      "nameExplicit": false
+    },
+    {
+      "entityType": "columns",
+      "table": "assets",
+      "name": "deleted",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": "0",
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "assets",
+      "name": "created",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "assets",
+      "name": "updated",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "pks",
+      "table": "assets",
+      "name": "assets_pk",
+      "columns": [
+        "asset_id"
+      ],
+      "nameExplicit": false
+    },
+    {
+      "entityType": "tables",
+      "name": "paths",
+      "strict": true
+    },
+    {
+      "entityType": "columns",
+      "table": "paths",
+      "name": "path_id",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "paths",
+      "name": "workspace_pk",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "fks",
+      "table": "paths",
+      "name": "fk_paths_workspace_pk_workspaces_workspace_id_fk",
+      "columns": [
+        "workspace_pk"
+      ],
+      "tableTo": "workspaces",
+      "columnsTo": [
+        "workspace_id"
+      ],
+      "onDelete": "CASCADE",
+      "onUpdate": null,
+      "nameExplicit": false
+    },
+    {
+      "entityType": "columns",
+      "table": "paths",
+      "name": "asset_pk",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "fks",
+      "table": "paths",
+      "name": "fk_paths_asset_pk_assets_asset_id_fk",
+      "columns": [
+        "asset_pk"
+      ],
+      "tableTo": "assets",
+      "columnsTo": [
+        "asset_id"
+      ],
+      "onDelete": "CASCADE",
+      "onUpdate": null,
+      "nameExplicit": false
+    },
+    {
+      "entityType": "columns",
+      "table": "paths",
+      "name": "root_pk",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "fks",
+      "table": "paths",
+      "name": "fk_paths_root_pk_roots_root_id_fk",
+      "columns": [
+        "root_pk"
+      ],
+      "tableTo": "roots",
+      "columnsTo": [
+        "root_id"
+      ],
+      "onDelete": "RESTRICT",
+      "onUpdate": null,
+      "nameExplicit": false
+    },
+    {
+      "entityType": "columns",
+      "table": "paths",
+      "name": "path",
+      "type": "TEXT",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "paths",
+      "name": "digest",
+      "type": "BLOB",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "paths",
+      "name": "session",
+      "type": "TEXT",
+      "notNull": false,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "paths",
+      "name": "from",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "paths",
+      "name": "to",
+      "type": "INTEGER",
+      "notNull": false,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "pks",
+      "table": "paths",
+      "name": "paths_pk",
+      "columns": [
+        "path_id"
+      ],
+      "nameExplicit": false
+    },
+    {
+      "entityType": "tables",
+      "name": "entries",
+      "strict": true
+    },
+    {
+      "entityType": "columns",
+      "table": "entries",
+      "name": "entry_id",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "entries",
+      "name": "workspace_pk",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "fks",
+      "table": "entries",
+      "name": "fk_entries_workspace_pk_workspaces_workspace_id_fk",
+      "columns": [
+        "workspace_pk"
+      ],
+      "tableTo": "workspaces",
+      "columnsTo": [
+        "workspace_id"
+      ],
+      "onDelete": "CASCADE",
+      "onUpdate": null,
+      "nameExplicit": false
+    },
+    {
+      "entityType": "columns",
+      "table": "entries",
+      "name": "asset_pk",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "fks",
+      "table": "entries",
+      "name": "fk_entries_asset_pk_assets_asset_id_fk",
+      "columns": [
+        "asset_pk"
+      ],
+      "tableTo": "assets",
+      "columnsTo": [
+        "asset_id"
+      ],
+      "onDelete": "CASCADE",
+      "onUpdate": null,
+      "nameExplicit": false
+    },
+    {
+      "entityType": "columns",
+      "table": "entries",
+      "name": "root_pk",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "fks",
+      "table": "entries",
+      "name": "fk_entries_root_pk_roots_root_id_fk",
+      "columns": [
+        "root_pk"
+      ],
+      "tableTo": "roots",
+      "columnsTo": [
+        "root_id"
+      ],
+      "onDelete": "RESTRICT",
+      "onUpdate": null,
+      "nameExplicit": false
+    },
+    {
+      "entityType": "columns",
+      "table": "entries",
+      "name": "path",
+      "type": "TEXT",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "entries",
+      "name": "schema",
+      "type": "TEXT",
+      "notNull": false,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "entries",
+      "name": "digest",
+      "type": "BLOB",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "entries",
+      "name": "diff",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "entries",
+      "name": "diagnostics",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": "0",
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "entries",
+      "name": "updated",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "entries",
+      "name": "src_bytes",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "entries",
+      "name": "src_mtime",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "entries",
+      "name": "meta_bytes",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "entries",
+      "name": "meta_mtime",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "entries",
+      "name": "observed",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "pks",
+      "table": "entries",
+      "name": "entries_pk",
+      "columns": [
+        "entry_id"
+      ],
+      "nameExplicit": false
+    },
+    {
+      "entityType": "tables",
+      "name": "payloads",
+      "strict": true
+    },
+    {
+      "entityType": "columns",
+      "table": "payloads",
+      "name": "payload_id",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "payloads",
+      "name": "workspace_pk",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "fks",
+      "table": "payloads",
+      "name": "fk_payloads_workspace_pk_workspaces_workspace_id_fk",
+      "columns": [
+        "workspace_pk"
+      ],
+      "tableTo": "workspaces",
+      "columnsTo": [
+        "workspace_id"
+      ],
+      "onDelete": "CASCADE",
+      "onUpdate": null,
+      "nameExplicit": false
+    },
+    {
+      "entityType": "columns",
+      "table": "payloads",
+      "name": "root_pk",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "fks",
+      "table": "payloads",
+      "name": "fk_payloads_root_pk_roots_root_id_fk",
+      "columns": [
+        "root_pk"
+      ],
+      "tableTo": "roots",
+      "columnsTo": [
+        "root_id"
+      ],
+      "onDelete": "RESTRICT",
+      "onUpdate": null,
+      "nameExplicit": false
+    },
+    {
+      "entityType": "columns",
+      "table": "payloads",
+      "name": "path",
+      "type": "TEXT",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "payloads",
+      "name": "document",
+      "type": "TEXT",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "payloads",
+      "name": "schema",
+      "type": "TEXT",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "payloads",
+      "name": "encoding",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "payloads",
+      "name": "revision",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "payloads",
+      "name": "saved",
+      "type": "INTEGER",
+      "notNull": false,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "payloads",
+      "name": "digest",
+      "type": "BLOB",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "payloads",
+      "name": "bytes",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "payloads",
+      "name": "payload",
+      "type": "BLOB",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "payloads",
+      "name": "checkpoint",
+      "type": "BLOB",
+      "notNull": false,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "payloads",
+      "name": "session",
+      "type": "TEXT",
+      "notNull": false,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "payloads",
+      "name": "project",
+      "type": "TEXT",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "payloads",
+      "name": "deleted",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": "0",
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "payloads",
+      "name": "created",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "payloads",
+      "name": "updated",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "pks",
+      "table": "payloads",
+      "name": "payloads_pk",
+      "columns": [
+        "payload_id"
+      ],
+      "nameExplicit": false
+    },
+    {
+      "entityType": "tables",
+      "name": "builders",
+      "strict": true
+    },
+    {
+      "entityType": "columns",
+      "table": "builders",
+      "name": "builder_id",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "builders",
+      "name": "workspace_pk",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "fks",
+      "table": "builders",
+      "name": "fk_builders_workspace_pk_workspaces_workspace_id_fk",
+      "columns": [
+        "workspace_pk"
+      ],
+      "tableTo": "workspaces",
+      "columnsTo": [
+        "workspace_id"
+      ],
+      "onDelete": "CASCADE",
+      "onUpdate": null,
+      "nameExplicit": false
+    },
+    {
+      "entityType": "columns",
+      "table": "builders",
+      "name": "guid",
+      "type": "BLOB",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "builders",
+      "name": "name",
+      "type": "TEXT",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "builders",
+      "name": "version",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "builders",
+      "name": "digest",
+      "type": "BLOB",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "pks",
+      "table": "builders",
+      "name": "builders_pk",
+      "columns": [
+        "builder_id"
+      ],
+      "nameExplicit": false
+    },
+    {
+      "entityType": "tables",
+      "name": "jobs",
+      "strict": true
+    },
+    {
+      "entityType": "columns",
+      "table": "jobs",
+      "name": "job_id",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "jobs",
+      "name": "workspace_pk",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "fks",
+      "table": "jobs",
+      "name": "fk_jobs_workspace_pk_workspaces_workspace_id_fk",
+      "columns": [
+        "workspace_pk"
+      ],
+      "tableTo": "workspaces",
+      "columnsTo": [
+        "workspace_id"
+      ],
+      "onDelete": "CASCADE",
+      "onUpdate": null,
+      "nameExplicit": false
+    },
+    {
+      "entityType": "columns",
+      "table": "jobs",
+      "name": "asset_pk",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "fks",
+      "table": "jobs",
+      "name": "fk_jobs_asset_pk_assets_asset_id_fk",
+      "columns": [
+        "asset_pk"
+      ],
+      "tableTo": "assets",
+      "columnsTo": [
+        "asset_id"
+      ],
+      "onDelete": "CASCADE",
+      "onUpdate": null,
+      "nameExplicit": false
+    },
+    {
+      "entityType": "columns",
+      "table": "jobs",
+      "name": "kind",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "jobs",
+      "name": "builder",
+      "type": "BLOB",
+      "notNull": false,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "jobs",
+      "name": "key",
+      "type": "TEXT",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "jobs",
+      "name": "platform",
+      "type": "TEXT",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "jobs",
+      "name": "status",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "jobs",
+      "name": "ready",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": "0",
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "jobs",
+      "name": "attempts",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": "0",
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "pks",
+      "table": "jobs",
+      "name": "jobs_pk",
+      "columns": [
+        "job_id"
+      ],
+      "nameExplicit": false
+    },
+    {
+      "entityType": "checks",
+      "table": "jobs",
+      "name": "jobs_check",
+      "value": "((kind = 0 AND builder IS NULL) OR (kind = 1 AND builder IS NOT NULL)) AND status IN (0, 1, 2, 3)"
+    },
+    {
+      "entityType": "tables",
+      "name": "attempts",
+      "strict": true
+    },
+    {
+      "entityType": "columns",
+      "table": "attempts",
+      "name": "attempt_id",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "attempts",
+      "name": "job_pk",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "fks",
+      "table": "attempts",
+      "name": "fk_attempts_job_pk_jobs_job_id_fk",
+      "columns": [
+        "job_pk"
+      ],
+      "tableTo": "jobs",
+      "columnsTo": [
+        "job_id"
+      ],
+      "onDelete": "CASCADE",
+      "onUpdate": null,
+      "nameExplicit": false
+    },
+    {
+      "entityType": "columns",
+      "table": "attempts",
+      "name": "ordinal",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "attempts",
+      "name": "status",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "attempts",
+      "name": "owner",
+      "type": "TEXT",
+      "notNull": false,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "attempts",
+      "name": "expires",
+      "type": "INTEGER",
+      "notNull": false,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "attempts",
+      "name": "staging",
+      "type": "TEXT",
+      "notNull": false,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "attempts",
+      "name": "finished",
+      "type": "INTEGER",
+      "notNull": false,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "attempts",
+      "name": "errors",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": "0",
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "attempts",
+      "name": "warnings",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": "0",
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "pks",
+      "table": "attempts",
+      "name": "attempts_pk",
+      "columns": [
+        "attempt_id"
+      ],
+      "nameExplicit": false
+    },
+    {
+      "entityType": "checks",
+      "table": "attempts",
+      "name": "attempts_check",
+      "value": "status IN (1, 2, 3, 4)"
+    },
+    {
+      "entityType": "tables",
+      "name": "products",
+      "strict": true
+    },
+    {
+      "entityType": "columns",
+      "table": "products",
+      "name": "product_id",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "products",
+      "name": "workspace_pk",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "fks",
+      "table": "products",
+      "name": "fk_products_workspace_pk_workspaces_workspace_id_fk",
+      "columns": [
+        "workspace_pk"
+      ],
+      "tableTo": "workspaces",
+      "columnsTo": [
+        "workspace_id"
+      ],
+      "onDelete": "CASCADE",
+      "onUpdate": null,
+      "nameExplicit": false
+    },
+    {
+      "entityType": "columns",
+      "table": "products",
+      "name": "asset_pk",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "fks",
+      "table": "products",
+      "name": "fk_products_asset_pk_assets_asset_id_fk",
+      "columns": [
+        "asset_pk"
+      ],
+      "tableTo": "assets",
+      "columnsTo": [
+        "asset_id"
+      ],
+      "onDelete": "CASCADE",
+      "onUpdate": null,
+      "nameExplicit": false
+    },
+    {
+      "entityType": "columns",
+      "table": "products",
+      "name": "platform",
+      "type": "TEXT",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "products",
+      "name": "sub_id",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "products",
+      "name": "job_pk",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "fks",
+      "table": "products",
+      "name": "fk_products_job_pk_jobs_job_id_fk",
+      "columns": [
+        "job_pk"
+      ],
+      "tableTo": "jobs",
+      "columnsTo": [
+        "job_id"
+      ],
+      "onDelete": "CASCADE",
+      "onUpdate": null,
+      "nameExplicit": false
+    },
+    {
+      "entityType": "columns",
+      "table": "products",
+      "name": "path",
+      "type": "TEXT",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "products",
+      "name": "kind",
+      "type": "BLOB",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "products",
+      "name": "format",
+      "type": "TEXT",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "products",
+      "name": "version",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "products",
+      "name": "aliases",
+      "type": "TEXT",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "products",
+      "name": "registration",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "products",
+      "name": "digest",
+      "type": "BLOB",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "products",
+      "name": "bytes",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "pks",
+      "table": "products",
+      "name": "products_pk",
+      "columns": [
+        "product_id"
+      ],
+      "nameExplicit": false
+    },
+    {
+      "entityType": "tables",
+      "name": "product_edges",
+      "strict": true
+    },
+    {
+      "entityType": "columns",
+      "table": "product_edges",
+      "name": "product_edge_id",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "product_edges",
+      "name": "product_pk",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "fks",
+      "table": "product_edges",
+      "name": "fk_product_edges_product_pk_products_product_id_fk",
+      "columns": [
+        "product_pk"
+      ],
+      "tableTo": "products",
+      "columnsTo": [
+        "product_id"
+      ],
+      "onDelete": "CASCADE",
+      "onUpdate": null,
+      "nameExplicit": false
+    },
+    {
+      "entityType": "columns",
+      "table": "product_edges",
+      "name": "guid",
+      "type": "BLOB",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "product_edges",
+      "name": "sub_id",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "product_edges",
+      "name": "flags",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "pks",
+      "table": "product_edges",
+      "name": "product_edges_pk",
+      "columns": [
+        "product_edge_id"
+      ],
+      "nameExplicit": false
+    },
+    {
+      "entityType": "tables",
+      "name": "job_edges",
+      "strict": true
+    },
+    {
+      "entityType": "columns",
+      "table": "job_edges",
+      "name": "job_edge_id",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "job_edges",
+      "name": "job_pk",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "fks",
+      "table": "job_edges",
+      "name": "fk_job_edges_job_pk_jobs_job_id_fk",
+      "columns": [
+        "job_pk"
+      ],
+      "tableTo": "jobs",
+      "columnsTo": [
+        "job_id"
+      ],
+      "onDelete": "CASCADE",
+      "onUpdate": null,
+      "nameExplicit": false
+    },
+    {
+      "entityType": "columns",
+      "table": "job_edges",
+      "name": "asset_pk",
+      "type": "INTEGER",
+      "notNull": false,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "fks",
+      "table": "job_edges",
+      "name": "fk_job_edges_asset_pk_assets_asset_id_fk",
+      "columns": [
+        "asset_pk"
+      ],
+      "tableTo": "assets",
+      "columnsTo": [
+        "asset_id"
+      ],
+      "onDelete": "RESTRICT",
+      "onUpdate": null,
+      "nameExplicit": false
+    },
+    {
+      "entityType": "columns",
+      "table": "job_edges",
+      "name": "target",
+      "type": "BLOB",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "job_edges",
+      "name": "key",
+      "type": "TEXT",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "job_edges",
+      "name": "platform",
+      "type": "TEXT",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "job_edges",
+      "name": "coupling",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "pks",
+      "table": "job_edges",
+      "name": "job_edges_pk",
+      "columns": [
+        "job_edge_id"
+      ],
+      "nameExplicit": false
+    },
+    {
+      "entityType": "tables",
+      "name": "source_edges",
+      "strict": true
+    },
+    {
+      "entityType": "columns",
+      "table": "source_edges",
+      "name": "source_edge_id",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "source_edges",
+      "name": "workspace_pk",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "fks",
+      "table": "source_edges",
+      "name": "fk_source_edges_workspace_pk_workspaces_workspace_id_fk",
+      "columns": [
+        "workspace_pk"
+      ],
+      "tableTo": "workspaces",
+      "columnsTo": [
+        "workspace_id"
+      ],
+      "onDelete": "CASCADE",
+      "onUpdate": null,
+      "nameExplicit": false
+    },
+    {
+      "entityType": "columns",
+      "table": "source_edges",
+      "name": "builder",
+      "type": "BLOB",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "source_edges",
+      "name": "asset_pk",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "fks",
+      "table": "source_edges",
+      "name": "fk_source_edges_asset_pk_assets_asset_id_fk",
+      "columns": [
+        "asset_pk"
+      ],
+      "tableTo": "assets",
+      "columnsTo": [
+        "asset_id"
+      ],
+      "onDelete": "CASCADE",
+      "onUpdate": null,
+      "nameExplicit": false
+    },
+    {
+      "entityType": "columns",
+      "table": "source_edges",
+      "name": "depends_pk",
+      "type": "INTEGER",
+      "notNull": false,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "fks",
+      "table": "source_edges",
+      "name": "fk_source_edges_depends_pk_assets_asset_id_fk",
+      "columns": [
+        "depends_pk"
+      ],
+      "tableTo": "assets",
+      "columnsTo": [
+        "asset_id"
+      ],
+      "onDelete": "RESTRICT",
+      "onUpdate": null,
+      "nameExplicit": false
+    },
+    {
+      "entityType": "columns",
+      "table": "source_edges",
+      "name": "target",
+      "type": "BLOB",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "source_edges",
+      "name": "relation",
+      "type": "INTEGER",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "pks",
+      "table": "source_edges",
+      "name": "source_edges_pk",
+      "columns": [
+        "source_edge_id"
+      ],
+      "nameExplicit": false
+    },
+    {
+      "entityType": "indexes",
+      "table": "workspaces",
+      "name": "idx_workspaces_key",
+      "columns": [
+        {
+          "value": "project",
+          "isExpression": false
+        },
+        {
+          "value": "root",
+          "isExpression": false
+        },
+        {
+          "value": "branch",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "origin": "manual"
+    },
+    {
+      "entityType": "indexes",
+      "table": "workspace_roots",
+      "name": "idx_workspace_roots_workspace_root",
+      "columns": [
+        {
+          "value": "workspace_pk",
+          "isExpression": false
+        },
+        {
+          "value": "root_pk",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "origin": "manual"
+    },
+    {
+      "entityType": "indexes",
+      "table": "workspace_roots",
+      "name": "idx_workspace_roots_root",
+      "columns": [
+        {
+          "value": "root_pk",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "origin": "manual"
+    },
+    {
+      "entityType": "indexes",
+      "table": "paths",
+      "name": "idx_paths_asset_open",
+      "columns": [
+        {
+          "value": "workspace_pk",
+          "isExpression": false
+        },
+        {
+          "value": "asset_pk",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "where": "\"to\" IS NULL",
+      "origin": "manual"
+    },
+    {
+      "entityType": "indexes",
+      "table": "paths",
+      "name": "idx_paths_locator_open",
+      "columns": [
+        {
+          "value": "workspace_pk",
+          "isExpression": false
+        },
+        {
+          "value": "root_pk",
+          "isExpression": false
+        },
+        {
+          "value": "path",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "where": "\"to\" IS NULL",
+      "origin": "manual"
+    },
+    {
+      "entityType": "indexes",
+      "table": "entries",
+      "name": "idx_entries_path",
+      "columns": [
+        {
+          "value": "workspace_pk",
+          "isExpression": false
+        },
+        {
+          "value": "root_pk",
+          "isExpression": false
+        },
+        {
+          "value": "path",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "origin": "manual"
+    },
+    {
+      "entityType": "indexes",
+      "table": "entries",
+      "name": "idx_entries_asset",
+      "columns": [
+        {
+          "value": "workspace_pk",
+          "isExpression": false
+        },
+        {
+          "value": "asset_pk",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "origin": "manual"
+    },
+    {
+      "entityType": "indexes",
+      "table": "payloads",
+      "name": "idx_payloads_document",
+      "columns": [
+        {
+          "value": "workspace_pk",
+          "isExpression": false
+        },
+        {
+          "value": "document",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "origin": "manual"
+    },
+    {
+      "entityType": "indexes",
+      "table": "payloads",
+      "name": "idx_payloads_path",
+      "columns": [
+        {
+          "value": "workspace_pk",
+          "isExpression": false
+        },
+        {
+          "value": "root_pk",
+          "isExpression": false
+        },
+        {
+          "value": "path",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "origin": "manual"
+    },
+    {
+      "entityType": "indexes",
+      "table": "builders",
+      "name": "idx_builders_workspace_guid",
+      "columns": [
+        {
+          "value": "workspace_pk",
+          "isExpression": false
+        },
+        {
+          "value": "guid",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "origin": "manual"
+    },
+    {
+      "entityType": "indexes",
+      "table": "jobs",
+      "name": "idx_jobs_plan",
+      "columns": [
+        {
+          "value": "workspace_pk",
+          "isExpression": false
+        },
+        {
+          "value": "asset_pk",
+          "isExpression": false
+        },
+        {
+          "value": "kind",
+          "isExpression": false
+        },
+        {
+          "value": "key",
+          "isExpression": false
+        },
+        {
+          "value": "platform",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "where": "kind = 0 AND builder IS NULL",
+      "origin": "manual"
+    },
+    {
+      "entityType": "indexes",
+      "table": "jobs",
+      "name": "idx_jobs_build",
+      "columns": [
+        {
+          "value": "workspace_pk",
+          "isExpression": false
+        },
+        {
+          "value": "asset_pk",
+          "isExpression": false
+        },
+        {
+          "value": "kind",
+          "isExpression": false
+        },
+        {
+          "value": "builder",
+          "isExpression": false
+        },
+        {
+          "value": "key",
+          "isExpression": false
+        },
+        {
+          "value": "platform",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "where": "kind = 1 AND builder IS NOT NULL",
+      "origin": "manual"
+    },
+    {
+      "entityType": "indexes",
+      "table": "jobs",
+      "name": "idx_jobs_ready",
+      "columns": [
+        {
+          "value": "workspace_pk",
+          "isExpression": false
+        },
+        {
+          "value": "kind",
+          "isExpression": false
+        },
+        {
+          "value": "status",
+          "isExpression": false
+        },
+        {
+          "value": "ready",
+          "isExpression": false
+        },
+        {
+          "value": "job_id",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "origin": "manual"
+    },
+    {
+      "entityType": "indexes",
+      "table": "jobs",
+      "name": "idx_jobs_target",
+      "columns": [
+        {
+          "value": "workspace_pk",
+          "isExpression": false
+        },
+        {
+          "value": "asset_pk",
+          "isExpression": false
+        },
+        {
+          "value": "key",
+          "isExpression": false
+        },
+        {
+          "value": "platform",
+          "isExpression": false
+        },
+        {
+          "value": "status",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "origin": "manual"
+    },
+    {
+      "entityType": "indexes",
+      "table": "jobs",
+      "name": "idx_jobs_processing",
+      "columns": [
+        {
+          "value": "workspace_pk",
+          "isExpression": false
+        },
+        {
+          "value": "platform",
+          "isExpression": false
+        },
+        {
+          "value": "status",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "origin": "manual"
+    },
+    {
+      "entityType": "indexes",
+      "table": "attempts",
+      "name": "idx_attempts_job_ordinal",
+      "columns": [
+        {
+          "value": "job_pk",
+          "isExpression": false
+        },
+        {
+          "value": "ordinal",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "origin": "manual"
+    },
+    {
+      "entityType": "indexes",
+      "table": "attempts",
+      "name": "idx_attempts_lease",
+      "columns": [
+        {
+          "value": "status",
+          "isExpression": false
+        },
+        {
+          "value": "expires",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "origin": "manual"
+    },
+    {
+      "entityType": "indexes",
+      "table": "products",
+      "name": "idx_products_identity",
+      "columns": [
+        {
+          "value": "workspace_pk",
+          "isExpression": false
+        },
+        {
+          "value": "platform",
+          "isExpression": false
+        },
+        {
+          "value": "asset_pk",
+          "isExpression": false
+        },
+        {
+          "value": "sub_id",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "origin": "manual"
+    },
+    {
+      "entityType": "indexes",
+      "table": "products",
+      "name": "idx_products_job",
+      "columns": [
+        {
+          "value": "job_pk",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "origin": "manual"
+    },
+    {
+      "entityType": "indexes",
+      "table": "product_edges",
+      "name": "idx_product_edges_product",
+      "columns": [
+        {
+          "value": "product_pk",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "origin": "manual"
+    },
+    {
+      "entityType": "indexes",
+      "table": "job_edges",
+      "name": "idx_job_edges_job",
+      "columns": [
+        {
+          "value": "job_pk",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "origin": "manual"
+    },
+    {
+      "entityType": "indexes",
+      "table": "job_edges",
+      "name": "idx_job_edges_target",
+      "columns": [
+        {
+          "value": "asset_pk",
+          "isExpression": false
+        },
+        {
+          "value": "key",
+          "isExpression": false
+        },
+        {
+          "value": "platform",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "origin": "manual"
+    },
+    {
+      "entityType": "indexes",
+      "table": "job_edges",
+      "name": "idx_job_edges_authored_target",
+      "columns": [
+        {
+          "value": "target",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "origin": "manual"
+    },
+    {
+      "entityType": "indexes",
+      "table": "source_edges",
+      "name": "idx_source_edges_builder_asset_target",
+      "columns": [
+        {
+          "value": "workspace_pk",
+          "isExpression": false
+        },
+        {
+          "value": "builder",
+          "isExpression": false
+        },
+        {
+          "value": "asset_pk",
+          "isExpression": false
+        },
+        {
+          "value": "target",
+          "isExpression": false
+        },
+        {
+          "value": "relation",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "origin": "manual"
+    },
+    {
+      "entityType": "indexes",
+      "table": "source_edges",
+      "name": "idx_source_edges_target",
+      "columns": [
+        {
+          "value": "workspace_pk",
+          "isExpression": false
+        },
+        {
+          "value": "depends_pk",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "origin": "manual"
+    },
+    {
+      "entityType": "indexes",
+      "table": "source_edges",
+      "name": "idx_source_edges_authored_target",
+      "columns": [
+        {
+          "value": "workspace_pk",
+          "isExpression": false
+        },
+        {
+          "value": "target",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "origin": "manual"
+    },
+    {
+      "entityType": "views",
+      "name": "catalog",
+      "definition": "SELECT p.product_id AS product_pk, p.workspace_pk, p.platform, a.guid, p.sub_id, p.path, p.kind, p.format, p.version, p.aliases, p.registration, p.digest, p.bytes, e.path AS source, e.schema, p.job_pk, j.builder, j.key AS job_key FROM products AS p INNER JOIN assets AS a ON p.asset_pk = a.asset_id INNER JOIN jobs AS j ON p.job_pk = j.job_id INNER JOIN entries AS e ON e.workspace_pk = p.workspace_pk AND e.asset_pk = p.asset_pk WHERE e.diff IN (0, 1, 2) AND j.status IN (0, 1, 2) ORDER BY p.path, a.guid, p.sub_id",
+      "isExisting": false
+    }
+  ],
+  "renames": []
+}

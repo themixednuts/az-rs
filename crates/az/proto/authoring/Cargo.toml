@@ -1,0 +1,19 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-proto-authoring"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Neutral Cap'n Proto carriers for Azoth structured authoring data"
+
+[lints]
+workspace = true
+
+[dependencies]
+az-core = { workspace = true }
+az-proto-core = { path = "../core" }
+capnp = { workspace = true }
+
+[build-dependencies]
+az-proto-build = { path = "../build" }

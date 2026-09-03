@@ -1,0 +1,35 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "lyshine-canvas"
+version = "0.1.0"
+edition.workspace = true
+description = "Legacy LyShine ObjectStream canvas import adapter"
+
+
+[lints]
+workspace = true
+[dependencies]
+anyhow = "1"
+az-asset = { workspace = true }
+az-asset-builder = { workspace = true }
+az-core = { workspace = true }
+az-filesystem = { workspace = true }
+az-framework = { workspace = true }
+az-framework-objectstream = { workspace = true }
+az-gem-contract = { workspace = true }
+az-gem-lyshine = { workspace = true }
+bevy = { workspace = true, features = ["ui_api", "bevy_sprite", "bevy_image"] }
+az-objectstream = { workspace = true }
+lyshine = { workspace = true }
+texture-atlas = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+criterion = { workspace = true }
+
+[[bench]]
+name = "ui_canvas_transform"
+harness = false

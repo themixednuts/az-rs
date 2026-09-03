@@ -1,0 +1,233 @@
+name: Azoth Toolkit Release
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  resolve-release:
+    name: Resolve release tag
+    runs-on: ubuntu-24.04
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+      head-sha: ${{ steps.release.outputs.head-sha }}
+      run-id: ${{ steps.release.outputs.run-id }}
+
+    steps:
+      - name: Resolve tag from successful lint check run
+        id: release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          if (-not $env:HEAD_BRANCH.StartsWith("v")) {
+            "CI run is for '$env:HEAD_BRANCH', not a v* release tag."
+            exit 0
+          }
+
+          $lintCheck = gh api "repos/$env:REPOSITORY/actions/runs/$env:RUN_ID/jobs?per_page=100" --jq '.jobs[] | select(.name == "fmt, clippy, tests") | [.status, .conclusion] | @tsv'
+          if (-not $lintCheck) {
+            throw "CI run $env:RUN_ID did not include the fmt, clippy, tests job"
+          }
+          $lintStatus, $lintConclusion = $lintCheck -split "`t"
+          if ($lintStatus -ne "completed" -or $lintConclusion -ne "success") {
+            throw "CI lint check was $lintStatus/$lintConclusion, expected completed/success"
+          }
+
+          $cacheManifest = gh api "repos/$env:REPOSITORY/actions/runs/$env:RUN_ID/artifacts?per_page=100" --jq '.artifacts[] | select(.name == "ci-cache-manifest" and .expired == false) | .id'
+          if (-not $cacheManifest) {
+            throw "CI run $env:RUN_ID did not publish a usable ci-cache-manifest artifact"
+          }
+
+          $ref = gh api "repos/$env:REPOSITORY/git/ref/tags/$env:HEAD_BRANCH" | ConvertFrom-Json
+          $targetSha = $ref.object.sha
+          if ($ref.object.type -eq "tag") {
+            $tagObject = gh api "repos/$env:REPOSITORY/git/tags/$targetSha" | ConvertFrom-Json
+            $targetSha = $tagObject.object.sha
+          }
+          if ($targetSha -ne $env:HEAD_SHA) {
+            throw "Tag $env:HEAD_BRANCH points to $targetSha, expected CI head $env:HEAD_SHA"
+          }
+
+          "tag=$env:HEAD_BRANCH" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "head-sha=$env:HEAD_SHA" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "run-id=$env:RUN_ID" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+  windows:
+    name: Windows release artifacts
+    runs-on: windows-2022
+    needs: resolve-release
+    if: needs.resolve-release.outputs.tag != ''
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.resolve-release.outputs.head-sha }}
+
+      - name: Download CI cache manifest
+        uses: actions/download-artifact@v8
+        with:
+          name: ci-cache-manifest
+          run-id: ${{ needs.resolve-release.outputs.run-id }}
+          github-token: ${{ github.token }}
+          path: .ci
+
+      - name: Verify CI cache manifest
+        id: ci-cache
+        shell: pwsh
+        run: |
+          $expectedSha = "${{ needs.resolve-release.outputs.head-sha }}"
+          $cacheManifest = ".ci/rust-cache-key.txt"
+          $shaManifest = ".ci/head-sha.txt"
+
+          if (-not (Test-Path $cacheManifest)) {
+            throw "CI cache manifest is missing $cacheManifest"
+          }
+          if (-not (Test-Path $shaManifest)) {
+            throw "CI cache manifest is missing $shaManifest"
+          }
+
+          $manifestSha = (Get-Content $shaManifest -Raw).Trim()
+          if ($manifestSha -ne $expectedSha) {
+            throw "CI cache manifest is for $manifestSha, expected $expectedSha"
+          }
+
+          $cacheKey = (Get-Content $cacheManifest -Raw).Trim()
+          if (-not $cacheKey) {
+            throw "CI cache key is empty"
+          }
+
+          "rust-cache-key=$cacheKey" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Install Rust toolchain
+        shell: pwsh
+        run: |
+          rustup show
+          rustc --version
+          cargo --version
+
+      - name: Cache vcpkg packages
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/vcpkg-binary-cache
+          key: windows-vcpkg-openssl-capnproto-x64-windows-static-md-${{ hashFiles('.github/workflows/*.yml', '.cargo/config.toml') }}
+
+      - name: Set up OpenSSL
+        shell: pwsh
+        run: |
+          $binaryCache = Join-Path $env:RUNNER_TEMP "vcpkg-binary-cache"
+          New-Item -ItemType Directory -Force $binaryCache | Out-Null
+          $env:VCPKG_BINARY_SOURCES = "clear;files,$binaryCache,readwrite"
+          $vcpkgRoot = $env:VCPKG_INSTALLATION_ROOT
+          if (-not $vcpkgRoot) {
+            $vcpkg = Get-Command vcpkg -ErrorAction SilentlyContinue
+            if ($vcpkg) {
+              $vcpkgRoot = Split-Path $vcpkg.Source -Parent
+            }
+          }
+          if (-not $vcpkgRoot -or -not (Test-Path (Join-Path $vcpkgRoot "vcpkg.exe"))) {
+            $vcpkgRoot = Join-Path $env:RUNNER_TEMP "vcpkg"
+            git clone https://github.com/microsoft/vcpkg $vcpkgRoot
+            & (Join-Path $vcpkgRoot "bootstrap-vcpkg.bat")
+          }
+          & (Join-Path $vcpkgRoot "vcpkg.exe") install openssl:x64-windows-static-md capnproto:x64-windows-static-md
+          $capnp = Get-ChildItem `
+            -LiteralPath (Join-Path $vcpkgRoot "installed/x64-windows-static-md/tools") `
+            -Filter capnp.exe `
+            -File `
+            -Recurse | Select-Object -First 1
+          if (-not $capnp) {
+            throw "vcpkg installed capnproto without capnp.exe"
+          }
+          "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "VCPKGRS_TRIPLET=x64-windows-static-md" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "OPENSSL_STATIC=1" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "CAPNP=$($capnp.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
+          & $capnp.FullName --version
+
+      - name: Restore Rust build artifacts from CI
+        uses: Swatinem/rust-cache@v2.9.1
+        with:
+          shared-key: ${{ steps.ci-cache.outputs.rust-cache-key }}
+          save-if: false
+
+      - name: Build Azoth toolkit
+        run: >
+          cargo build --release --locked
+          -p azoth --bin azoth
+          -p az-editor --bin az-editor
+          -p az-daemon --bin azd
+          -p az-sessiond --bin az-sessiond
+
+      - name: Package toolkit
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ needs.resolve-release.outputs.tag }}
+        run: |
+          $distName = "azoth-toolkit-windows-x86_64"
+          $dist = "dist/$distName"
+          New-Item -ItemType Directory -Force $dist | Out-Null
+
+          $binaries = @(
+            "azoth.exe",
+            "az-editor.exe",
+            "azd.exe",
+            "az-sessiond.exe"
+          )
+          foreach ($name in $binaries) {
+            $src = "target/release/$name"
+            if (-not (Test-Path $src)) {
+              throw "missing release binary: $src"
+            }
+            Copy-Item $src "$dist/$name"
+          }
+
+          $readme = @(
+            "Azoth toolkit $($env:RELEASE_TAG)",
+            "",
+            "Sibling binaries for the Azoth engine/editor stack on Windows x86_64:",
+            "",
+            "- azoth.exe       project/CLI entrypoint (azoth editor, daemon, session, build, ...)",
+            "- az-editor.exe   universal Aether editor",
+            "- azd.exe         user-level Azoth daemon",
+            "- az-sessiond.exe per-session supervisor",
+            "",
+            "Keep these executables in the same directory. The CLI and editor resolve",
+            "sidecar launches from sibling paths before falling back to cargo run.",
+            "",
+            "Install tip: add this directory to PATH, or invoke azoth.exe by full path."
+          ) -join "`n"
+          Set-Content -Path "$dist/README.txt" -Value $readme -Encoding utf8
+
+          if (Test-Path README.md) {
+            Copy-Item README.md "$dist/README.md"
+          }
+
+          Compress-Archive -Path "$dist/*" -DestinationPath "dist/$distName.zip" -Force
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: azoth-toolkit-windows
+          path: dist/*.zip
+
+      - name: Publish GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.resolve-release.outputs.tag }}
+        run: >
+          gh release create $env:RELEASE_TAG dist/*.zip
+          --title $env:RELEASE_TAG
+          --notes "Automated Azoth toolkit release (azoth CLI, az-editor, azd, az-sessiond)."

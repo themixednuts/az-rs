@@ -1,0 +1,9 @@
+Selected Zed GPUI Windows sources
+
+Upstream: https://github.com/zed-industries/zed
+Recorded upstream revision: 17c0ebb0f7b8b512d99f396e543e71c1775ff6f6
+Local status: partial source snapshot retained for the Windows adapter delta.
+License: Apache-2.0
+
+The full standard license text is included at
+../../vendor/gpu-allocator/LICENSE-APACHE.

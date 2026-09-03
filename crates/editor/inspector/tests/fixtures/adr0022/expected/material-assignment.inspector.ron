@@ -1,0 +1,13 @@
+(
+    case: "material_assignment",
+    schema: "azoth.render.MaterialAssignment",
+    type_label: "Material Assignment",
+    category: Some("Rendering"),
+    icon: Some("palette"),
+    fields: [
+        (name: "default", label: "Default Material", schema_type: "core.option<core.asset-path>", widget: "asset:material", default: Some("null"), constraints: ()),
+        (name: "slots", label: "Slot Overrides", schema_type: "core.list<azoth.render.MaterialSlotOverride>", widget: "default", default: Some("list[]"), constraints: ()),
+    ],
+    add_component: Some((editor_export: true, runtime_export: true, provides: [], requires: ["azoth.renderable", "azoth.material-slots"], incompatible: [], default_available: true)),
+    behaviors: ["optional_asset", "nested_list", "list_insert_remove_move", "add_component_applicability"],
+)

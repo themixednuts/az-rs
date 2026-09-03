@@ -1,0 +1,17 @@
+{
+  "name": "cryengine-docs-scraper",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --remote --port 8787",
+    "deploy": "wrangler deploy",
+    "scrape": "node scripts/scrape-cryengine3.ts",
+    "scrape:html": "node scripts/scrape-cryengine3-html.ts",
+    "html:index": "node scripts/build-cryengine3-html-index.ts",
+    "dry-run": "node scripts/scrape-cryengine3.ts --dry-run --limit 5"
+  },
+  "dependencies": {
+    "node-html-parser": "^7.0.1"
+  }
+}

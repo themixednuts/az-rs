@@ -1,0 +1,44 @@
+[manifest]
+kind = "gem"
+schema = "azoth.gem/v3"
+
+[gem]
+id = "azoth.vegetation"
+name = "Vegetation"
+version = "0.1.0"
+
+[paths]
+assets = "assets"
+scripts = "scripts"
+
+# The spawner's AZ types and the distribution asset type travel with the gem
+# wherever it is linked, `asset-worker` included: that is the role whose
+# ObjectStream lowering reads them, and the force-linked anchor this stanza
+# replaces made them visible there.
+[[contributions]]
+id = "package"
+kind = "code"
+package = "az-gem-vegetation"
+roles = ["game", "p2p", "client", "server", "unified", "headless-server", "project-host", "asset-worker", "runtime-host"]
+
+# Reflected prefab types are read by the two hosts that resolve prefab documents
+# without a Bevy world: `project-host` through its type registry and
+# `asset-worker` through AZSCENE analysis. `asset-processor` is deliberately
+# absent — the AP host links no gem code.
+[[contributions]]
+id = "prefab-types"
+kind = "builder"
+package = "az-gem-vegetation"
+roles = ["project-host", "asset-worker"]
+
+[[dependencies]]
+id = "azoth.gradient-signal"
+version = "^0.1.0"
+
+[[dependencies]]
+id = "azoth.legacy-terrain"
+version = "^0.1.0"
+
+[[dependencies]]
+id = "azoth.lmbr-central"
+version = "^0.1.0"

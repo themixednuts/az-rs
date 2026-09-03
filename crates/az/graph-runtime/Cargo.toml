@@ -1,0 +1,30 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-graph-runtime"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Runtime packed graph product format for Azoth visual graph assets"
+
+
+[lints]
+workspace = true
+[features]
+default = []
+bevy = ["dep:bevy_app", "dep:bevy_asset", "dep:bevy_reflect"]
+
+[dependencies]
+az-gem-contract = { workspace = true }
+bevy_app = { workspace = true, optional = true }
+bevy_asset = { workspace = true, optional = true }
+bevy_reflect = { workspace = true, optional = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+az-architecture-guard = { workspace = true }
+toml = { workspace = true }
+
+[build-dependencies]
+az-build-fingerprint = { workspace = true }

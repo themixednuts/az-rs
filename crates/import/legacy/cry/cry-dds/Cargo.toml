@@ -1,0 +1,20 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "cry-dds"
+version = "0.1.0"
+edition.workspace = true
+description = "Borrowed parser for Cry/Lumberyard DDS texture assets"
+
+
+[lints]
+workspace = true
+[dependencies]
+az-asset = { workspace = true }
+az-asset-builder = { workspace = true }
+az-core = { workspace = true }
+az-filesystem = { workspace = true }
+az-gem-contract = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }

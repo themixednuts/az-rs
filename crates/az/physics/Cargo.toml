@@ -1,0 +1,22 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-physics"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Backend-neutral physics scene, body, query, and Cry living-entity contracts for Azoth"
+
+[lints]
+workspace = true
+
+[dependencies]
+az-core = { workspace = true, features = ["serde"] }
+az-derive = { workspace = true }
+bevy_ecs = { workspace = true }
+bevy_math = { workspace = true, features = ["serialize", "bevy_reflect"] }
+bevy_reflect = { workspace = true, features = ["glam"] }
+glam = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }

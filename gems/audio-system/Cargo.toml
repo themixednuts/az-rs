@@ -1,0 +1,23 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-gem-audio-system"
+version = "0.1.0"
+edition = "2024"
+description = "Lumberyard AudioSystem Gem runtime request surface as a Bevy plugin"
+
+
+[lints]
+workspace = true
+[dependencies]
+az-gem-contract = { workspace = true }
+az-core = { path = "../../crates/az/core" }
+az-derive = { workspace = true }
+bevy = { workspace = true, features = ["default_app", "common_api"] }
+gridmate = { workspace = true, default-features = false }
+serde = { workspace = true, features = ["derive"] }
+thiserror = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+azoth-audio-system-ids = { path = "ids" }

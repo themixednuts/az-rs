@@ -1,0 +1,25 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-transform"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Engine-owned authored transform component schema for Azoth"
+
+[lints]
+workspace = true
+
+[features]
+default = []
+bevy = ["dep:bevy", "az-core/bevy"]
+
+[dependencies]
+az-core = { workspace = true }
+az-gem-contract = { workspace = true }
+az-prefab = { workspace = true }
+bevy = { workspace = true, optional = true }
+bevy_ecs = { workspace = true }
+bevy_reflect = { workspace = true }
+glam = { workspace = true }
+uuid = { workspace = true }

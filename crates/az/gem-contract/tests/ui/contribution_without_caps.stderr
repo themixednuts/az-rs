@@ -1,0 +1,11 @@
+error: `#[contribution]` requires `caps = [...]`; a contribution with no host-capability floor declares `caps = []`
+  --> tests/ui/contribution_without_caps.rs:16:1
+   |
+16 | / #[contribution(
+17 | |     gem = ids::GEM,
+18 | |     id = ids::RUNTIME,
+19 | |     roles = [Server, Unified],
+20 | | )]
+   | |__^
+   |
+   = note: this error originates in the attribute macro `contribution` (in Nightly builds, run with -Z macro-backtrace for more info)

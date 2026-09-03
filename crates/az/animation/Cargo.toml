@@ -1,0 +1,32 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-animation"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Azoth native animation asset builders"
+
+[lints]
+workspace = true
+
+[dependencies]
+arrayvec = { workspace = true }
+az-asset = { workspace = true }
+az-asset-builder = { workspace = true }
+az-core = { workspace = true, features = ["serde"] }
+az-filesystem = { workspace = true }
+az-gem-contract = { workspace = true }
+bevy_math = { workspace = true }
+bevy_asset = { workspace = true }
+bevy_reflect = { workspace = true }
+bitflags = { workspace = true, features = ["serde"] }
+gltf = { workspace = true, features = ["names", "utils"] }
+postcard = { workspace = true }
+ron = { workspace = true }
+serde = { workspace = true, features = ["rc"] }
+serde_json = { workspace = true }
+smallvec = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }

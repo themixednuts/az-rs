@@ -1,0 +1,17 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "cry-shader-cache"
+version = "0.1.0"
+edition.workspace = true
+description = "Borrowed parser for Cry/Lumberyard shader cache assets"
+
+
+[lints]
+workspace = true
+[dependencies]
+az-asset-builder = { workspace = true }
+az-core = { workspace = true }
+az-gem-contract = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }

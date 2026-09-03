@@ -1,0 +1,771 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "azoth"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.97"
+description = "AZoth Project Manager - Create and manage game projects using the AZoth Engine"
+
+[features]
+default = []
+oodle = ["az-asset/oodle"]
+
+[lints]
+workspace = true
+
+[workspace]
+package.license = "Apache-2.0"
+package.repository = "https://github.com/themixednuts/az-rs"
+package.edition = "2024"
+package.rust-version = "1.97"
+resolver = "3"
+members = [
+  "crates/az/architecture-guard",
+  "crates/az/animation",
+  "crates/az/asset",
+  "crates/az/asset-builder",
+  "crates/az/asset-builder-derive",
+  "crates/az/asset-processor",
+  "crates/az/asset-worker",
+  "crates/az/asset-processor-host",
+  "crates/az/assetdb",
+  "crates/az/build-fingerprint",
+  "crates/az/core",
+  "crates/az/daemon",
+  "crates/az/derive",
+  "crates/az/durable",
+  "crates/az/endpoint-discovery",
+  "crates/az/engine",
+  "crates/az/facet",
+  "crates/az/federation",
+  "crates/az/federation-crypto",
+  "crates/az/proto/federation",
+  "crates/az/world-instance",
+  "crates/az/filesystem",
+  "crates/az/framework",
+  "crates/az/gem-contract",
+  "crates/az/gem-contract-derive",
+  "crates/az/gem-loader",
+  "crates/az/graph-builder",
+  "crates/az/graph-layout",
+  "crates/az/graph-runtime",
+  "crates/az/jobs",
+  "crates/az/gridmate",
+  "crates/az/gridmate-bevy",
+  "crates/az/gridmate-derive",
+  "crates/az/material",
+  "crates/az/material-builder",
+  "crates/az/mesh",
+  "crates/az/mesh-builder",
+  "crates/az/material-nodes",
+  "crates/az/node-graph",
+  "crates/az/nv-cloth",
+  "crates/az/observability",
+  "crates/az/observability-control",
+  "crates/az/physics",
+  "crates/az/physics-rapier",
+  "crates/az/prefab",
+  "crates/az/prefab-derive",
+  "crates/az/prefab-builder",
+  "crates/az/project",
+  "crates/az/project-host",
+  "crates/az/project-scaffold",
+  "crates/az/render",
+  "crates/az/proto/asset",
+  "crates/az/proto/authoring",
+  "crates/az/proto/build",
+  "crates/az/proto/core",
+  "crates/az/proto/daemon",
+  "crates/az/proto/observability",
+  "crates/az/proto/project",
+  "crates/az/proto/runtime",
+  "crates/az/proto/session",
+  "crates/az/rpc",
+  "crates/az/runtime-app",
+  "crates/az/runtime-host",
+  "crates/az/scene",
+  "crates/az/secret-value",
+  "crates/az/secrets",
+  "crates/az/service-entrypoint",
+  "crates/az/service-catalog",
+  "crates/az/service-supervision",
+  "crates/az/session",
+  "crates/az/sessiond",
+  "crates/az/source-control",
+  "crates/az/terrain",
+  "crates/az/terrain-builder",
+  "crates/az/terrain-runtime",
+  "crates/az/texture-builder",
+  "crates/az/texture-source",
+  "crates/az/transform",
+  "crates/az/turso",
+  "crates/az/work",
+  "crates/az/xml",
+  "crates/editor/core",
+  "crates/editor/inspector",
+  "crates/editor/ui",
+  "crates/editor/viewport-compositor",
+  "crates/engine/assets",
+  "crates/engine/builders",
+  "crates/engine/ids",
+  "crates/engine/runtime",
+  "crates/engine/types",
+  "crates/formats/bink",
+  "crates/formats/compat/az-pak",
+  "crates/formats/legacy/az/object-stream",
+  "crates/formats/legacy/cry/cry-chunk",
+  "crates/formats/legacy/cry/cry-mannequin",
+  "crates/formats/legacy/cry/cry-system",
+  "crates/formats/legacy/lumberyard/lmbr-central-vshape",
+  "crates/formats/legacy/lumberyard/lyshine",
+  "crates/formats/legacy/lumberyard/texture-atlas",
+  "crates/import/legacy/az/az-framework-input",
+  "crates/import/legacy/az/az-framework-objectstream",
+  "crates/import/legacy/az/az-physics-assets",
+  "crates/import/legacy/cry/cry-3d-engine",
+  "crates/import/legacy/cry/cry-ai",
+  "crates/import/legacy/cry/cry-animation",
+  "crates/import/legacy/cry/cry-character",
+  "crates/import/legacy/cry/cry-dds",
+  "crates/import/legacy/cry/cry-entity-system",
+  "crates/import/legacy/cry/cry-font",
+  "crates/import/legacy/cry/cry-localization",
+  "crates/import/legacy/cry/cry-mannequin-assets",
+  "crates/import/legacy/cry/cry-renderer",
+  "crates/import/legacy/cry/cry-shader-cache",
+  "crates/import/legacy/cry/cry-shader-ext",
+  "crates/import/legacy/cry/cry-system-assets",
+  "crates/import/legacy/cry/cry-text",
+  "crates/import/legacy/cry/cry-to-gltf",
+  "crates/import/legacy/cry/cry-xml",
+  "crates/import/legacy/lua/lua-bytecode",
+  "crates/import/legacy/lumberyard/lmbr-central-assets",
+  "crates/import/legacy/lumberyard/lyshine-canvas",
+  "crates/import/legacy/lumberyard/nv-cloth-assets",
+  "crates/import/legacy/lumberyard/texture-atlas-assets",
+  "crates/integrations/ags-auth-protocol",
+  "crates/integrations/aws",
+  "crates/integrations/eos/ffi",
+  "crates/integrations/eos/plugin",
+  "crates/integrations/http",
+  "crates/integrations/logging-registry",
+  "crates/integrations/oodle/fetch",
+  "crates/integrations/secrets-aws",
+  "crates/integrations/spacetime",
+  "crates/integrations/steam/locator",
+  "gems/animation",
+  "gems/animation/ids",
+  "gems/audio-system",
+  "gems/audio-system/ids",
+  "gems/auth",
+  "gems/auth/ids",
+  "gems/auth-eos",
+  "gems/auth-eos/ids",
+  "gems/auth-local",
+  "gems/auth-local/ids",
+  "gems/auth-steam",
+  "gems/auth-steam/ids",
+  "gems/camera",
+  "gems/camera/ids",
+  "gems/eos",
+  "gems/eos/ids",
+  "gems/fast-noise",
+  "gems/fast-noise/ids",
+  "gems/footsteps",
+  "gems/footsteps/ids",
+  "gems/gamedata",
+  "gems/gamedata/ids",
+  "gems/gamedata/derive",
+  "gems/gradient-signal",
+  "gems/gradient-signal/ids",
+  "gems/historical-input",
+  "gems/historical-input/ids",
+  "gems/legacy-terrain",
+  "gems/legacy-terrain/ids",
+  "gems/lmbr-central",
+  "gems/lmbr-central/builders",
+  "gems/lmbr-central/ids",
+  "gems/lyshine",
+  "gems/lyshine/builders",
+  "gems/lyshine/ids",
+  "gems/nv-cloth",
+  "gems/nv-cloth/ids",
+  "gems/roads-and-rivers",
+  "gems/roads-and-rivers/ids",
+  "gems/rock-n-roll",
+  "gems/rock-n-roll/ids",
+  "gems/slayer-script",
+  "gems/slayer-script/ids",
+  "gems/steam",
+  "gems/steam/ids",
+  "gems/texture-atlas",
+  "gems/texture-atlas/builders",
+  "gems/texture-atlas/ids",
+  "gems/vegetation",
+  "gems/vegetation/ids",
+]
+exclude = [
+  "vendor/gpui-component",
+  "vendor/luajit-src",
+  "vendor/notify",
+  "vendor/proc-macro-error2",
+  "vendor/zed",
+]
+default-members = [
+  ".",
+  "crates/az/asset-processor",
+  "crates/az/asset-processor-host",
+  "crates/az/daemon",
+  "crates/az/engine",
+  "crates/az/graph-layout",
+  "crates/az/project-host",
+  "crates/az/runtime-app",
+  "crates/az/runtime-host",
+  "crates/az/sessiond",
+  "crates/editor/core",
+]
+
+[workspace.lints.clippy]
+pedantic = "deny"
+nursery = "deny"
+
+[workspace.dependencies]
+ags-auth-protocol = { path = "crates/integrations/ags-auth-protocol" }
+aide = { version = "0.15", features = ["axum", "axum-json", "axum-query"] }
+arcstr = { version = "1.2", features = ["serde"] }
+arrayvec = { version = "0.7", features = ["serde"] }
+async-channel = "2.5"
+# Async runtime dependencies (for async-io executor)
+async-io = "2.6.0"
+async-lock = "3.4"
+aws-config = "1.8"
+aws-credential-types = "1.2"
+aws-http = "0.60"
+aws-sdk-kinesis = "1.105.0"
+aws-sdk-secretsmanager = "1.114.0"
+aws-sdk-sts = "1.104.0"
+aws-sigv4 = "1.4"
+aws-smithy-runtime-api = "1.12"
+axum = { version = "0.8", features = ["json", "macros", "query", "ws"] }
+az-architecture-guard = { path = "crates/az/architecture-guard" }
+az-animation = { path = "crates/az/animation" }
+az-asset = { path = "crates/az/asset", default-features = false }
+az-asset-builder = { path = "crates/az/asset-builder" }
+az-asset-builder-derive = { path = "crates/az/asset-builder-derive" }
+az-asset-processor = { path = "crates/az/asset-processor" }
+az-asset-worker = { path = "crates/az/asset-worker" }
+az-asset-processor-host = { path = "crates/az/asset-processor-host" }
+az-assetdb = { path = "crates/az/assetdb" }
+az-build-fingerprint = { path = "crates/az/build-fingerprint" }
+az-core = { path = "crates/az/core" }
+az-derive = { path = "crates/az/derive" }
+az-durable = { path = "crates/az/durable" }
+# Editor crates as workspace deps so the per-project editor build target (ADR
+# 0016 Phase 3) can resolve them; not used by the engine's own crates.
+az-editor = { path = "crates/editor/core" }
+az-endpoint-discovery = { path = "crates/az/endpoint-discovery" }
+az-engine = { path = "crates/az/engine" }
+az-engine-assets = { path = "crates/engine/assets" }
+az-engine-builders = { path = "crates/engine/builders" }
+az-engine-ids = { path = "crates/engine/ids" }
+az-engine-runtime = { path = "crates/engine/runtime" }
+az-engine-types = { path = "crates/engine/types" }
+az-facet = { path = "crates/az/facet" }
+az-federation = { path = "crates/az/federation" }
+az-federation-crypto = { path = "crates/az/federation-crypto" }
+az-proto-federation = { path = "crates/az/proto/federation" }
+az-world-instance = { path = "crates/az/world-instance" }
+az-filesystem = { path = "crates/az/filesystem" }
+az-framework = { path = "crates/az/framework" }
+az-framework-objectstream = {
+  path = "crates/import/legacy/az/az-framework-objectstream"
+}
+# The contract's model surface is the workspace default; its Bevy edge (the
+# `app` feature: `App`, `GemContext::app`, the composer's owned `App`) is opted
+# into by hosts that own a world with `features = ["app"]`. Members cannot
+# subtract a workspace default, so the subtraction lives here.
+az-gem-contract = { path = "crates/az/gem-contract", default-features = false }
+az-gem-contract-derive = { path = "crates/az/gem-contract-derive" }
+az-gem-loader = { path = "crates/az/gem-loader" }
+az-gem-animation = { path = "gems/animation" }
+az-gem-audio-system = { path = "gems/audio-system" }
+az-gem-auth = { path = "gems/auth" }
+az-gem-auth-eos = { path = "gems/auth-eos" }
+az-gem-auth-local = { path = "gems/auth-local" }
+az-gem-auth-steam = { path = "gems/auth-steam" }
+az-gem-eos = { path = "gems/eos" }
+az-gem-historical-input = { path = "gems/historical-input" }
+az-gem-legacy-terrain = { path = "gems/legacy-terrain" }
+az-gem-lmbr-central = { path = "gems/lmbr-central" }
+az-gem-lyshine = { path = "gems/lyshine" }
+az-gem-nv-cloth = { path = "gems/nv-cloth" }
+az-gem-rock-n-roll = { path = "gems/rock-n-roll" }
+az-gem-slayer-script = { path = "gems/slayer-script" }
+az-gem-steam = { path = "gems/steam" }
+az-gem-texture-atlas = { path = "gems/texture-atlas" }
+az-gem-vegetation = { path = "gems/vegetation" }
+az-graph-builder = { path = "crates/az/graph-builder" }
+az-graph-layout = { path = "crates/az/graph-layout" }
+az-graph-runtime = { path = "crates/az/graph-runtime" }
+az-jobs = { path = "crates/az/jobs" }
+az-lua-bytecode = { path = "crates/import/legacy/lua/lua-bytecode" }
+az-material = { path = "crates/az/material" }
+az-material-builder = { path = "crates/az/material-builder" }
+az-mesh = { path = "crates/az/mesh" }
+az-mesh-builder = { path = "crates/az/mesh-builder" }
+az-material-nodes = { path = "crates/az/material-nodes" }
+az-node-graph = { path = "crates/az/node-graph" }
+az-nv-cloth = { path = "crates/az/nv-cloth" }
+az-objectstream = { path = "crates/formats/legacy/az/object-stream" }
+az-physics = { path = "crates/az/physics" }
+az-physics-rapier = { path = "crates/az/physics-rapier" }
+az-prefab = { path = "crates/az/prefab" }
+az-prefab-derive = { path = "crates/az/prefab-derive" }
+az-prefab-builder = { path = "crates/az/prefab-builder" }
+az-project = { path = "crates/az/project" }
+az-render = { path = "crates/az/render" }
+az-terrain = { path = "crates/az/terrain" }
+az-terrain-builder = { path = "crates/az/terrain-builder" }
+az-terrain-runtime = { path = "crates/az/terrain-runtime" }
+az-texture-builder = { path = "crates/az/texture-builder" }
+az-texture-source = { path = "crates/az/texture-source" }
+az-transform = { path = "crates/az/transform" }
+az-turso = { path = "crates/az/turso" }
+az-rpc = { path = "crates/az/rpc" }
+az-runtime-app = { path = "crates/az/runtime-app" }
+az-runtime-host = { path = "crates/az/runtime-host" }
+az-scene = { path = "crates/az/scene" }
+az-secret-value = { path = "crates/az/secret-value" }
+az-secrets = { path = "crates/az/secrets" }
+az-secrets-aws = { path = "crates/integrations/secrets-aws" }
+az-service-entrypoint = { path = "crates/az/service-entrypoint" }
+az-service-catalog = { path = "crates/az/service-catalog" }
+az-service-supervision = { path = "crates/az/service-supervision" }
+az-source-control = { path = "crates/az/source-control" }
+az-work = { path = "crates/az/work" }
+az-xml = { path = "crates/az/xml" }
+bevy = { version = "0.19", default-features = false, features = ["serialize"] }
+bevy_app = "0.19"
+bevy_asset = "0.19"
+bevy_color = { version = "0.19", features = ["serialize"] }
+bevy_ecs = { version = "0.19", features = ["serialize"] }
+bevy_math = "0.19"
+base64 = "0.22"
+# LuaJIT is Lua 5.1-source-compatible but uses its own bytecode format.
+# Project tools convert legacy `.luac` files into editable `.lua`; Azoth
+# compiles those `.lua` sources into VM-specific bytecode products.
+#
+# These deps are intentionally backend-AGNOSTIC (no `lua54`/`luajit`/... here).
+# `mlua-sys` requires exactly one Lua backend per build graph, so the choice is
+# owned in ONE place: `az-framework` (the engine scripting host) selects it via
+# its own `default = ["luajit"]` feature. Every other crate — engine gems and
+# separate project workspaces alike — depends on `bevy_mod_scripting` without a
+# backend and inherits the framework's choice, which makes a backend mismatch
+# (the classic `enable only one of the features` build break) structurally
+# impossible. Audit with `cargo tree -e features -i mlua-sys`.
+bevy_mod_scripting = { version = "0.19", default-features = false }
+bevy_mod_scripting_lua = { version = "0.19", default-features = false }
+bevy_reflect = "0.19"
+chacha20poly1305 = { version = "0.11", features = ["zeroize"] }
+bevy_tasks = "0.19"
+bevy-steamworks = "0.16"
+bindgen = "0.72"
+bitflags = "2"
+blake3 = "1"
+bracket-noise = "0.8.7"
+bumpalo = { version = "3.20", features = ["collections"] }
+bytemuck = { version = "1.20", features = ["derive"] }
+bytes = "1.11"
+capnp = "0.26"
+capnp-rpc = "0.26"
+capnpc = "0.26"
+cc = "1"
+chrono = "0.4"
+ciborium = "0.2"
+clap = { version = "4.6", features = ["env"] }
+crc32fast = "1.4"
+criterion = { version = "0.8", features = ["html_reports"] }
+crossbeam-channel = "0.5.15"
+ctrlc = { version = "3.5", features = ["termination"] }
+cry-chunk = { version = "0.1.0", path = "crates/formats/legacy/cry/cry-chunk" }
+cry-character-assets = { path = "crates/import/legacy/cry/cry-character" }
+cry-localization = { path = "crates/import/legacy/cry/cry-localization" }
+cry-mannequin = { path = "crates/formats/legacy/cry/cry-mannequin" }
+cry-mannequin-assets = { path = "crates/import/legacy/cry/cry-mannequin-assets" }
+cry-system = { path = "crates/formats/legacy/cry/cry-system" }
+cry-system-assets = { path = "crates/import/legacy/cry/cry-system-assets" }
+cry-text = { path = "crates/import/legacy/cry/cry-text" }
+cry-to-gltf = { path = "crates/import/legacy/cry/cry-to-gltf" }
+cry-xml-assets = { path = "crates/import/legacy/cry/cry-xml" }
+csv = "1"
+dark-light = "2.0"
+dashmap = "6.1.0"
+derive_more = {
+  version = "2.1",
+  default-features = false,
+  features = [
+    "as_ref",
+    "deref",
+    "deref_mut",
+    "display",
+    "from",
+    "into",
+    "std",
+  ]
+}
+directories = "6.0"
+dotenvy = "0.15"
+dunce = "1.0.5"
+ed25519-dalek = { version = "3", default-features = false, features = ["fast"] }
+# Pin one published crates.io release across Azoth and downstream workspaces so
+# their lockfiles cannot resolve incompatible Drizzle/Turso API generations.
+# Downstream workspaces should use these exact versions.
+drizzle = "=0.1.16"
+drizzle-migrations = "=0.1.16"
+drizzle-types = "=0.1.16"
+encoding_rs = "0.8"
+exr = { version = "1.74.0", default-features = false }
+flate2 = "1.0"
+# Pinned to openssl 0.10's internal `foreign-types` major. The `Ssl`/`X509`
+# wrappers in `openssl` impl `foreign_types::ForeignType` from the version
+# they pull in transitively; mismatching here would mean our
+# `ForeignType::as_ptr` calls in `secure_connection.rs` don't resolve.
+# Move in lockstep with `openssl`.
+foreign-types = "0.3"
+# SIMD typo-resistant fuzzy matcher (the matching core of the fff file finder),
+# used for in-editor list filtering (not filesystem search).
+frizbee = "0.9"
+futures = "0.3"
+fs2 = "0.4.3"
+futures-lite = "2.6"
+futures-timer = "3.0"
+futures-util = "0.3"
+gamedata = { path = "gems/gamedata" }
+# Pinned to bevy 0.19's glam major so `Vec2`/`Vec3` resolve to the same
+# type across `gridmate` marshaler implementations and `bevy::math` consumers.
+# Bumping this independently forks the
+# `Vec2` type and `Marshaler<Vec2>` stops applying to Bevy-side values.
+# Move in lockstep with bevy.
+glam = { version = "0.32", features = ["serde"] }
+gltf = { version = "1.4", default-features = false, features = ["extras", "names", "utils"] }
+gridmate = { path = "crates/az/gridmate", default-features = false }
+glob = "0.3"
+gpui = { git = "https://github.com/zed-industries/zed", rev = "17c0ebb0f7b8b512d99f396e543e71c1775ff6f6" }
+# Pinned to the upstream commit the vendored snapshot was cut from (see the
+# patch-table note below); the patch table redirects both crates to
+# vendor/gpui-component, so these revs resolve only if that patch is lifted.
+gpui-component = { git = "https://github.com/longbridge/gpui-component", rev = "1aab597cae95d631e099f77003f7c3a0c8d1d83a" }
+gpui-component-assets = { git = "https://github.com/longbridge/gpui-component", rev = "1aab597cae95d631e099f77003f7c3a0c8d1d83a" }
+gpui_platform = {
+  git = "https://github.com/zed-industries/zed",
+  rev = "17c0ebb0f7b8b512d99f396e543e71c1775ff6f6",
+  features = [
+    "font-kit",
+    "runtime_shaders",
+    "wayland",
+    "x11",
+  ]
+}
+hex = "0.4"
+half = "2.7"
+http = "1.4"
+humansize = "2"
+image = "0.25"
+indexmap = "2.14"
+intel_tex_2 = "0.5.0"
+inventory = "0.3"
+jsonwebtoken = "9.3"
+keyring = "4.2"
+ktx2 = "0.5.0"
+lmbr-central-assets = { path = "crates/import/legacy/lumberyard/lmbr-central-assets" }
+lmbr-central-vshape = { path = "crates/formats/legacy/lumberyard/lmbr-central-vshape" }
+lyshine = { path = "crates/formats/legacy/lumberyard/lyshine" }
+lyshine-canvas = { path = "crates/import/legacy/lumberyard/lyshine-canvas" }
+lzzzz = "2.0.0"
+memchr = "2.7"
+memmap2 = "0.9"
+mlua = { version = "0.10", default-features = false, features = [
+  "luajit",
+  "vendored",
+] }
+notify = "8.2"
+nucleo-matcher = "0.3"
+num_enum = "0.7.5"
+nv-cloth-assets = { path = "crates/import/legacy/lumberyard/nv-cloth-assets" }
+oodle-safe = "0.2"
+oodle-sys = "0.2"
+openssl = "0.10"
+openssl-sys = "0.9"
+phf = "0.14"
+phf_codegen = "0.14"
+postcard = { version = "1", features = ["alloc"] }
+proc-macro2 = "1.0"
+quick-xml = { version = "0.41", features = ["serialize"] }
+quote = "1.0"
+rayon = "1.10"
+rapier3d = "0.32"
+regex = "1.11"
+reqwest = {
+  version = "0.13",
+  default-features = false,
+  features = [
+    "http2",
+    "json",
+    "rustls",
+  ]
+}
+ron = "0.12"
+rstest = "0.26.1"
+rust-embed = { version = "8.11.0", features = ["debug-embed"] }
+rustc-hash = "2.1"
+schemars = "1.2"
+serde = { version = "1.0", features = ["derive"] }
+serde-value = "0.7"
+serde_bytes = "0.11"
+serde_json = { version = "1.0", features = ["raw_value"] }
+serde_urlencoded = "0.7"
+sha1 = "0.11"
+sysinfo = "0.38"
+sha2 = "0.11"
+signal-hook = "0.4"
+smallvec = { version = "1.15", features = ["serde"] }
+spade = "2.15.1"
+steam-locator = { path = "crates/integrations/steam/locator" }
+# Proc macro dependencies
+syn = { version = "2.0", features = ["extra-traits", "full"] }
+tempfile = "3"
+texture-atlas = { path = "crates/formats/legacy/lumberyard/texture-atlas" }
+texture-atlas-assets = { path = "crates/import/legacy/lumberyard/texture-atlas-assets" }
+thiserror = "2.0"
+bstr = "1.12"
+byteorder = "1.5"
+full_moon = { version = "=2.2.0", default-features = false, features = ["lua54"] }
+getrandom = "0.3.4"
+heck = "0.5"
+petgraph = "0.8"
+stylua = { version = "=2.5.2", default-features = false, features = ["lua54"] }
+tiff = "0.11"
+# Tokio (minimal features for reqwest/hyper compatibility)
+# Only include what's needed for hyper-rustls to work
+# rt = runtime (required for hyper), rt-multi-thread = multi-threaded scheduler
+# net = networking, io-util = IO utilities, sync = sync primitives
+tokio = {
+  version = "1.52",
+  default-features = false,
+  features = [
+    "io-util",
+    "macros",
+    "net",
+    "rt",
+    "rt-multi-thread",
+    "sync",
+    "time",
+  ]
+}
+tokio-util = { version = "0.7", features = ["compat"] }
+toml = { version = "1.1", features = ["serde"] }
+toml_edit = "0.25"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+turso = { version = "=0.8.0-pre.2", default-features = false, features = [
+  "pure-rust-crypto",
+] }
+# Turso's pre-release manifests use compatible ranges for internal crates even
+# though their generated APIs must advance as one release set. Keep the facade
+# and its internal packages on the same published pre-release so regenerating
+# Cargo.lock cannot combine incompatible generations.
+turso_core = "=0.8.0-pre.2"
+turso_ext = "=0.8.0-pre.2"
+turso_macros = "=0.8.0-pre.2"
+turso_parser = "=0.8.0-pre.2"
+turso_sdk_kit = "=0.8.0-pre.2"
+turso_sdk_kit_macros = "=0.8.0-pre.2"
+turso_sync_engine = "=0.8.0-pre.2"
+turso_sync_sdk_kit = "=0.8.0-pre.2"
+unicode-normalization = "0.1"
+uuid = { version = "1.23", features = ["serde", "v4", "v7"] }
+vk2dfd = "0.1.0"
+weezl = "0.2"
+wgpu = { git = "https://github.com/zed-industries/wgpu.git", rev = "357a0c56e0070480ad9daea5d2eaa83150b79e88" }
+windows = "0.62"
+libc = "0.2"
+libloading = "0.8.9"
+zeroize = { version = "1.8", features = ["derive"] }
+zip = {
+  version = "9.0.0-pre2",
+  default-features = false,
+  features = ["deflate"]
+}
+
+[[bin]]
+name = "azoth"
+path = "src/main.rs"
+
+[dependencies]
+capnp = { workspace = true }
+capnp-rpc = { workspace = true }
+# CLI framework
+clap = { workspace = true, features = ["derive"] }
+sysinfo = { workspace = true }
+
+# Logging
+tracing = { workspace = true }
+zeroize = { workspace = true }
+
+az-asset = { path = "crates/az/asset", default-features = false }
+az-endpoint-discovery = { workspace = true }
+az-filesystem = { workspace = true }
+az-gem-auth = { workspace = true }
+az-secrets = { workspace = true }
+az-observability = { path = "crates/az/observability" }
+az-project = { path = "crates/az/project" }
+az-project-scaffold = { path = "crates/az/project-scaffold" }
+az-source-control = { workspace = true }
+az-proto-asset = { path = "crates/az/proto/asset" }
+az-proto-authoring = { path = "crates/az/proto/authoring" }
+az-proto-core = { path = "crates/az/proto/core" }
+az-proto-daemon = { path = "crates/az/proto/daemon" }
+az-proto-project = { path = "crates/az/proto/project" }
+az-proto-runtime = { path = "crates/az/proto/runtime" }
+az-proto-session = { path = "crates/az/proto/session" }
+az-rpc = { workspace = true }
+az-session = { path = "crates/az/session" }
+az-service-catalog = { workspace = true }
+az-service-supervision = { workspace = true }
+az-transform = { workspace = true }
+az-turso = { workspace = true }
+az-work = { workspace = true }
+blake3 = { workspace = true }
+crossbeam-channel = { workspace = true }
+futures = { workspace = true }
+notify = { workspace = true }
+ron = { workspace = true }
+serde_json = { workspace = true }
+# Error handling
+thiserror = { workspace = true }
+tokio = { workspace = true }
+toml = { workspace = true }
+toml_edit = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+az-architecture-guard = { workspace = true }
+az-daemon = { path = "crates/az/daemon", features = ["test-support"] }
+az-session = { path = "crates/az/session", features = ["test-support"] }
+tempfile = "3"
+
+[patch.crates-io]
+# luajit-src's static MSVC batch build otherwise inherits cl.exe's /MT
+# default, which conflicts with Rust's default dynamic CRT. Keep the vendored
+# source aligned with the target's crt-static feature instead of suppressing
+# the resulting linker warning.
+luajit-src = { path = "vendor/luajit-src" }
+
+# proc-macro-error2 2.0.1 re-exports a private proc_macro crate, which Rust is
+# phasing into a hard error. Apply the compiler-recommended public declaration
+# while the abandoned upstream crate remains in the transitive graph.
+proc-macro-error2 = { path = "vendor/proc-macro-error2" }
+
+# RON 0.12.2 classifies every numeric token by searching the entire remaining
+# document for a range operator, making numeric-heavy documents quadratic.
+# Pin the accepted upstream bounded-search fix until it reaches a release.
+ron = { git = "https://github.com/ron-rs/ron.git", rev = "31529b8b8d8c44ebf6ef91975da6cb14ae76a505" }
+
+# notify 8.2 silently removes a Windows ReadDirectoryChangesW watch when its
+# queue overruns or the watched directory disappears. Emit the same typed
+# rescan event used by the Unix/macOS backends before removing that watch so
+# consumers can reconcile and re-arm instead of remaining silently stale.
+notify = { path = "vendor/notify" }
+
+# crates.io bevy-steamworks 0.16 is the newest release, but it depends on
+# bevy_app/bevy_ecs 0.18. Keep the public crate API and move only the Bevy edge
+# to 0.19 so Steam integration shares the engine ECS/resource/message traits.
+bevy-steamworks = { path = "vendor/bevy-steamworks" }
+
+# bevy_mod_scripting 0.19's published crates still depend on Bevy 0.18 even
+# though the engine runtime is on Bevy 0.19. Vendor the active BMS stack and
+# retarget only its Bevy/glam dependency edges so Lua integration shares the
+# same ECS, asset, reflection, and math types as the engine.
+bevy_mod_scripting = { path = "vendor/bevy_mod_scripting/bevy_mod_scripting" }
+bevy_mod_scripting_asset = { path = "vendor/bevy_mod_scripting/bevy_mod_scripting_asset" }
+bevy_mod_scripting_bindings = { path = "vendor/bevy_mod_scripting/bevy_mod_scripting_bindings" }
+bevy_mod_scripting_bindings_domain = { path = "vendor/bevy_mod_scripting/bevy_mod_scripting_bindings_domain" }
+bevy_mod_scripting_core = { path = "vendor/bevy_mod_scripting/bevy_mod_scripting_core" }
+bevy_mod_scripting_derive = { path = "vendor/bevy_mod_scripting/bevy_mod_scripting_derive" }
+bevy_mod_scripting_display = { path = "vendor/bevy_mod_scripting/bevy_mod_scripting_display" }
+bevy_mod_scripting_functions = { path = "vendor/bevy_mod_scripting/bevy_mod_scripting_functions" }
+bevy_mod_scripting_lua = { path = "vendor/bevy_mod_scripting/bevy_mod_scripting_lua" }
+bevy_mod_scripting_script = { path = "vendor/bevy_mod_scripting/bevy_mod_scripting_script" }
+bevy_system_reflection = { path = "vendor/bevy_mod_scripting/bevy_system_reflection" }
+
+# Unify wgpu: bevy 0.19 wants crates.io `wgpu ^29.0.3`; redirect the whole wgpu
+# family to the same Zed fork rev the GPUI stack uses so bevy and GPUI share ONE
+# wgpu. bevy depends on `wgpu-types`/`wgpu-hal`/`wgpu-core` *directly*, so all of
+# them must be patched, not just `wgpu`, or bevy_render sees two copies of types
+# like `Extent3d`. Keep the Bevy and wgpu type graph on one revision.
+wgpu = { git = "https://github.com/zed-industries/wgpu.git", rev = "357a0c56e0070480ad9daea5d2eaa83150b79e88" }
+wgpu-types = { git = "https://github.com/zed-industries/wgpu.git", rev = "357a0c56e0070480ad9daea5d2eaa83150b79e88" }
+wgpu-hal = { git = "https://github.com/zed-industries/wgpu.git", rev = "357a0c56e0070480ad9daea5d2eaa83150b79e88" }
+wgpu-core = { git = "https://github.com/zed-industries/wgpu.git", rev = "357a0c56e0070480ad9daea5d2eaa83150b79e88" }
+# bevy_render uses `naga` directly too; the fork ships its own, so patch it as
+# well or bevy_render sees two `naga::Module` types.
+naga = { git = "https://github.com/zed-industries/wgpu.git", rev = "357a0c56e0070480ad9daea5d2eaa83150b79e88" }
+
+# Zed's WGPU fork uses `windows = 0.62` in `wgpu-hal`; crates.io
+# `gpu-allocator 0.28.0` still resolves D3D12 through `windows 0.54`,
+# which makes the D3D12 COM interface types incompatible on Windows.
+# Local copy of upstream commit 46539528 with the Windows dependency
+# narrowed to the 0.62 line so D3D12 COM interface types match Zed WGPU.
+gpu-allocator = { path = "vendor/gpu-allocator" }
+
+[patch."https://github.com/longbridge/gpui-component"]
+# Current Zed GPUI requires explicit flex grow/shrink factors. Keep the
+# component stack on upstream main, with a local compatibility patch until
+# Longbridge lands the same API update.
+#
+# Vendored snapshot provenance: cut from upstream `main` at (or within hours
+# of) commit 1aab597cae95d631e099f77003f7c3a0c8d1d83a ("select, combobox:
+# Use popover background for dropdown menus", 2026-07-20) — the git revs
+# above pin that point. The vendored tree carries local edits on top of it:
+# the flex grow/shrink compatibility patch plus a locally added per-language
+# `tree-sitter-*` feature table in crates/ui/Cargo.toml. To rebase onto a
+# newer upstream: diff vendor/gpui-component against upstream at that rev,
+# re-apply those local edits onto the new base, move both `rev =` pins above,
+# and re-run the editor test suite.
+gpui-component = { path = "vendor/gpui-component/crates/ui" }
+gpui-component-assets = { path = "vendor/gpui-component/crates/assets" }
+gpui-component-macros = { path = "vendor/gpui-component/crates/macros" }
+
+[patch."https://github.com/zed-industries/zed"]
+# GPUI currently logs Win32 invalid-handle errors during normal HWND teardown.
+# GPUI also carries the typed composition-hole scene primitive used by the
+# Windows viewport compositor. Keep both crates pinned to the same Zed source
+# revision and vendored together.
+gpui = { path = "vendor/zed/crates/gpui" }
+gpui_windows = { path = "vendor/zed/crates/gpui_windows" }
+
+# Linux GPUI renders through gpui_wgpu. Keep it vendored with gpui so additions
+# to the shared scene primitive enum remain exhaustive on every editor host.
+gpui_wgpu = { path = "vendor/zed/crates/gpui_wgpu" }
+
+# Enable a small amount of optimization in the dev profile.
+[profile.dev]
+opt-level = 1
+
+# Enable a large amount of optimization in the dev profile for dependencies.
+[profile.dev.package."*"]
+opt-level = 3
+
+# CI builds should optimize for wall-clock compile time, not local runtime
+# performance. The dev profile intentionally optimizes dependencies for the
+# engine/editor locally, but that makes clean Windows lint/test jobs expensive.
+[profile.ci]
+inherits = "dev"
+opt-level = 0
+debug = 0
+incremental = false
+
+[profile.ci.package."*"]
+opt-level = 0
+debug = 0

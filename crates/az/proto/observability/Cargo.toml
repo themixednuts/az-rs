@@ -1,0 +1,23 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-proto-observability"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Cap'n Proto protocol types for Azoth observability services"
+
+
+[lints]
+workspace = true
+[dependencies]
+az-proto-core = { path = "../core" }
+capnp = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+blake3 = { workspace = true }
+
+[build-dependencies]
+az-proto-build = { path = "../build" }

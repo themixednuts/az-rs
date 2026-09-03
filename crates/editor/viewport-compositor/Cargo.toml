@@ -1,0 +1,26 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "viewport-compositor-capture"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+image = { version = "0.25", default-features = false, features = ["png"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "ansi"] }
+
+# Windows Graphics Capture is the only recording path this tool has, so the
+# `capture` subcommand is Windows only. `compare` stays portable, which keeps
+# the crate buildable everywhere it is a workspace member.
+[target.'cfg(windows)'.dependencies]
+windows-capture = "1.5"

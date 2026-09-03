@@ -1,0 +1,14 @@
+(
+    case: "gamedata_row",
+    schema: "azoth.phase0.ItemRow",
+    type_label: "",
+    category: None,
+    icon: None,
+    fields: [
+        (name: "item_id", label: "Item ID", schema_type: "core.string", widget: "default", default: Some("string:"), constraints: ()),
+        (name: "display_name", label: "Display Name", schema_type: "core.string", widget: "default", default: Some("string:"), constraints: ()),
+        (name: "price", label: "Price", schema_type: "core.u32", widget: "number:1:", default: Some("unsigned:0"), constraints: ()),
+    ],
+    add_component: None,
+    behaviors: ["row_columns", "named_primary_key", "row_source_round_trip"],
+)

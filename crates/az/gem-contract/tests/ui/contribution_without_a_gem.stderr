@@ -1,0 +1,14 @@
+error: `../../../../engine.toml` declares no contribution for package `az-gem-contract-tests`. Add the stanza that names it:
+
+       [[contributions]]
+       id = "<contribution-id>"
+       kind = "code"
+       package = "az-gem-contract-tests"
+       roles = ["server", "unified"]
+       caps = ["HostsWorld"]
+  --> tests/ui/contribution_without_a_gem.rs:15:1
+   |
+15 | #[contribution]
+   | ^^^^^^^^^^^^^^^
+   |
+   = note: this error originates in the attribute macro `contribution` (in Nightly builds, run with -Z macro-backtrace for more info)

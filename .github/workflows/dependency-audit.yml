@@ -1,0 +1,38 @@
+name: Dependency audit
+
+# Weekly non-blocking advisory scan over Cargo.lock. Reports findings as a
+# failed (continue-on-error) job so they surface in the Actions tab without
+# gating pushes or PRs; triage critical/high items into dependency bumps.
+on:
+  schedule:
+    # Mondays 06:20 UTC, offset from the hour to dodge runner congestion.
+    - cron: "20 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  cargo-audit:
+    name: Advisories in Cargo.lock (non-blocking report)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install Rust toolchain
+        run: |
+          rustup show
+          cargo --version
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked --version 0.21.2
+
+      - name: Audit Cargo.lock against the RustSec advisory database
+        run: cargo audit

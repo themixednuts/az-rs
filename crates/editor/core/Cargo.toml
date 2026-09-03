@@ -1,0 +1,120 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-editor"
+version = "0.1.0"
+edition.workspace = true
+description = "AZoth Editor "
+
+# `test = false` because this target's test harness links the GPUI Windows
+# platform, whose import table names `dcomp.dll!DCompositionWaitForCompositorClock`
+# — an entry Windows Server images do not export, so the harness cannot even
+# load there. The binary is `fn main` alone; all startup logic and its tests
+# live in the library, whose harness links none of that.
+[[bin]]
+name = "az-editor"
+path = "src/bin/az-editor.rs"
+test = false
+
+[lints]
+workspace = true
+[build-dependencies]
+# `build.rs` runs drizzle's schema -> migration generator for editor-local
+# preference state. Runtime loads generated SQL via `include_migrations!`.
+drizzle-migrations = { workspace = true }
+drizzle-types = { workspace = true }
+
+[dependencies]
+# UI components
+az-editor-ui = { path = "../ui" }
+
+# Inspector UI components
+az-editor-inspector = { path = "../inspector" }
+az-core = { workspace = true, features = ["bevy"] }
+az-animation = { workspace = true }
+az-endpoint-discovery = { workspace = true }
+# The engine contribution bundles the viewport preview composes for the
+# `runtime-host` role. `builders` is absent because that role does not name it
+# and the preview asks it nothing.
+az-engine-assets = { workspace = true }
+az-engine-runtime = { workspace = true }
+az-engine-types = { workspace = true }
+az-filesystem = { workspace = true }
+az-turso = { workspace = true }
+az-framework = { workspace = true }
+az-gem-contract = { workspace = true }
+az-graph-layout = { workspace = true }
+az-material = { workspace = true }
+az-mesh-builder = { workspace = true }
+az-node-graph = { workspace = true }
+az-observability = { path = "../../az/observability" }
+az-prefab = { workspace = true }
+az-prefab-builder = { workspace = true }
+az-render = { workspace = true, features = ["bevy"] }
+az-scene = { workspace = true }
+az-source-control = { workspace = true }
+az-proto-asset = { path = "../../az/proto/asset" }
+az-proto-core = { path = "../../az/proto/core" }
+az-proto-daemon = { path = "../../az/proto/daemon" }
+az-proto-project = { path = "../../az/proto/project" }
+az-proto-runtime = { path = "../../az/proto/runtime" }
+az-proto-session = { path = "../../az/proto/session" }
+az-project-scaffold = { path = "../../az/project-scaffold" }
+az-rpc = { workspace = true }
+az-service-supervision = { workspace = true }
+az-transform = { workspace = true }
+
+# GPUI for editor UI
+bevy = { workspace = true, features = ["2d", "3d", "dds", "file_watcher"] }
+gltf = "1.4"
+gpui = { workspace = true }
+gpui-component = { workspace = true }
+gpui-component-assets = { workspace = true }
+gpui_platform = { workspace = true }
+wgpu = { workspace = true, features = ["naga-ir"] }
+
+# Utilities
+tracing = { workspace = true }
+blake3 = { workspace = true }
+capnp = { workspace = true }
+capnp-rpc = { workspace = true }
+clap = { workspace = true, features = ["derive"] }
+thiserror = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+ron = { workspace = true }
+smallvec = { workspace = true }
+toml = { workspace = true }
+futures = { workspace = true }
+futures-timer = { workspace = true }
+tokio = { workspace = true }
+uuid = { workspace = true }
+drizzle = { workspace = true, features = ["turso"] }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+windows = { workspace = true, features = [
+    "Wdk_System_SystemServices",
+    "Win32_Graphics_Gdi",
+    "Win32_System_Com",
+    "Win32_System_SystemInformation",
+] }
+# Typed DirectComposition visual-slot and structural telemetry API. Resolves to
+# vendor/zed/crates/gpui_windows through the workspace Zed patch table.
+gpui_windows = { git = "https://github.com/zed-industries/zed", rev = "17c0ebb0f7b8b512d99f396e543e71c1775ff6f6" }
+
+[features]
+default = []
+
+[dev-dependencies]
+az-architecture-guard = { workspace = true }
+az-asset-builder = { workspace = true }
+az-asset-processor = { path = "../../az/asset-processor", features = ["test-support"] }
+az-assetdb = { path = "../../az/assetdb", features = ["test-support"] }
+az-daemon = { path = "../../az/daemon", features = ["test-support"] }
+az-project = { workspace = true }
+az-project-host = { path = "../../az/project-host", features = ["test-support"] }
+az-runtime-host = { path = "../../az/runtime-host", features = ["test-support"] }
+az-session = { path = "../../az/session", features = ["test-support"] }
+az-service-catalog = { workspace = true }
+gpui = { workspace = true, features = ["test-support"] }
+tempfile = "3"

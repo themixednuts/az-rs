@@ -1,0 +1,23 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-gem-slayer-script"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Typed SlayerScript source schemas and deterministic state-machine runtime"
+
+[lints]
+workspace = true
+
+[dependencies]
+arrayvec = { workspace = true }
+az-core = { workspace = true, features = ["bevy", "serde"] }
+az-derive = { workspace = true }
+az-gem-contract = { workspace = true }
+az-prefab = { workspace = true }
+bevy = { workspace = true, features = ["default_app"] }
+gridmate = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+thiserror = { workspace = true }
+uuid = { workspace = true }

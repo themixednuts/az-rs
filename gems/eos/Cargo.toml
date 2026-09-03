@@ -1,0 +1,21 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-gem-eos"
+version = "0.1.0"
+edition = "2024"
+description = "Azoth Epic Online Services platform integration gem"
+
+
+[lints]
+workspace = true
+[features]
+default = []
+client-runtime = ["dep:eos-plugin", "eos-plugin/client-runtime"]
+anti-cheat-client = ["client-runtime", "eos-plugin/anti-cheat-client"]
+server-runtime = ["dep:eos-plugin", "eos-plugin/server-runtime"]
+
+[dependencies]
+az-gem-contract = { workspace = true }
+eos-plugin = { path = "../../crates/integrations/eos/plugin", optional = true }
+serde = { workspace = true, features = ["derive"] }

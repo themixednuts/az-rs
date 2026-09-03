@@ -1,0 +1,27 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "eos-plugin"
+version = "0.1.0"
+edition = "2024"
+
+
+[lints]
+workspace = true
+
+[features]
+default = []
+client-runtime = []
+anti-cheat-client = ["client-runtime"]
+server-runtime = []
+
+[dependencies]
+bevy = { workspace = true, features = ["default_app"] }
+eos-ffi = { path = "../ffi" }
+hex = { workspace = true }
+tracing = { workspace = true }
+thiserror = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+futures-lite = { workspace = true }
+logging-registry = { path = "../../logging-registry" }
+zeroize = { workspace = true }

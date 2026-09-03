@@ -1,0 +1,13 @@
+(
+    case: "nested_prefab_override",
+    schema: "azoth.prefab.Instance",
+    type_label: "Prefab Instance",
+    category: None,
+    icon: None,
+    fields: [
+        (name: "source", label: "Source", schema_type: "core.asset-path", widget: "asset:prefab", default: Some("asset:"), constraints: ()),
+        (name: "overrides", label: "Overrides", schema_type: "core.list<azoth.prefab.OverrideOp>", widget: "default", default: Some("list[]"), constraints: ()),
+    ],
+    add_component: None,
+    behaviors: ["nested_instance", "instance_chain", "override_target", "override_set"],
+)

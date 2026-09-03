@@ -1,0 +1,16 @@
+(
+    case: "camera",
+    schema: "azoth.render.Camera",
+    type_label: "Camera",
+    category: Some("Rendering"),
+    icon: Some("video"),
+    fields: [
+        (name: "projection", label: "Projection", schema_type: "azoth.render.CameraProjection", widget: "default", default: Some("variant:3741716405(struct{3730337318=float:60})"), constraints: ()),
+        (name: "near", label: "Near Clip", schema_type: "core.f32", widget: "number:0.01:m", default: Some("float:0.10000000149011612"), constraints: (min: Some(0.001))),
+        (name: "far", label: "Far Clip", schema_type: "core.f32", widget: "number:1:m", default: Some("float:1000"), constraints: (min: Some(0.002))),
+        (name: "active", label: "Active", schema_type: "core.bool", widget: "toggle", default: Some("bool:true"), constraints: ()),
+        (name: "order", label: "Render Order", schema_type: "core.i32", widget: "number:1:", default: Some("signed:0"), constraints: ()),
+    ],
+    add_component: Some((editor_export: true, runtime_export: true, provides: ["azoth.camera"], requires: ["azoth.transform"], incompatible: ["azoth.camera"], default_available: true)),
+    behaviors: ["enum_variant", "nested_struct", "number_suffix", "cross_field_validation", "add_component_applicability"],
+)

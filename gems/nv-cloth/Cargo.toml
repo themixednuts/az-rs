@@ -1,0 +1,26 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-gem-nv-cloth"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Deterministic NvCloth-compatible character cloth runtime"
+
+
+[lints]
+workspace = true
+[dependencies]
+az-core = { workspace = true }
+az-framework = { path = "../../crates/az/framework", default-features = false }
+az-gem-animation = { workspace = true }
+az-gem-contract = { workspace = true }
+az-mesh = { workspace = true }
+az-nv-cloth = { workspace = true }
+az-physics = { workspace = true }
+bevy = { workspace = true, features = ["default_app", "common_api", "bevy_gltf"] }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+azoth-nv-cloth-ids = { path = "ids" }

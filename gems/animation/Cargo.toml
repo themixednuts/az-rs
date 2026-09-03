@@ -1,0 +1,40 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-gem-animation"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Azoth Animation Gem build and runtime asset registration"
+
+[lints]
+workspace = true
+
+[dependencies]
+az-animation = { workspace = true }
+az-core = { workspace = true }
+az-framework = { path = "../../crates/az/framework", default-features = false }
+az-mesh = { workspace = true }
+az-nv-cloth = { workspace = true }
+az-physics = { workspace = true }
+az-gem-contract = { workspace = true }
+bevy = { workspace = true, features = [
+    "default_app",
+    "common_api",
+    "bevy_gltf",
+    "gltf_animation",
+] }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+az-asset = { workspace = true }
+# The compose-seam test composes the engine's `builders` bundle beside this
+# gem, because `project-host` is the role both name and the only place a second
+# caller of `az_animation::register` would surface as a duplicate key.
+az-engine-builders = { workspace = true }
+az-engine-ids = { workspace = true }
+azoth-animation-ids = { path = "ids" }
+gltf = { workspace = true, features = ["names", "utils"] }
+tempfile = "3"
+uuid = { workspace = true }

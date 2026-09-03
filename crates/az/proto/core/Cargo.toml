@@ -1,0 +1,25 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-proto-core"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Shared Cap'n Proto protocol types for Azoth service boundaries"
+
+
+[lints]
+workspace = true
+[dependencies]
+blake3 = { workspace = true }
+capnp = { workspace = true }
+capnp-rpc = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }
+
+[build-dependencies]
+az-proto-build = { path = "../build" }
+
+[dev-dependencies]
+futures = { workspace = true }
+tempfile = "3"

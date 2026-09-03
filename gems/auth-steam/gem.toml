@@ -1,0 +1,31 @@
+[manifest]
+kind = "gem"
+schema = "azoth.gem/v3"
+
+[gem]
+id = "azoth.auth.steam"
+name = "Steam Authentication Provider"
+version = "0.1.0"
+
+[gem.origin]
+publisher = "Azoth"
+license = "MIT OR Apache-2.0"
+
+[[dependencies]]
+id = "azoth.auth"
+version = "^0.1.0"
+
+[[dependencies]]
+id = "azoth.steam"
+version = "^0.1.0"
+
+[[contributions]]
+id = "provider"
+kind = "code"
+package = "az-gem-auth-steam"
+roles = ["named-service"]
+
+[capabilities.provider]
+label = "Steam Provider"
+description = "Steam session-ticket authentication provider composed over the Steam platform gem."
+contributions = ["provider"]

@@ -1,0 +1,66 @@
+use uuid::Uuid;
+
+/// Lumberyard `LmbrCentral::PhysicsSystemComponent` AZ component UUID.
+pub const PHYSICS_SYSTEM_COMPONENT_TYPE_ID: &str = "1586DBA1-F5F0-49AB-9F59-AE62C0E60AE0";
+pub const PHYSICS_SYSTEM_COMPONENT_TYPE_UUID: Uuid =
+    Uuid::from_u128(0x1586DBA1_F5F0_49AB_9F59_AE62C0E60AE0);
+
+/// Lumberyard `LmbrCentral::PhysicsComponent` base type UUID.
+pub const PHYSICS_COMPONENT_TYPE_ID: &str = "6C2A2397-C33D-4ACA-8813-42B99E7B84DB";
+pub const PHYSICS_COMPONENT_TYPE_UUID: Uuid =
+    Uuid::from_u128(0x6C2A2397_C33D_4ACA_8813_42B99E7B84DB);
+
+/// Lumberyard `AzFramework::PrimitiveColliderConfig` type UUID.
+pub const PRIMITIVE_COLLIDER_CONFIG_TYPE_ID: &str = "85AA27D6-E019-469F-8472-89862323DBF7";
+pub const PRIMITIVE_COLLIDER_CONFIG_TYPE_UUID: Uuid =
+    Uuid::from_u128(0x85AA27D6_E019_469F_8472_89862323DBF7);
+
+/// Lumberyard `LmbrCentral::PrimitiveColliderComponent` AZ component UUID.
+pub const PRIMITIVE_COLLIDER_COMPONENT_TYPE_ID: &str = "9CB3707A-73B3-4EE5-84EA-3CF86E0E3722";
+pub const PRIMITIVE_COLLIDER_COMPONENT_TYPE_UUID: Uuid =
+    Uuid::from_u128(0x9CB3707A_73B3_4EE5_84EA_3CF86E0E3722);
+
+/// Lumberyard `LmbrCentral::MeshColliderComponent` AZ component UUID.
+pub const MESH_COLLIDER_COMPONENT_TYPE_ID: &str = "2D559EB0-F6FE-46E0-9FCE-E8F375177724";
+pub const MESH_COLLIDER_COMPONENT_TYPE_UUID: Uuid =
+    Uuid::from_u128(0x2D559EB0_F6FE_46E0_9FCE_E8F375177724);
+
+/// Lumberyard `AzFramework::RigidPhysicsConfig` type UUID.
+pub const RIGID_PHYSICS_CONFIG_TYPE_ID: &str = "4D4211C2-4539-444F-A8AC-B0C8417AA579";
+pub const RIGID_PHYSICS_CONFIG_TYPE_UUID: Uuid =
+    Uuid::from_u128(0x4D4211C2_4539_444F_A8AC_B0C8417AA579);
+
+/// Lumberyard `AzFramework::RigidPhysicsConfig::MassOrDensity` type UUID.
+pub const RIGID_PHYSICS_MASS_OR_DENSITY_TYPE_ID: &str = "0F5DBFB3-FD9A-4E83-B9B3-4713AB2241B4";
+pub const RIGID_PHYSICS_MASS_OR_DENSITY_TYPE_UUID: Uuid =
+    Uuid::from_u128(0x0F5DBFB3_FD9A_4E83_B9B3_4713AB2241B4);
+
+/// Lumberyard `LmbrCentral::RigidPhysicsComponent` AZ component UUID.
+pub const RIGID_PHYSICS_COMPONENT_TYPE_ID: &str = "BF2ED241-6364-4D78-8008-498EF2A2659C";
+pub const RIGID_PHYSICS_COMPONENT_TYPE_UUID: Uuid =
+    Uuid::from_u128(0xBF2ED241_6364_4D78_8008_498EF2A2659C);
+
+/// Lumberyard `AzFramework::StaticPhysicsConfig` type UUID.
+pub const STATIC_PHYSICS_CONFIG_TYPE_ID: &str = "2129576B-A548-4F3E-A2A1-87851BF48838";
+pub const STATIC_PHYSICS_CONFIG_TYPE_UUID: Uuid =
+    Uuid::from_u128(0x2129576B_A548_4F3E_A2A1_87851BF48838);
+
+/// Lumberyard `LmbrCentral::StaticPhysicsComponent` AZ component UUID.
+pub const STATIC_PHYSICS_COMPONENT_TYPE_ID: &str = "95D89791-6397-41BC-AAC5-95282C8AD9D4";
+pub const STATIC_PHYSICS_COMPONENT_TYPE_UUID: Uuid =
+    Uuid::from_u128(0x95D89791_6397_41BC_AAC5_95282C8AD9D4);
+
+/// Lumberyard `LmbrCentral::ForceVolumeConfiguration` type UUID.
+pub const FORCE_VOLUME_CONFIGURATION_TYPE_ID: &str = "B0270667-B52B-4117-974F-035472E9F25A";
+pub const FORCE_VOLUME_CONFIGURATION_TYPE_UUID: Uuid =
+    Uuid::from_u128(0xB0270667_B52B_4117_974F_035472E9F25A);
+
+/// Lumberyard `LmbrCentral::ForceVolumeComponent` AZ component UUID.
+pub const FORCE_VOLUME_COMPONENT_TYPE_ID: &str = "810D20F9-AD2D-4A5C-BBD4-0175A3874DD6";
+pub const FORCE_VOLUME_COMPONENT_TYPE_UUID: Uuid =
+    Uuid::from_u128(0x810D20F9_AD2D_4A5C_BBD4_0175A3874DD6);
+
+/// Lumberyard `LmbrCentral::VegetationPhysicsComponent` AZ component UUID.
+pub const VEGETATION_PHYSICS_COMPONENT_TYPE_ID: &str = "D221EB6B-85D9-4CB2-96EC-F6BEA2FD017A";
+pub const VEGETATION_PHYSICS_COMPONENT_TYPE_UUID: Uuid =
+    Uuid::from_u128(0xD221EB6B_85D9_4CB2_96EC_F6BEA2FD017A);

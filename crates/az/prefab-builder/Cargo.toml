@@ -1,0 +1,40 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-prefab-builder"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Azoth typed Prefab to AZSCENE asset builder"
+
+[lints]
+workspace = true
+
+[dependencies]
+az-asset-builder = { workspace = true }
+az-core = { workspace = true, features = ["bevy"] }
+az-framework = { path = "../framework", default-features = false }
+az-gem-contract = { workspace = true }
+az-prefab = { workspace = true }
+az-render = { workspace = true }
+az-scene = { workspace = true }
+az-transform = { workspace = true }
+bevy = { workspace = true, features = ["bevy_world_serialization"] }
+blake3 = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+az-asset = { workspace = true }
+# The engine bundles this crate's own tests compose, so the fixture lowerings
+# arrive the way a worker's do. Neither bundle names this crate, so there is no
+# cycle to unpick — the arrow only ever points from `builders` to here.
+az-engine-runtime = { workspace = true }
+az-engine-types = { workspace = true }
+az-work = { workspace = true }
+glam = { workspace = true }
+tempfile = { workspace = true }
+
+[build-dependencies]
+az-build-fingerprint = { workspace = true }

@@ -1,0 +1,36 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-prefab"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Engine-owned prefab authored-source schemas and semantics for Azoth"
+
+[lints]
+workspace = true
+
+[dependencies]
+az-core = { workspace = true }
+# Registrar-only: registry entry types, no `App`. See az-node-graph.
+az-gem-contract = { workspace = true }
+az-prefab-derive = { workspace = true }
+bevy_ecs = { workspace = true }
+bevy_reflect = { workspace = true }
+ron = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+# Enable az-core's serde feature for tests so the reflect-opaque identity/CRC
+# leaf types (EntityId, ComponentId, Crc32) register ReflectSerialize /
+# ReflectDeserialize. Opaque reflection has no structural fallback, so the
+# prefab codec serializes these leaves through serde — which requires that
+# type data. This does not affect non-test builds of az-prefab (dev-deps are
+# excluded there), matching the real runtime pipeline that builds az-core with
+# serde enabled.
+az-core = { workspace = true, features = ["serde"] }
+uuid = { workspace = true }
+
+[build-dependencies]
+az-build-fingerprint = { workspace = true }

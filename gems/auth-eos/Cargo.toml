@@ -1,0 +1,16 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-gem-auth-eos"
+version = "0.1.0"
+edition = "2024"
+description = "Azoth Epic Online Services authentication provider (azoth.auth.eos)"
+
+[lints]
+workspace = true
+
+[dependencies]
+az-gem-auth = { workspace = true }
+az-gem-contract = { workspace = true }
+az-gem-eos = { workspace = true }
+serde = { workspace = true, features = ["derive"] }

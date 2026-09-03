@@ -1,0 +1,29 @@
+[manifest]
+kind = "gem"
+schema = "azoth.gem/v3"
+
+[gem]
+id = "azoth.texture-atlas"
+name = "TextureAtlas"
+version = "0.1.0"
+
+[paths]
+assets = "assets"
+scripts = "scripts"
+
+[[contributions]]
+id = "package"
+kind = "code"
+package = "az-gem-texture-atlas"
+roles = ["game", "p2p", "client", "unified", "project-host", "runtime-host"]
+
+# `texture-atlas-assets` reads and writes this gem's own format, so it depends
+# on `az-gem-texture-atlas` and no engine bundle can name it without the
+# asset-processor host linking gem code. Its registration reaches a host through
+# this gem instead, from a bundle crate that may name both. `asset-processor` is
+# deliberately absent for that same reason.
+[[contributions]]
+id = "builders"
+kind = "builder"
+package = "az-gem-texture-atlas-builders"
+roles = ["project-host", "asset-worker"]

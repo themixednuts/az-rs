@@ -1,0 +1,14 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "cry-renderer"
+version = "0.1.0"
+edition.workspace = true
+description = "Cry renderer asset parsers"
+
+
+[lints]
+workspace = true
+[dependencies]
+az-asset-builder = { path = "../../../../az/asset-builder" }
+thiserror = { workspace = true }

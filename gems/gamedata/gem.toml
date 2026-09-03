@@ -1,0 +1,30 @@
+[manifest]
+kind = "gem"
+schema = "azoth.gem/v3"
+
+[gem]
+id = "azoth.gamedata"
+name = "GameData"
+version = "0.1.0"
+
+[paths]
+assets = "assets"
+scripts = "scripts"
+
+[[contributions]]
+id = "authoring"
+kind = "code"
+package = "gamedata"
+roles = ["project-host"]
+
+[[contributions]]
+id = "builders"
+kind = "builder"
+package = "gamedata"
+roles = ["asset-processor", "asset-worker"]
+
+[capabilities.authoring]
+label = "Authoring"
+description = "Registers generic GameData source schemas, table builders, and descriptor catalogs."
+contributions = ["authoring", "builders"]
+cargo_features = ["authoring"]

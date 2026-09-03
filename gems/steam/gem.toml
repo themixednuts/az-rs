@@ -1,0 +1,24 @@
+[manifest]
+kind = "gem"
+schema = "azoth.gem/v3"
+
+[gem]
+id = "azoth.steam"
+name = "Steam"
+version = "0.1.0"
+
+[paths]
+assets = "assets"
+scripts = "scripts"
+
+[[contributions]]
+id = "client-runtime"
+kind = "code"
+package = "az-gem-steam"
+roles = ["client", "unified"]
+
+[capabilities.client-runtime]
+label = "Client Runtime"
+description = "Steam client runtime integration for overlay, auth tickets, and client SDK access."
+contributions = ["client-runtime"]
+cargo_features = ["runtime"]

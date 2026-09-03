@@ -1,0 +1,32 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-texture-builder"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Azoth native texture asset builders"
+
+[lints]
+workspace = true
+
+[dependencies]
+az-asset-builder = { workspace = true }
+az-core = { workspace = true }
+az-filesystem = { workspace = true }
+az-gem-contract = { workspace = true }
+az-texture-source = { workspace = true }
+exr = { workspace = true }
+half = { workspace = true }
+image = { workspace = true, features = ["png"] }
+intel_tex_2 = { workspace = true }
+ron = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+vk2dfd = { workspace = true }
+
+[dev-dependencies]
+ktx2 = { workspace = true }
+tempfile = { workspace = true }

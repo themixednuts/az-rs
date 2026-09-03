@@ -1,0 +1,16 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-gem-auth-local"
+version = "0.1.0"
+edition = "2024"
+description = "Azoth local/dev authentication provider (azoth.auth.local)"
+
+[lints]
+workspace = true
+
+[dependencies]
+az-gem-auth = { workspace = true }
+az-gem-contract = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+sha2 = { workspace = true }

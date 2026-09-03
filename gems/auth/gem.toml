@@ -1,0 +1,40 @@
+[manifest]
+kind = "gem"
+schema = "azoth.gem/v3"
+
+[gem]
+id = "azoth.auth"
+name = "Authentication Contract"
+version = "0.1.0"
+
+[gem.origin]
+publisher = "Azoth"
+license = "MIT OR Apache-2.0"
+
+# The provider-neutral contract. Game/runtime code depends on it for the
+# client-side `CredentialSource`; the generated auth host depends on it (with
+# the `host` feature) for signing. It never links a provider SDK.
+[[contributions]]
+id = "contract"
+kind = "code"
+package = "az-gem-auth"
+roles = ["client", "server", "unified", "headless-server", "named-service"]
+
+# The reference host authority (session signing/validation) is only linked into
+# the generated auth-host service, behind the `host` cargo feature.
+[[contributions]]
+id = "host"
+kind = "code"
+package = "az-gem-auth"
+roles = ["named-service"]
+
+[capabilities.contract]
+label = "Auth Contract"
+description = "Provider-neutral identity, credential, and session vocabulary."
+contributions = ["contract"]
+
+[capabilities.host]
+label = "Auth Host Authority"
+description = "Reference session signing/validation authority for the generated auth host."
+contributions = ["host"]
+cargo_features = ["host"]

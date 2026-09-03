@@ -1,0 +1,22 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-derive"
+version = "0.1.0"
+edition.workspace = true
+
+
+[lints]
+workspace = true
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1.0"
+quote = "1.0"
+syn = { version = "2.0", features = ["full", "derive", "extra-traits"] }
+
+[dev-dependencies]
+az-core = { workspace = true }
+trybuild = "1"
+uuid = { workspace = true }

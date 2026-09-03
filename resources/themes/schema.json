@@ -1,0 +1,589 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://azoth-editor.dev/schemas/theme.json",
+  "title": "Azoth Editor Theme Configuration",
+  "description": "Configuration schema for Azoth editor themes using gpui-component's Theme structure. Themes define colors, font size, and radius that map directly to gpui-component's ThemeColor fields.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Display name of the theme (e.g., 'Solarized', 'One Dark')",
+      "minLength": 1
+    },
+    "colors": {
+      "$ref": "#/$defs/themeColorConfig"
+    },
+    "font": {
+      "type": "object",
+      "description": "Font configuration",
+      "properties": {
+        "family": {
+          "type": "string",
+          "description": "Base UI font family"
+        },
+        "size": {
+          "$ref": "#/$defs/lengthConfig",
+          "description": "Base font size for the theme"
+        },
+        "mono_family": {
+          "type": "string",
+          "description": "Monospace UI font family"
+        },
+        "mono_size": {
+          "$ref": "#/$defs/lengthConfig",
+          "description": "Monospace font size for code and metadata"
+        }
+      },
+      "additionalProperties": false
+    },
+    "radius": {
+      "$ref": "#/$defs/lengthConfig",
+      "description": "Base border radius for the theme"
+    },
+    "light": {
+      "type": "object",
+      "description": "Light theme variant configuration. Overrides global settings when light mode is active.",
+      "properties": {
+        "colors": {
+          "$ref": "#/$defs/themeColorConfig"
+        },
+        "font": {
+          "type": "object",
+          "properties": {
+            "family": {
+              "type": "string"
+            },
+            "size": {
+              "$ref": "#/$defs/lengthConfig"
+            },
+            "mono_family": {
+              "type": "string"
+            },
+            "mono_size": {
+              "$ref": "#/$defs/lengthConfig"
+            }
+          },
+          "additionalProperties": false
+        },
+        "radius": {
+          "$ref": "#/$defs/lengthConfig"
+        }
+      },
+      "additionalProperties": false
+    },
+    "dark": {
+      "type": "object",
+      "description": "Dark theme variant configuration. Overrides global settings when dark mode is active.",
+      "properties": {
+        "colors": {
+          "$ref": "#/$defs/themeColorConfig"
+        },
+        "font": {
+          "type": "object",
+          "properties": {
+            "family": {
+              "type": "string"
+            },
+            "size": {
+              "$ref": "#/$defs/lengthConfig"
+            },
+            "mono_family": {
+              "type": "string"
+            },
+            "mono_size": {
+              "$ref": "#/$defs/lengthConfig"
+            }
+          },
+          "additionalProperties": false
+        },
+        "radius": {
+          "$ref": "#/$defs/lengthConfig"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": ["name"],
+  "additionalProperties": false,
+  "$defs": {
+    "themeColorConfig": {
+      "type": "object",
+      "description": "Color configuration using underscore-separated keys. Maps to gpui-component's ThemeColor structure. Colors should be specified in hex format (e.g., '#rrggbb' or '#rrggbbaa').",
+      "properties": {
+        "background": {
+          "type": "string",
+          "description": "Default background color"
+        },
+        "foreground": {
+          "type": "string",
+          "description": "Default text color"
+        },
+        "border": {
+          "type": "string",
+          "description": "Default border color"
+        },
+        "accent": {
+          "type": "string",
+          "description": "Accent background for hover states"
+        },
+        "accent_foreground": {
+          "type": "string",
+          "description": "Accent text color"
+        },
+        "primary": {
+          "type": "string",
+          "description": "Primary brand color"
+        },
+        "primary_hover": {
+          "type": "string",
+          "description": "Primary hover state"
+        },
+        "primary_active": {
+          "type": "string",
+          "description": "Primary active/pressed state"
+        },
+        "primary_foreground": {
+          "type": "string",
+          "description": "Text on primary background"
+        },
+        "secondary": {
+          "type": "string",
+          "description": "Secondary color"
+        },
+        "secondary_hover": {
+          "type": "string",
+          "description": "Secondary hover state"
+        },
+        "secondary_active": {
+          "type": "string",
+          "description": "Secondary active state"
+        },
+        "secondary_foreground": {
+          "type": "string",
+          "description": "Text on secondary background"
+        },
+        "danger": {
+          "type": "string",
+          "description": "Danger/error background"
+        },
+        "danger_hover": {
+          "type": "string",
+          "description": "Danger hover state"
+        },
+        "danger_active": {
+          "type": "string",
+          "description": "Danger active state"
+        },
+        "danger_foreground": {
+          "type": "string",
+          "description": "Text on danger background"
+        },
+        "success": {
+          "type": "string",
+          "description": "Success background"
+        },
+        "success_hover": {
+          "type": "string",
+          "description": "Success hover state"
+        },
+        "success_active": {
+          "type": "string",
+          "description": "Success active state"
+        },
+        "success_foreground": {
+          "type": "string",
+          "description": "Text on success background"
+        },
+        "warning": {
+          "type": "string",
+          "description": "Warning background"
+        },
+        "warning_hover": {
+          "type": "string",
+          "description": "Warning hover state"
+        },
+        "warning_active": {
+          "type": "string",
+          "description": "Warning active state"
+        },
+        "warning_foreground": {
+          "type": "string",
+          "description": "Text on warning background"
+        },
+        "info": {
+          "type": "string",
+          "description": "Info background"
+        },
+        "info_hover": {
+          "type": "string",
+          "description": "Info hover state"
+        },
+        "info_active": {
+          "type": "string",
+          "description": "Info active state"
+        },
+        "info_foreground": {
+          "type": "string",
+          "description": "Text on info background"
+        },
+        "input": {
+          "type": "string",
+          "description": "Input field border color"
+        },
+        "input_background": {
+          "type": "string",
+          "description": "Recessed input field background color"
+        },
+        "caret": {
+          "type": "string",
+          "description": "Text cursor color"
+        },
+        "selection": {
+          "type": "string",
+          "description": "Text selection background"
+        },
+        "muted": {
+          "type": "string",
+          "description": "Muted/disabled background"
+        },
+        "muted_foreground": {
+          "type": "string",
+          "description": "Muted/disabled text"
+        },
+        "list": {
+          "type": "string",
+          "description": "List background (maps from list key)"
+        },
+        "list_active": {
+          "type": "string",
+          "description": "Active list item background"
+        },
+        "list_hover": {
+          "type": "string",
+          "description": "List item hover background"
+        },
+        "list_active_border": {
+          "type": "string",
+          "description": "Active list item border"
+        },
+        "tab": {
+          "type": "string",
+          "description": "Tab background"
+        },
+        "tab_active": {
+          "type": "string",
+          "description": "Active tab background"
+        },
+        "tab_active_foreground": {
+          "type": "string",
+          "description": "Active tab text"
+        },
+        "tab_foreground": {
+          "type": "string",
+          "description": "Tab text"
+        },
+        "tab_bar": {
+          "type": "string",
+          "description": "Tab bar background"
+        },
+        "sidebar": {
+          "type": "string",
+          "description": "Sidebar background"
+        },
+        "sidebar_foreground": {
+          "type": "string",
+          "description": "Sidebar text"
+        },
+        "sidebar_border": {
+          "type": "string",
+          "description": "Sidebar border"
+        },
+        "title_bar": {
+          "type": "string",
+          "description": "Title bar background"
+        },
+        "title_bar_border": {
+          "type": "string",
+          "description": "Title bar border"
+        },
+        "ring": {
+          "type": "string",
+          "description": "Focus ring color"
+        },
+        "skeleton": {
+          "type": "string",
+          "description": "Skeleton loading placeholder color"
+        },
+        "list_even": {
+          "type": "string",
+          "description": "Alternating list row background"
+        },
+        "list_head": {
+          "type": "string",
+          "description": "List header background"
+        },
+        "tab_bar_segmented": {
+          "type": "string",
+          "description": "Segmented tab bar background"
+        },
+        "sidebar_accent": {
+          "type": "string",
+          "description": "Sidebar accent background"
+        },
+        "sidebar_accent_foreground": {
+          "type": "string",
+          "description": "Text on sidebar accent background"
+        },
+        "sidebar_primary": {
+          "type": "string",
+          "description": "Sidebar primary background"
+        },
+        "sidebar_primary_foreground": {
+          "type": "string",
+          "description": "Text on sidebar primary background"
+        },
+        "link": {
+          "type": "string",
+          "description": "Link text color"
+        },
+        "link_hover": {
+          "type": "string",
+          "description": "Link hover color"
+        },
+        "link_active": {
+          "type": "string",
+          "description": "Link active color"
+        },
+        "popover": {
+          "type": "string",
+          "description": "Popover background"
+        },
+        "popover_foreground": {
+          "type": "string",
+          "description": "Popover text color"
+        },
+        "overlay": {
+          "type": "string",
+          "description": "Overlay scrim color"
+        },
+        "drag_border": {
+          "type": "string",
+          "description": "Drag indicator border"
+        },
+        "drop_target": {
+          "type": "string",
+          "description": "Drop target highlight"
+        },
+        "group_box": {
+          "type": "string",
+          "description": "Group box background"
+        },
+        "group_box_foreground": {
+          "type": "string",
+          "description": "Group box text color"
+        },
+        "accordion": {
+          "type": "string",
+          "description": "Accordion background"
+        },
+        "accordion_hover": {
+          "type": "string",
+          "description": "Accordion hover background"
+        },
+        "button_primary": {
+          "type": "string",
+          "description": "Primary button background"
+        },
+        "button_primary_hover": {
+          "type": "string",
+          "description": "Primary button hover background"
+        },
+        "button_primary_active": {
+          "type": "string",
+          "description": "Primary button active background"
+        },
+        "button_primary_foreground": {
+          "type": "string",
+          "description": "Text on primary button background"
+        },
+        "progress_bar": {
+          "type": "string",
+          "description": "Progress bar fill"
+        },
+        "slider_bar": {
+          "type": "string",
+          "description": "Slider track"
+        },
+        "slider_thumb": {
+          "type": "string",
+          "description": "Slider thumb"
+        },
+        "switch": {
+          "type": "string",
+          "description": "Switch track"
+        },
+        "switch_thumb": {
+          "type": "string",
+          "description": "Switch thumb"
+        },
+        "scrollbar": {
+          "type": "string",
+          "description": "Scrollbar track"
+        },
+        "scrollbar_thumb": {
+          "type": "string",
+          "description": "Scrollbar thumb"
+        },
+        "scrollbar_thumb_hover": {
+          "type": "string",
+          "description": "Scrollbar thumb hover"
+        },
+        "table": {
+          "type": "string",
+          "description": "Table background"
+        },
+        "table_active": {
+          "type": "string",
+          "description": "Active table row background"
+        },
+        "table_active_border": {
+          "type": "string",
+          "description": "Active table row border"
+        },
+        "table_even": {
+          "type": "string",
+          "description": "Alternating table row background"
+        },
+        "table_head": {
+          "type": "string",
+          "description": "Table header background"
+        },
+        "table_head_foreground": {
+          "type": "string",
+          "description": "Table header text"
+        },
+        "table_foot": {
+          "type": "string",
+          "description": "Table footer background"
+        },
+        "table_foot_foreground": {
+          "type": "string",
+          "description": "Table footer text"
+        },
+        "table_hover": {
+          "type": "string",
+          "description": "Table row hover background"
+        },
+        "table_row_border": {
+          "type": "string",
+          "description": "Table row border"
+        },
+        "tiles": {
+          "type": "string",
+          "description": "Tile grid background"
+        },
+        "description_list_label": {
+          "type": "string",
+          "description": "Description list label background"
+        },
+        "description_list_label_foreground": {
+          "type": "string",
+          "description": "Description list label text"
+        },
+        "window_border": {
+          "type": "string",
+          "description": "Window border color"
+        },
+        "chart_1": {
+          "type": "string",
+          "description": "First chart series color"
+        },
+        "chart_2": {
+          "type": "string",
+          "description": "Second chart series color"
+        },
+        "chart_3": {
+          "type": "string",
+          "description": "Third chart series color"
+        },
+        "chart_4": {
+          "type": "string",
+          "description": "Fourth chart series color"
+        },
+        "chart_5": {
+          "type": "string",
+          "description": "Fifth chart series color"
+        },
+        "chart_bullish": {
+          "type": "string",
+          "description": "Bullish chart semantic color"
+        },
+        "chart_bearish": {
+          "type": "string",
+          "description": "Bearish chart semantic color"
+        },
+        "type_accent_neutral": {
+          "type": "string",
+          "description": "Neutral authored/runtime type icon accent"
+        },
+        "type_accent_slate": {
+          "type": "string",
+          "description": "Slate authored/runtime type icon accent"
+        },
+        "type_accent_level": {
+          "type": "string",
+          "description": "Level and scene type icon accent"
+        },
+        "type_accent_prefab": {
+          "type": "string",
+          "description": "Prefab and UI type icon accent"
+        },
+        "type_accent_gold": {
+          "type": "string",
+          "description": "Material and slice type icon accent"
+        },
+        "type_accent_light": {
+          "type": "string",
+          "description": "Light type icon accent"
+        },
+        "type_accent_teal": {
+          "type": "string",
+          "description": "Script and volume type icon accent"
+        },
+        "type_accent_terrain": {
+          "type": "string",
+          "description": "Terrain and texture type icon accent"
+        },
+        "type_accent_audio": {
+          "type": "string",
+          "description": "Audio type icon accent"
+        },
+        "type_accent_animation": {
+          "type": "string",
+          "description": "Animation type icon accent"
+        }
+      },
+      "additionalProperties": true
+    },
+    "lengthConfig": {
+      "description": "A length value that can be specified as pixels, rems, or bare numbers (interpreted as pixels).",
+      "anyOf": [
+        {
+          "type": "number",
+          "description": "Bare number interpreted as pixels (e.g., 14.0 = 14px)",
+          "minimum": 0
+        },
+        {
+          "type": "string",
+          "pattern": "^[0-9]+(\\.[0-9]+)?px$",
+          "description": "Explicit pixel value (e.g., \"14px\")"
+        },
+        {
+          "type": "string",
+          "pattern": "^[0-9]+(\\.[0-9]+)?rem$",
+          "description": "Rem value for scalable sizing (e.g., \"0.875rem\")"
+        }
+      ]
+    }
+  }
+}

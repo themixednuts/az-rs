@@ -1,0 +1,25 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-facet"
+version = "0.1.0"
+edition.workspace = true
+
+[lints]
+workspace = true
+
+[lib]
+name = "az_facet"
+path = "src/lib.rs"
+
+[dependencies]
+az-core = { workspace = true, features = ["bevy", "serde"] }
+az-derive = { workspace = true }
+az-gem-contract = { workspace = true }
+az-prefab = { workspace = true }
+bevy_ecs = { workspace = true }
+bevy_reflect = { workspace = true }
+getrandom = { workspace = true }
+gridmate = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+uuid = { workspace = true }

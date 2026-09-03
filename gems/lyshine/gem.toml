@@ -1,0 +1,33 @@
+[manifest]
+kind = "gem"
+schema = "azoth.gem/v3"
+
+[gem]
+id = "azoth.lyshine"
+name = "LyShine"
+version = "0.1.0"
+
+[paths]
+assets = "assets"
+scripts = "scripts"
+
+[[contributions]]
+id = "package"
+kind = "code"
+package = "az-gem-lyshine"
+roles = ["game", "p2p", "client", "unified", "project-host", "runtime-host"]
+
+# `lyshine-canvas` reads and writes this gem's own format, so it depends on
+# `az-gem-lyshine` and no engine bundle can name it without the asset-processor
+# host linking gem code. Its registration reaches a host through this gem
+# instead, from a bundle crate that may name both. `asset-processor` is
+# deliberately absent for that same reason.
+[[contributions]]
+id = "builders"
+kind = "builder"
+package = "az-gem-lyshine-builders"
+roles = ["project-host", "asset-worker"]
+
+[[dependencies]]
+id = "azoth.texture-atlas"
+version = "^0.1.0"

@@ -1,0 +1,25 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-federation"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Provider-neutral Certified Federation domain and application kernel"
+
+[lints]
+workspace = true
+
+[dependencies]
+arrayvec = { workspace = true }
+az-federation-crypto = { workspace = true }
+az-world-instance = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+az-architecture-guard = { workspace = true }
+futures = { workspace = true }
+serde_json = { workspace = true }
+toml = { workspace = true }

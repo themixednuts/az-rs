@@ -1,0 +1,55 @@
+[package]
+name = "bevy_mod_scripting_lua"
+description = "Necessary functionality for Lua support with bevy_mod_scripting"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme.workspace = true
+
+[package.metadata."docs.rs"]
+features = ["lua54"]
+
+[package.metadata.release]
+enable-features = ["lua54"]
+
+[features]
+# enables loading possibly unsafe lua modules by lua scripts
+unsafe_lua_modules = []
+
+lua51 = ["mlua/lua51"]
+lua52 = ["mlua/lua52"]
+lua53 = ["mlua/lua53"]
+lua54 = ["mlua/lua54"]
+luajit = ["mlua/luajit"]
+luajit52 = ["mlua/luajit52"]
+luau = ["mlua/luau"]
+mlua_serialize = ["mlua/serialize"]
+mlua_macros = ["mlua/macros"]
+mlua_async = ["mlua/async"]
+
+[lib]
+name = "bevy_mod_scripting_lua"
+path = "src/lib.rs"
+
+[dependencies]
+bevy_app = { workspace = true, default-features = false, features = [] }
+bevy_ecs = { workspace = true, default-features = false, features = [] }
+bevy_asset = { workspace = true, default-features = false, features = [] }
+bevy_log = { workspace = true, default-features = false, features = [] }
+bevy_platform = { workspace = true, default-features = false, features = [] }
+bevy_mod_scripting_core = { workspace = true }
+bevy_mod_scripting_display = { workspace = true }
+bevy_mod_scripting_bindings = { workspace = true }
+bevy_mod_scripting_bindings_domain = { workspace = true }
+bevy_mod_scripting_asset = { workspace = true }
+bevy_mod_scripting_script = { workspace = true }
+mlua = { workspace = true, features = ["vendored", "send", "macros"] }
+profiling = { workspace = true }
+
+[lints]
+workspace = true

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#15171b;}
+  .ms{font-family:'Material Symbols Outlined';font-weight:400;font-style:normal;line-height:1;display:inline-block;vertical-align:middle;-webkit-font-smoothing:antialiased;user-select:none;}
+</style>
+</helmet>
+<div data-htmlswap-component="segmented-option" data-htmlswap-variant="outline" data-htmlswap-tone="accent" onClick="{{ handleClick }}" style="{{ optStyle }}" style-hover="border-color:#3a4150;">
+  <sc-if value="{{ hasIcon }}" hint-placeholder-val="{{ false }}"><span class="ms" style="font-size:15px;">{{ icon }}</span></sc-if>
+  <span style="font-family:'IBM Plex Sans',system-ui,sans-serif;">{{ label }}</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:160,&quot;height&quot;:48},&quot;label&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Vulkan&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Content&quot;},&quot;icon&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Content&quot;},&quot;active&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;State&quot;},&quot;toggle&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;State&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#3160a8&quot;,&quot;options&quot;:[&quot;#3160a8&quot;,&quot;#3a8f4e&quot;,&quot;#d6a23b&quot;,&quot;#b78fd6&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Style&quot;},&quot;onClick&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(active: boolean) =&gt; void&quot;}}">
+class Component extends DCLogic {
+  state = { on: undefined };
+  renderVals() {
+    const p = this.props;
+    const controlled = typeof p.onClick === 'function' && !p.toggle;
+    const seed = p.active != null ? !!p.active : !!p.default;
+    const active = controlled ? seed : (this.state.on !== undefined ? this.state.on : seed);
+    const accent = p.accent || '#3160a8';
+    const icon = p.icon ?? '';
+    const handleClick = () => {
+      const next = p.toggle ? !active : true;
+      if (!controlled && p.toggle) this.setState({ on: next });
+      if (typeof p.onClick === 'function') p.onClick(next);
+    };
+    return {
+      handleClick, label: p.label ?? 'Option', icon, hasIcon: !!icon,
+      optStyle: {
+        display: 'flex', alignItems: 'center', gap: '6px',
+        height: '32px', padding: icon ? '0 13px' : '0 16px', borderRadius: '7px',
+        fontSize: '11.5px', cursor: 'default', userSelect: 'none', width: 'fit-content',
+        border: active ? `1px solid ${accent}` : '1px solid #2c313a',
+        background: active ? 'rgba(65,136,224,0.14)' : '#1b1e23',
+        color: active ? '#e4e7ec' : '#9aa1ac',
+        fontWeight: active ? 500 : 400
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

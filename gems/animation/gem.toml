@@ -1,0 +1,18 @@
+[manifest]
+kind = "gem"
+schema = "azoth.gem/v3"
+
+[gem]
+id = "azoth.animation"
+name = "Animation"
+version = "0.1.0"
+
+[paths]
+assets = "assets"
+scripts = "scripts"
+
+[[contributions]]
+id = "package"
+kind = "code"
+package = "az-gem-animation"
+roles = ["game", "p2p", "client", "server", "unified", "headless-server", "project-host", "runtime-host"]

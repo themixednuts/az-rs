@@ -1,0 +1,14 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-proto-build"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Shared build-script helper for Azoth Cap'n Proto mirror crates: capnp executable discovery and sibling schema-ID wiring in one place"
+
+[lints]
+workspace = true
+
+[dependencies]
+capnpc = { workspace = true }

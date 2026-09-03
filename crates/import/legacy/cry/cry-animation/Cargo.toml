@@ -1,0 +1,18 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "cry-animation-assets"
+version = "0.1.0"
+edition.workspace = true
+description = "Streaming parsers for CryAnimation metadata assets"
+
+
+[lints]
+workspace = true
+[dependencies]
+az-asset-builder = { workspace = true }
+az-animation = { workspace = true }
+glam = { workspace = true }
+quick-xml = { workspace = true }
+ron = { workspace = true }
+thiserror = { workspace = true }

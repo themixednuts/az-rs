@@ -1,0 +1,28 @@
+(
+    version: 1,
+    type_versions: {},
+    entities: {"mount": (components: {})},
+    instances: {
+        "door-instance": (
+            source: "prefabs/base-door.prefab.ron",
+            parent: Some("mount"),
+            overrides: [(
+                target: (
+                    instance_chain: [],
+                    entity: "base-camera",
+                    component: "az_render::camera::Camera",
+                    path: "near",
+                ),
+                action: Set(2.0),
+            ), (
+                target: (
+                    instance_chain: [],
+                    entity: "base-camera",
+                    component: "az_render::camera::Camera",
+                    path: "far",
+                ),
+                action: Clear,
+            )],
+        ),
+    },
+)

@@ -1,0 +1,25 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-nv-cloth"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Azoth cloth authoring, product, and solver-independent asset types"
+
+[lints]
+workspace = true
+
+[dependencies]
+az-asset-builder = { workspace = true }
+az-core = { workspace = true, features = ["serde"] }
+az-gem-contract = { workspace = true }
+bevy_asset = { workspace = true }
+bevy_math = { workspace = true, features = ["serialize"] }
+bevy_reflect = { workspace = true }
+postcard = { workspace = true }
+ron = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }

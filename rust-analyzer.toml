@@ -1,0 +1,8 @@
+checkOnSave = true
+
+[cargo]
+features = ["az-core/bevy"]
+
+[cargo.buildScripts]
+enable = true
+useRustcWrapper = true

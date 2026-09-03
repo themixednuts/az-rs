@@ -1,0 +1,26 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-proto-daemon"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Cap'n Proto protocol types for the Azoth user daemon"
+
+
+[lints]
+workspace = true
+[dependencies]
+az-proto-core = { path = "../core" }
+az-proto-session = { path = "../session" }
+capnp = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+thiserror = { workspace = true }
+toml = { workspace = true }
+
+[build-dependencies]
+az-proto-build = { path = "../build" }
+
+[dev-dependencies]
+tempfile = "3"
+uuid = { workspace = true }

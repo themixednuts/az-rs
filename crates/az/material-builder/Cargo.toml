@@ -1,0 +1,31 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-material-builder"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Azoth native material asset builders and compiled material products"
+
+[lints]
+workspace = true
+
+[dependencies]
+az-asset-builder = { workspace = true }
+az-core = { workspace = true }
+az-gem-contract = { workspace = true }
+az-material = { workspace = true }
+bevy = { workspace = true, features = ["default_app"], optional = true }
+glam = { workspace = true }
+ron = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+
+[features]
+default = []
+bevy = ["dep:bevy"]
+
+[build-dependencies]
+az-build-fingerprint = { workspace = true }

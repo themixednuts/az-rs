@@ -1,0 +1,15 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-engine-mount-types"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Fixture engine bundle crate nested one level below its engine manifest"
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+az-gem-contract = { workspace = true }

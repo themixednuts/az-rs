@@ -1,0 +1,5 @@
+error: `gem` takes an id const from the gem's generated ids crate (`gem_ids::GEM`), never a string literal; drop every argument to take identity from `gem.toml` instead
+  --> tests/ui/contribution_id_as_string_literal.rs:10:11
+   |
+10 |     gem = "azoth.vegetation",
+   |           ^^^^^^^^^^^^^^^^^^

@@ -1,0 +1,27 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-terrain-builder"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Azoth native terrain asset builders"
+
+[lints]
+workspace = true
+
+[dependencies]
+az-asset-builder = { workspace = true }
+az-core = { workspace = true }
+az-gem-contract = { workspace = true }
+az-terrain = { workspace = true }
+az-terrain-runtime = { workspace = true }
+glam = { workspace = true }
+ron = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+
+[build-dependencies]
+az-build-fingerprint = { workspace = true }

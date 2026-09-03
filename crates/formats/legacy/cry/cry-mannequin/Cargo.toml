@@ -1,0 +1,17 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "cry-mannequin"
+version = "0.1.0"
+edition.workspace = true
+description = "Streaming parsers for CryAction Mannequin metadata assets"
+
+[lints]
+workspace = true
+
+[dependencies]
+az-filesystem = { workspace = true }
+quick-xml = { workspace = true }
+ron = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+thiserror = { workspace = true }

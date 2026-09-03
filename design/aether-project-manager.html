@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{background:#15171b;}
+  ::selection{background:rgba(65,136,224,0.35);}
+  input{font-family:inherit;outline:none;}
+  .ms{font-family:'Material Symbols Outlined';font-weight:400;font-style:normal;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;direction:ltr;-webkit-font-smoothing:antialiased;font-variation-settings:'opsz' 20,'wght' 400,'GRAD' 0,'FILL' 0;vertical-align:middle;user-select:none;}
+  ::-webkit-scrollbar{width:11px;height:11px;}
+  ::-webkit-scrollbar-thumb{background:#33394300;border:3px solid transparent;background-clip:padding-box;border-radius:8px;}
+  *:hover::-webkit-scrollbar-thumb{background:#39404b;background-clip:padding-box;}
+  ::-webkit-scrollbar-thumb:hover{background:#454d59;background-clip:padding-box;}
+</style>
+</helmet>
+
+<div style="display:flex;flex-direction:column;height:100vh;width:100vw;overflow:hidden;background:#15171b;color:#d6dae0;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:12px;line-height:1.4;-webkit-font-smoothing:antialiased;user-select:none;">
+
+  <!-- titlebar -->
+  <div style="height:36px;flex:0 0 36px;display:flex;align-items:center;background:#202429;border-bottom:1px solid #2c313a;padding:0 10px;">
+    <div style="width:14px;height:14px;background:#4188e0;transform:rotate(45deg);border-radius:2px;margin-right:11px;"></div>
+    <span style="font-size:12.5px;font-weight:600;color:#e4e7ec;letter-spacing:.2px;">Aether</span>
+    <span style="font-size:12px;color:#6b7280;margin-left:7px;">Project Manager</span>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:2px;">
+      <div style="width:28px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:5px;color:#8b919c;cursor:default;" style-hover="background:#2c313a;"><span class="ms" style="font-size:15px;">remove</span></div>
+      <div style="width:28px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:5px;color:#8b919c;cursor:default;" style-hover="background:#2c313a;"><span class="ms" style="font-size:13px;">crop_square</span></div>
+      <div style="width:28px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:5px;color:#8b919c;cursor:default;" style-hover="background:#c0453f;color:#fff;"><span class="ms" style="font-size:16px;">close</span></div>
+    </div>
+  </div>
+
+  <div style="flex:1 1 auto;display:flex;min-height:0;">
+
+    <!-- nav rail -->
+    <div style="width:212px;flex:0 0 212px;background:#181b20;border-right:1px solid #2c313a;display:flex;flex-direction:column;padding:10px 10px;">
+      <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="4">
+        <div onClick="{{ n.onClick }}" style="{{ n.style }}" style-hover="background:#22262c;color:#d6dae0;">
+          <span class="ms" style="font-size:18px;">{{ n.icon }}</span>{{ n.label }}
+        </div>
+      </sc-for>
+      <div style="margin-top:auto;border-top:1px solid #23272e;padding-top:10px;">
+        <div style="display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:7px;cursor:default;" style-hover="background:#22262c;">
+          <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#3160a8,#5ac0c0);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex:0 0 auto;">JD</div>
+          <div style="min-width:0;"><div style="font-size:11.5px;color:#d6dae0;overflow:hidden;text-overflow:ellipsis;">jordan.dev</div><div style="font-size:10px;color:#6b7280;">Studio License</div></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 9px;margin-top:2px;">
+          <span style="font-size:10px;color:#5f6670;font-family:'IBM Plex Mono',monospace;">Aether 0.4.2</span>
+          <span style="font-size:9.5px;color:#57b97e;background:rgba(87,185,126,0.13);padding:2px 6px;border-radius:4px;cursor:default;">Up to date</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ RECENT VIEW ============ -->
+    <sc-if value="{{ viewRecent }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1 1 auto;display:flex;flex-direction:column;min-width:0;background:#15171b;">
+      <div style="flex:0 0 auto;display:flex;align-items:center;gap:12px;padding:20px 24px 14px;">
+        <div><div style="font-size:19px;font-weight:600;color:#e8ebef;">Projects</div><div style="font-size:11.5px;color:#6b7280;margin-top:2px;">{{ recentCount }} recent · stored locally</div></div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:9px;">
+          <div style="display:flex;align-items:center;gap:7px;height:32px;padding:0 11px;background:#1b1e23;border:1px solid #2c313a;border-radius:7px;width:220px;"><span class="ms" style="font-size:16px;color:#6b7280;">search</span><input placeholder="Search projects…" style="flex:1 1 auto;background:none;border:none;color:#d6dae0;font-size:12px;"/></div>
+          <div style="display:flex;align-items:center;gap:7px;height:32px;padding:0 14px;background:#1b1e23;border:1px solid #2c313a;border-radius:7px;color:#c2c8d0;font-size:12px;font-weight:500;cursor:default;" style-hover="border-color:#3a4150;background:#22262c;"><span class="ms" style="font-size:17px;">folder_open</span>Open…</div>
+          <div onClick="{{ goNew }}" style="display:flex;align-items:center;gap:7px;height:32px;padding:0 14px;background:#2f6ad0;border-radius:7px;color:#fff;font-size:12px;font-weight:600;cursor:default;" style-hover="filter:brightness(1.1);"><span class="ms" style="font-size:17px;">add</span>New Project</div>
+        </div>
+      </div>
+
+      <div style="flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:0 24px 12px;color:#6b7280;font-size:11px;">
+        <div style="display:flex;align-items:center;gap:5px;height:26px;padding:0 9px;border-radius:6px;cursor:default;" style-hover="background:#1b1e23;color:#c2c8d0;">Sort: <span style="color:#aeb4bd;">Last opened</span><span class="ms" style="font-size:15px;">arrow_drop_down</span></div>
+        <div style="display:flex;align-items:center;gap:5px;height:26px;padding:0 9px;border-radius:6px;cursor:default;" style-hover="background:#1b1e23;color:#c2c8d0;"><span class="ms" style="font-size:15px;">filter_list</span>All engines</div>
+        <div style="margin-left:auto;display:flex;background:#1b1e23;border-radius:6px;padding:2px;">
+          <div style="width:26px;height:21px;display:flex;align-items:center;justify-content:center;border-radius:4px;background:#3160a8;color:#fff;cursor:default;"><span class="ms" style="font-size:16px;">view_list</span></div>
+          <div style="width:26px;height:21px;display:flex;align-items:center;justify-content:center;border-radius:4px;color:#8b919c;cursor:default;" style-hover="color:#d6dae0;"><span class="ms" style="font-size:16px;">grid_view</span></div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;height:26px;padding:0 24px;color:#5a6068;font-size:10px;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #20242a;">
+        <span style="width:40px;flex:0 0 40px;"></span>
+        <span style="flex:1 1 auto;">Project</span>
+        <span style="width:150px;">Template</span>
+        <span style="width:80px;">Gems</span>
+        <span style="width:90px;">Engine</span>
+        <span style="width:120px;">Last opened</span>
+      </div>
+
+      <div style="flex:1 1 auto;overflow-y:auto;padding:6px 14px;">
+        <sc-for list="{{ recentProjects }}" as="p" hint-placeholder-count="6">
+          <a href="Aether Editor.dc.html" style="{{ p.rowStyle }}" style-hover="background:#1b1e23;border-color:#2c313a;">
+            <span style="width:40px;flex:0 0 40px;display:flex;justify-content:center;"><span style="{{ p.iconTileStyle }}"><span class="ms" style="font-size:18px;color:#fff;">{{ p.icon }}</span></span></span>
+            <span style="flex:1 1 auto;min-width:0;">
+              <span style="display:block;font-size:13px;font-weight:500;color:#e4e7ec;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ p.name }}<sc-if value="{{ p.pinned }}" hint-placeholder-val="{{ false }}"><span class="ms" style="font-size:13px;color:#d6a23b;margin-left:6px;">push_pin</span></sc-if></span>
+              <span style="display:block;font-size:10.5px;color:#6b7280;font-family:'IBM Plex Mono',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ p.path }}</span>
+            </span>
+            <span style="width:150px;color:#9aa1ac;font-size:11.5px;">{{ p.kind }}</span>
+            <span style="width:80px;color:#7c838f;font-size:11.5px;font-family:'IBM Plex Mono',monospace;">{{ p.gems }}</span>
+            <span style="width:90px;"><span style="{{ p.verStyle }}">{{ p.ver }}</span></span>
+            <span style="width:120px;color:#8b919c;font-size:11px;">{{ p.opened }}</span>
+          </a>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ NEW PROJECT VIEW ============ -->
+    <sc-if value="{{ viewNew }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1 1 auto;display:flex;min-width:0;">
+
+      <!-- main column -->
+      <div style="flex:1 1 auto;display:flex;flex-direction:column;min-width:0;background:#15171b;">
+        <!-- header + stepper -->
+        <div style="flex:0 0 auto;display:flex;align-items:center;gap:14px;padding:16px 24px;border-bottom:1px solid #20242a;">
+          <div onClick="{{ goRecent }}" style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:7px;background:#1b1e23;border:1px solid #2c313a;color:#aeb4bd;cursor:default;flex:0 0 auto;" style-hover="background:#22262c;color:#fff;"><span class="ms" style="font-size:18px;">arrow_back</span></div>
+          <div style="font-size:16px;font-weight:600;color:#e8ebef;">New Project</div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:4px;">
+            <sc-for list="{{ steps }}" as="s" hint-placeholder-count="3">
+              <div onClick="{{ s.onClick }}" style="{{ s.style }}" style-hover="color:#d6dae0;">
+                <span style="{{ s.numStyle }}"><sc-if value="{{ s.done }}" hint-placeholder-val="{{ false }}"><span class="ms" style="font-size:14px;">check</span></sc-if><sc-if value="{{ s.notDone }}" hint-placeholder-val="{{ true }}">{{ s.num }}</sc-if></span>{{ s.label }}
+              </div>
+              <span style="{{ s.connStyle }}"></span>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="flex:1 1 auto;overflow-y:auto;padding:22px 24px;">
+
+          <!-- STEP 1 — TEMPLATE -->
+          <sc-if value="{{ step1 }}" hint-placeholder-val="{{ true }}">
+            <div style="font-size:12px;color:#6b7280;margin-bottom:14px;">Choose a starting point. Templates preconfigure gems, the render pipeline and a sample scene — all editable next.</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:12px;">
+              <sc-for list="{{ templates }}" as="t" hint-placeholder-count="9">
+                <div onClick="{{ t.onClick }}" style="{{ t.cardStyle }}" style-hover="border-color:#3a4150;">
+                  <div style="{{ t.iconWrapStyle }}"><span class="ms" style="font-size:24px;color:{{ t.iconColor }};">{{ t.icon }}</span></div>
+                  <div style="font-size:13px;font-weight:600;color:#e4e7ec;">{{ t.name }}</div>
+                  <div style="font-size:11px;color:#8b919c;line-height:1.45;">{{ t.desc }}</div>
+                  <sc-if value="{{ t.selected }}" hint-placeholder-val="{{ false }}"><span class="ms" style="position:absolute;top:9px;right:9px;font-size:18px;color:#4188e0;">check_circle</span></sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- STEP 2 — CONFIGURE -->
+          <sc-if value="{{ step2 }}" hint-placeholder-val="{{ false }}">
+            <div style="max-width:560px;display:flex;flex-direction:column;gap:18px;">
+              <div>
+                <div style="font-size:11px;color:#9aa1ac;margin-bottom:6px;font-weight:500;">Project Name</div>
+                <input value="{{ name }}" onInput="{{ onName }}" style="width:100%;height:34px;padding:0 12px;background:#1b1e23;border:1px solid #2c313a;border-radius:7px;color:#e4e7ec;font-size:13px;" style-focus="border-color:#3160a8;"/>
+              </div>
+              <div>
+                <div style="font-size:11px;color:#9aa1ac;margin-bottom:6px;font-weight:500;">Location</div>
+                <div style="display:flex;gap:8px;">
+                  <input value="{{ location }}" onInput="{{ onLocation }}" style="flex:1 1 auto;height:34px;padding:0 12px;background:#1b1e23;border:1px solid #2c313a;border-radius:7px;color:#e4e7ec;font-size:12.5px;font-family:'IBM Plex Mono',monospace;" style-focus="border-color:#3160a8;"/>
+                  <div style="display:flex;align-items:center;gap:6px;height:34px;padding:0 13px;background:#22262c;border:1px solid #2c313a;border-radius:7px;color:#c2c8d0;font-size:12px;cursor:default;flex:0 0 auto;" style-hover="background:#2a2f37;"><span class="ms" style="font-size:16px;">folder_open</span>Browse</div>
+                </div>
+                <div style="font-size:10.5px;color:#5f6670;font-family:'IBM Plex Mono',monospace;margin-top:6px;">Creates <span style="color:#7fb0ec;">{{ pathPreview }}</span></div>
+              </div>
+
+              <div style="height:1px;background:#20242a;"></div>
+
+              <div>
+                <div style="font-size:11px;color:#9aa1ac;margin-bottom:7px;font-weight:500;">Renderer Backend</div>
+                <div style="display:flex;gap:6px;">
+                  <sc-for list="{{ rendererOpts }}" as="o" hint-placeholder-count="3"><div onClick="{{ o.onClick }}" style="{{ o.style }}" style-hover="border-color:#3a4150;">{{ o.label }}</div></sc-for>
+                </div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:#9aa1ac;margin-bottom:7px;font-weight:500;">Render Pipeline</div>
+                <div style="display:flex;gap:6px;">
+                  <sc-for list="{{ pipelineOpts }}" as="o" hint-placeholder-count="3"><div onClick="{{ o.onClick }}" style="{{ o.style }}" style-hover="border-color:#3a4150;">{{ o.label }}</div></sc-for>
+                </div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:#9aa1ac;margin-bottom:7px;font-weight:500;">Color Space</div>
+                <div style="display:flex;gap:6px;">
+                  <sc-for list="{{ colorOpts }}" as="o" hint-placeholder-count="2"><div onClick="{{ o.onClick }}" style="{{ o.style }}" style-hover="border-color:#3a4150;">{{ o.label }}</div></sc-for>
+                </div>
+              </div>
+
+              <div>
+                <div style="font-size:11px;color:#9aa1ac;margin-bottom:7px;font-weight:500;">Target Platforms</div>
+                <div style="display:flex;flex-wrap:wrap;gap:7px;">
+                  <sc-for list="{{ platformOpts }}" as="p" hint-placeholder-count="6"><div onClick="{{ p.onClick }}" style="{{ p.style }}" style-hover="border-color:#3a4150;"><span class="ms" style="font-size:15px;">{{ p.icon }}</span>{{ p.label }}</div></sc-for>
+                </div>
+              </div>
+
+              <div style="height:1px;background:#20242a;"></div>
+
+              <div style="display:flex;align-items:center;gap:11px;">
+                <span onClick="{{ toggleGit }}" style="{{ gitTrackStyle }}"><span style="{{ gitKnobStyle }}"></span></span>
+                <div><div style="font-size:12px;color:#d6dae0;">Initialize Git repository</div><div style="font-size:10.5px;color:#6b7280;">Adds a Rust + Aether <span style="font-family:'IBM Plex Mono',monospace;">.gitignore</span> and first commit</div></div>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- STEP 3 — GEMS -->
+          <sc-if value="{{ step3 }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+              <div style="font-size:12px;color:#6b7280;flex:1 1 auto;">Gems are modular engine features. Dependencies resolve automatically; required gems can't be removed.</div>
+              <div style="display:flex;align-items:center;gap:7px;height:30px;padding:0 11px;background:#1b1e23;border:1px solid #2c313a;border-radius:7px;width:200px;flex:0 0 auto;"><span class="ms" style="font-size:15px;color:#6b7280;">search</span><input value="{{ gemQuery }}" onInput="{{ onGemSearch }}" placeholder="Filter gems…" style="flex:1 1 auto;background:none;border:none;color:#d6dae0;font-size:11.5px;"/></div>
+            </div>
+            <sc-for list="{{ gemGroups }}" as="grp" hint-placeholder-count="6">
+              <div style="margin-bottom:16px;">
+                <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;"><span class="ms" style="font-size:15px;color:{{ grp.color }};">{{ grp.icon }}</span><span style="font-size:11px;font-weight:600;color:#aeb4bd;text-transform:uppercase;letter-spacing:.5px;">{{ grp.cat }}</span><span style="font-size:10px;color:#5f6670;font-family:'IBM Plex Mono',monospace;">{{ grp.count }}</span></div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:8px;">
+                  <sc-for list="{{ grp.items }}" as="g" hint-placeholder-count="3">
+                    <div onClick="{{ g.onToggle }}" style="{{ g.style }}" style-hover="border-color:#3a4150;">
+                      <div style="flex:1 1 auto;min-width:0;">
+                        <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:12px;font-weight:500;color:#e4e7ec;">{{ g.name }}</span><span style="font-size:9.5px;color:#5f6670;font-family:'IBM Plex Mono',monospace;">{{ g.ver }}</span><sc-if value="{{ g.locked }}" hint-placeholder-val="{{ false }}"><span style="font-size:9px;color:#7c838f;background:#23272e;padding:1px 5px;border-radius:3px;">REQUIRED</span></sc-if></div>
+                        <div style="font-size:10.5px;color:#8b919c;line-height:1.4;margin-top:2px;">{{ g.desc }}</div>
+                      </div>
+                      <span style="{{ g.trackStyle }}"><span style="{{ g.knobStyle }}"></span></span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </sc-if>
+        </div>
+
+        <!-- footer nav -->
+        <div style="flex:0 0 auto;display:flex;align-items:center;padding:13px 24px;border-top:1px solid #20242a;background:#181b20;">
+          <sc-if value="{{ canBack }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ onBack }}" style="display:flex;align-items:center;gap:6px;height:34px;padding:0 16px;background:#22262c;border:1px solid #2c313a;border-radius:7px;color:#c2c8d0;font-size:12px;font-weight:500;cursor:default;" style-hover="background:#2a2f37;color:#fff;"><span class="ms" style="font-size:17px;">arrow_back</span>Back</div>
+          </sc-if>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:10px;">
+            <div style="font-size:11px;color:#6b7280;">{{ footerHint }}</div>
+            <sc-if value="{{ notLastStep }}" hint-placeholder-val="{{ true }}">
+              <div onClick="{{ onNext }}" style="display:flex;align-items:center;gap:6px;height:34px;padding:0 18px;background:#2f6ad0;border-radius:7px;color:#fff;font-size:12px;font-weight:600;cursor:default;" style-hover="filter:brightness(1.1);">Continue<span class="ms" style="font-size:17px;">arrow_forward</span></div>
+            </sc-if>
+            <sc-if value="{{ lastStep }}" hint-placeholder-val="{{ false }}">
+              <a href="Aether Editor.dc.html" style="display:flex;align-items:center;gap:7px;height:34px;padding:0 20px;background:#3a8f4e;border-radius:7px;color:#fff;font-size:12px;font-weight:600;cursor:default;text-decoration:none;" style-hover="filter:brightness(1.1);"><span class="ms" style="font-size:18px;">rocket_launch</span>Create Project</a>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+
+      <!-- summary rail -->
+      <div style="width:300px;flex:0 0 300px;background:#181b20;border-left:1px solid #2c313a;display:flex;flex-direction:column;">
+        <div style="padding:18px 18px 14px;border-bottom:1px solid #20242a;">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#5f6670;margin-bottom:11px;">Summary</div>
+          <div style="display:flex;align-items:center;gap:11px;">
+            <div style="width:44px;height:44px;border-radius:10px;background:#22262c;display:flex;align-items:center;justify-content:center;flex:0 0 auto;"><span class="ms" style="font-size:24px;color:{{ sumIconColor }};">{{ sumIcon }}</span></div>
+            <div style="min-width:0;"><div style="font-size:14px;font-weight:600;color:#e8ebef;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ name }}</div><div style="font-size:11px;color:#8b919c;">{{ sumTemplate }} template</div></div>
+          </div>
+        </div>
+        <div style="flex:1 1 auto;overflow-y:auto;padding:14px 18px;">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#5f6670;margin-bottom:9px;">Configuration</div>
+          <sc-for list="{{ sumRows }}" as="r" hint-placeholder-count="5">
+            <div style="display:flex;align-items:center;justify-content:space-between;min-height:24px;padding:3px 0;border-bottom:1px solid #1c1f24;"><span style="font-size:11px;color:#7c838f;">{{ r.label }}</span><span style="font-size:11px;color:#c2c8d0;font-family:'IBM Plex Mono',monospace;max-width:160px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ r.value }}</span></div>
+          </sc-for>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#5f6670;margin:16px 0 9px;display:flex;justify-content:space-between;"><span>Gems</span><span style="color:#7fb0ec;font-family:'IBM Plex Mono',monospace;">{{ gemCount }} enabled</span></div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px;">
+            <sc-for list="{{ sumGems }}" as="g" hint-placeholder-count="6"><span style="display:flex;align-items:center;gap:4px;font-size:10.5px;color:#aeb4bd;background:#22262c;border:1px solid #2c313a;padding:3px 8px;border-radius:5px;"><span class="ms" style="font-size:12px;color:{{ g.color }};">{{ g.icon }}</span>{{ g.name }}</span></sc-for>
+          </div>
+        </div>
+        <div style="flex:0 0 auto;padding:14px 18px;border-top:1px solid #20242a;">
+          <a href="Aether Editor.dc.html" style="display:flex;align-items:center;justify-content:center;gap:8px;height:40px;background:#2f6ad0;border-radius:8px;color:#fff;font-size:13px;font-weight:600;cursor:default;text-decoration:none;" style-hover="filter:brightness(1.1);"><span class="ms" style="font-size:19px;">rocket_launch</span>Create Project</a>
+          <div onClick="{{ goRecent }}" style="text-align:center;margin-top:9px;font-size:11px;color:#7c838f;cursor:default;" style-hover="color:#d6dae0;">Cancel</div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ============ SAMPLES / LEARN placeholder ============ -->
+    <sc-if value="{{ viewMisc }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#15171b;color:#5f6670;gap:12px;">
+      <span class="ms" style="font-size:48px;color:#2c313a;">{{ miscIcon }}</span>
+      <div style="font-size:14px;color:#8b919c;">{{ miscTitle }}</div>
+      <div style="font-size:11.5px;">{{ miscSub }}</div>
+    </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.catMeta = {
+      'System':['memory','#7a8aa0'],'Rendering':['palette','#4188e0'],'Physics':['fitness_center','#d6a23b'],
+      'Scripting':['code','#5ac0c0'],'AI':['smart_toy','#8fc97e'],'Audio':['graphic_eq','#d68fb0'],
+      'Animation':['animation','#7ad6a6'],'Networking':['lan','#7a8aa0'],'World':['public','#8fc97e'],
+      'Input / XR':['view_in_ar','#b78fd6'],'UI':['dashboard','#b78fd6'],'Sequencer':['movie','#e0a060'],'Debug':['bug_report','#9aa1ac']
+    };
+    // id,name,category,version,required,desc
+    this.gemCatalog = [
+      ['core','Core Framework','System','0.4.2',true,'ECS, asset system & job scheduler — always included.'],
+      ['atom','Atom Renderer','Rendering','0.4.2',false,'Vulkan forward+ renderer with GPU-driven culling.'],
+      ['render2d','2D Renderer','Rendering','0.4.0',false,'Sprite, tilemap & 2D lighting renderer.'],
+      ['physx','PhysX 5','Physics','5.1.3',false,'Rigid bodies, character controllers & cloth.'],
+      ['physx2d','2D Physics','Physics','0.4.0',false,'Box2D-based 2D collision & dynamics.'],
+      ['lua','Lua Scripting','Scripting','5.4.6',false,'Hot-reloadable Lua with editor bindings.'],
+      ['scriptcanvas','Script Canvas','Scripting','1.2.0',false,'Node-based visual scripting graph.'],
+      ['navmesh','Navigation Mesh','AI','0.4.0',false,'Recast navmesh baking & crowd avoidance.'],
+      ['behavior','Behavior Trees','AI','0.3.2',false,'Authoring & runtime for AI behavior trees.'],
+      ['wwise','Audio Engine','Audio','2024.1',false,'Spatial audio, occlusion & bus routing.'],
+      ['emotionfx','EmotionFX','Animation','0.4.0',false,'Skeletal anim graphs, blend spaces & IK.'],
+      ['multiplayer','Multiplayer','Networking','0.3.5',false,'Authoritative replication & client prediction.'],
+      ['terrain','Terrain System','World','0.4.1',false,'Heightmap terrain with layer blending.'],
+      ['vegetation','Vegetation','World','0.3.0',false,'GPU-instanced foliage scattering.'],
+      ['openxr','OpenXR','Input / XR','0.4.0',false,'VR/AR device & hand-tracking support.'],
+      ['ui','UI Toolkit','UI','0.4.2',false,'Retained-mode UI canvas & layout engine.'],
+      ['cinematics','Cinematics','Sequencer','0.4.0',false,'Timeline-based cutscene authoring.'],
+      ['imgui','ImGui Debug','Debug','1.90',false,'Immediate-mode debug overlays & tooling.']
+    ];
+    this.gemMap = {}; this.gemCatalog.forEach(g=>this.gemMap[g[0]]=g);
+
+    // id,name,icon,iconColor,desc,gems,pipeline,platforms
+    this.templates = [
+      {id:'empty',name:'Empty',icon:'crop_square',color:'#8b919c',desc:'Core systems only — build from a blank slate.',gems:['core','atom'],pipeline:'Forward+',platforms:['win']},
+      {id:'3d',name:'3D',icon:'view_in_ar',color:'#4188e0',desc:'Lit 3D scene with physics, terrain & navmesh.',gems:['core','atom','physx','terrain','navmesh','lua'],pipeline:'Forward+',platforms:['win','linux','mac']},
+      {id:'fps',name:'First Person',icon:'sports_esports',color:'#5ac0c0',desc:'FPS controller, weapon rig & input mapping.',gems:['core','atom','physx','emotionfx','wwise','navmesh','lua'],pipeline:'Forward+',platforms:['win','linux']},
+      {id:'tps',name:'Third Person',icon:'directions_run',color:'#7ad6a6',desc:'Character controller & spring-arm camera.',gems:['core','atom','physx','emotionfx','wwise','navmesh','lua'],pipeline:'Forward+',platforms:['win','linux','mac']},
+      {id:'topdown',name:'Top-Down',icon:'grid_view',color:'#d6a23b',desc:'Top-down camera with click-to-move.',gems:['core','atom','physx','navmesh','lua'],pipeline:'Forward+',platforms:['win']},
+      {id:'2d',name:'2D',icon:'image',color:'#8fc97e',desc:'Sprite renderer, tilemaps & 2D physics.',gems:['core','render2d','physx2d','lua','ui'],pipeline:'Forward+',platforms:['win','web']},
+      {id:'vr',name:'VR / XR',icon:'visibility',color:'#b78fd6',desc:'OpenXR rig with hand & controller tracking.',gems:['core','atom','physx','openxr','emotionfx'],pipeline:'Forward+',platforms:['win']},
+      {id:'mobile',name:'Mobile',icon:'smartphone',color:'#d68fb0',desc:'Touch input & lightweight mobile pipeline.',gems:['core','atom','physx','ui'],pipeline:'Mobile',platforms:['android','ios']},
+      {id:'mp',name:'Multiplayer',icon:'lan',color:'#7a8aa0',desc:'Authoritative server with prediction & rollback.',gems:['core','atom','physx','multiplayer','navmesh','lua'],pipeline:'Forward+',platforms:['win','linux']}
+    ];
+    this.tplMap = {}; this.templates.forEach(t=>this.tplMap[t.id]=t);
+
+    this.platformDefs = [['win','Windows','desktop_windows'],['linux','Linux','dns'],['mac','macOS','laptop_mac'],['android','Android','android'],['ios','iOS','phone_iphone'],['web','Web','language']];
+
+    // recent projects: name,path,kind,gems#,ver,opened,icon,accent,pinned
+    this.recent = [
+      ['RiftRunner','~/dev/aether/RiftRunner','First Person',12,'0.4.2','2 hours ago','sports_esports','#4188e0',true],
+      ['Verdant','~/dev/aether/Verdant','3D · Open World',15,'0.4.2','Yesterday','public','#3a8f4e',true],
+      ['NeonDrift','~/dev/aether/NeonDrift','Top-Down',8,'0.4.1','3 days ago','grid_view','#d6a23b',false],
+      ['PocketKnights','~/clients/pk/PocketKnights','Mobile',6,'0.4.1','1 week ago','smartphone','#d68fb0',false],
+      ['HollowVR','~/dev/aether/HollowVR','VR / XR',9,'0.4.0','2 weeks ago','visibility','#b78fd6',false],
+      ['ArenaClash','~/dev/aether/ArenaClash','Multiplayer',11,'0.3.5','1 month ago','lan','#7a8aa0',false],
+      ['SpriteForge','~/dev/aether/SpriteForge','2D',5,'0.4.2','1 month ago','image','#8fc97e',false]
+    ];
+
+    const t0=this.tplMap['3d'];
+    const g0={}; t0.gems.forEach(id=>g0[id]=true);
+    const p0={}; t0.platforms.forEach(id=>p0[id]=true);
+    this.state = {
+      view:'recent', step:1, template:'3d', name:'MyGame', location:'~/dev/aether',
+      renderer:'Vulkan', pipeline:t0.pipeline, colorSpace:'Linear',
+      platforms:p0, git:true, gems:g0, gemQuery:''
+    };
+  }
+
+  track(on,locked){ return {width:'30px',height:'17px',borderRadius:'9px',background:on?(locked?'#2d5230':'#3160a8'):'#3a3f48',position:'relative',flex:'0 0 auto',cursor:locked?'not-allowed':'default',opacity:locked?0.8:1,transition:'background .12s'}; }
+  knob(on){ return {position:'absolute',top:'2px',left:'2px',width:'13px',height:'13px',borderRadius:'50%',background:on?'#fff':'#9aa1ac',transform:on?'translateX(13px)':'translateX(0)',transition:'transform .12s'}; }
+  seg(active){ return {height:'32px',padding:'0 16px',display:'flex',alignItems:'center',borderRadius:'7px',fontSize:'12px',cursor:'default',border:active?'1px solid #3160a8':'1px solid #2c313a',background:active?'rgba(65,136,224,0.14)':'#1b1e23',color:active?'#e4e7ec':'#9aa1ac',fontWeight:active?500:400}; }
+
+  selectTemplate(id){
+    const t=this.tplMap[id];
+    const g={}; t.gems.forEach(x=>g[x]=true);
+    const p={}; t.platforms.forEach(x=>p[x]=true);
+    this.setState({template:id,gems:g,platforms:p,pipeline:t.pipeline});
+  }
+
+  renderVals(){
+    const st=this.state;
+    const tpl=this.tplMap[st.template];
+
+    const navDefs=[['recent','Recent Projects','folder_open'],['new','New Project','add_box'],['samples','Samples','auto_stories'],['learn','Learn','menu_book']];
+    const navItems=navDefs.map(([id,label,icon])=>{ const a=st.view===id||(id==='new'&&st.view==='new'); return {key:id,label,icon,
+      onClick:()=>this.setState(id==='new'?{view:'new',step:1}:{view:id}),
+      style:{display:'flex',alignItems:'center',gap:'10px',height:'36px',padding:'0 11px',borderRadius:'7px',marginBottom:'2px',fontSize:'12.5px',cursor:'default',color:a?'#e4e7ec':'#9aa1ac',background:a?'rgba(65,136,224,0.14)':'transparent',boxShadow:a?'inset 2px 0 0 #4188e0':'none',fontWeight:a?500:400}}; });
+
+    // recent
+    const recentProjects=this.recent.map((p,ix)=>({key:ix,name:p[0],path:p[1],kind:p[2],gems:p[3]+' gems',ver:p[4],opened:p[5],icon:p[6],pinned:p[8],
+      iconTileStyle:{width:'30px',height:'30px',borderRadius:'7px',background:p[7],display:'flex',alignItems:'center',justifyContent:'center'},
+      verStyle:{fontSize:'10px',fontFamily:"'IBM Plex Mono',monospace",color:p[4]==='0.4.2'?'#57b97e':'#8b919c',background:p[4]==='0.4.2'?'rgba(87,185,126,0.12)':'#22262c',padding:'2px 7px',borderRadius:'4px'},
+      rowStyle:{display:'flex',alignItems:'center',gap:'0',height:'52px',padding:'0 12px',borderRadius:'8px',border:'1px solid transparent',cursor:'default',textDecoration:'none',color:'inherit'}}));
+
+    // steps
+    const stepDefs=[[1,'Template'],[2,'Configure'],[3,'Gems']];
+    const steps=stepDefs.map(([n,label],ix)=>{ const cur=st.step===n; const done=st.step>n; return {key:n,num:String(n),label,done,notDone:!done,
+      onClick:()=>this.setState({step:n}),
+      style:{display:'flex',alignItems:'center',gap:'7px',height:'28px',padding:'0 8px',fontSize:'11.5px',cursor:'default',color:cur?'#e4e7ec':(done?'#9aa1ac':'#6b7280'),fontWeight:cur?600:400},
+      numStyle:{width:'19px',height:'19px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'10.5px',fontWeight:600,flex:'0 0 auto',color:cur||done?'#fff':'#8b919c',background:cur?'#3160a8':(done?'#3a8f4e':'#2c313a')},
+      connStyle:{width:ix<2?'18px':'0',height:'1px',background:'#2c313a',display:'inline-block'}}; });
+
+    // templates
+    const templates=this.templates.map(t=>{ const a=st.template===t.id; return {key:t.id,name:t.name,desc:t.desc,icon:t.icon,iconColor:t.color,selected:a,
+      onClick:()=>this.selectTemplate(t.id),
+      cardStyle:{position:'relative',display:'flex',flexDirection:'column',gap:'7px',padding:'14px',borderRadius:'10px',cursor:'default',border:a?'1px solid #3160a8':'1px solid #2c313a',background:a?'rgba(65,136,224,0.10)':'#1b1e23'},
+      iconWrapStyle:{width:'42px',height:'42px',borderRadius:'9px',background:'#22262c',display:'flex',alignItems:'center',justifyContent:'center',marginBottom:'2px'}}; });
+
+    // configure segmented
+    const mk=(val,cur,key,label)=>({key:val,label:label||val,onClick:()=>this.setState({[key]:val}),style:this.seg(cur===val)});
+    const rendererOpts=['Vulkan','DirectX 12','Metal'].map(v=>mk(v,st.renderer,'renderer'));
+    const pipelineOpts=['Forward+','Deferred','Mobile'].map(v=>mk(v,st.pipeline,'pipeline'));
+    const colorOpts=['Linear','Gamma'].map(v=>mk(v,st.colorSpace,'colorSpace'));
+    const platformOpts=this.platformDefs.map(([id,label,icon])=>{ const on=!!st.platforms[id]; return {key:id,label,icon,
+      onClick:()=>this.setState(s=>({platforms:{...s.platforms,[id]:!s.platforms[id]}})),
+      style:{display:'flex',alignItems:'center',gap:'6px',height:'32px',padding:'0 13px',borderRadius:'7px',fontSize:'11.5px',cursor:'default',border:on?'1px solid #3160a8':'1px solid #2c313a',background:on?'rgba(65,136,224,0.12)':'#1b1e23',color:on?'#e4e7ec':'#8b919c'}}; });
+
+    // gems grouped
+    const q=st.gemQuery.trim().toLowerCase();
+    const order=[]; const byCat={};
+    this.gemCatalog.forEach(g=>{
+      if(q && !(g[1].toLowerCase().includes(q)||g[2].toLowerCase().includes(q)||g[5].toLowerCase().includes(q))) return;
+      if(!byCat[g[2]]){ byCat[g[2]]=[]; order.push(g[2]); }
+      byCat[g[2]].push(g);
+    });
+    const gemGroups=order.map(cat=>{ const cm=this.catMeta[cat]||['extension','#9aa1ac']; return {key:cat,cat,icon:cm[0],color:cm[1],count:String(byCat[cat].length),
+      items:byCat[cat].map(g=>{ const on=!!st.gems[g[0]]; const locked=g[4]; return {key:g[0],name:g[1],ver:'v'+g[3],desc:g[5],locked,
+        onToggle:()=>{ if(locked) return; this.setState(s=>({gems:{...s.gems,[g[0]]:!s.gems[g[0]]}})); },
+        style:{display:'flex',alignItems:'flex-start',gap:'10px',padding:'10px 12px',borderRadius:'8px',cursor:locked?'not-allowed':'default',border:on?'1px solid #2f4f7a':'1px solid #2c313a',background:on?'rgba(65,136,224,0.07)':'#1b1e23'},
+        trackStyle:this.track(on,locked),knobStyle:this.knob(on)}; })}; });
+
+    const gemCount=Object.keys(st.gems).filter(k=>st.gems[k]).length;
+    const sumGems=this.gemCatalog.filter(g=>st.gems[g[0]]).map(g=>{ const cm=this.catMeta[g[2]]||['extension','#9aa1ac']; return {key:g[0],name:g[1],icon:cm[0],color:cm[1]}; });
+
+    const plats=this.platformDefs.filter(p=>st.platforms[p[0]]).map(p=>p[1]).join(', ')||'None';
+    const sumRows=[
+      {key:'r',label:'Renderer',value:st.renderer},
+      {key:'p',label:'Pipeline',value:st.pipeline},
+      {key:'c',label:'Color Space',value:st.colorSpace},
+      {key:'pl',label:'Platforms',value:plats},
+      {key:'g',label:'Version Control',value:st.git?'Git':'None'}
+    ];
+
+    const miscMap={samples:['auto_stories','Sample Projects','Browse ready-made scenes and demos'],learn:['menu_book','Learn','Tutorials, docs and API reference']};
+    const misc=miscMap[st.view]||miscMap.samples;
+
+    return {
+      navItems,
+      viewRecent:st.view==='recent', viewNew:st.view==='new', viewMisc:st.view==='samples'||st.view==='learn',
+      goNew:()=>this.setState({view:'new',step:1}), goRecent:()=>this.setState({view:'recent'}),
+      recentCount:String(this.recent.length), recentProjects,
+
+      steps, step1:st.step===1, step2:st.step===2, step3:st.step===3,
+      templates,
+      name:st.name, location:st.location, pathPreview:st.location+'/'+(st.name||'Untitled'),
+      onName:(e)=>this.setState({name:e.target.value}), onLocation:(e)=>this.setState({location:e.target.value}),
+      rendererOpts, pipelineOpts, colorOpts, platformOpts,
+      git:st.git, toggleGit:()=>this.setState(s=>({git:!s.git})), gitTrackStyle:this.track(st.git,false), gitKnobStyle:this.knob(st.git),
+      gemQuery:st.gemQuery, onGemSearch:(e)=>this.setState({gemQuery:e.target.value}), gemGroups,
+
+      canBack:st.step>1, onBack:()=>this.setState(s=>({step:Math.max(1,s.step-1)})),
+      onNext:()=>this.setState(s=>({step:Math.min(3,s.step+1)})),
+      notLastStep:st.step<3, lastStep:st.step===3,
+      footerHint:st.step===1?'Pick a template to continue':(st.step===2?'Set name, location & settings':gemCount+' gems · ready to create'),
+
+      sumIcon:tpl.icon, sumIconColor:tpl.color, sumTemplate:tpl.name,
+      sumRows, gemCount:String(gemCount), sumGems,
+
+      miscIcon:misc[0], miscTitle:misc[1], miscSub:misc[2]
+    };
+  }
+}
+</script>
+</body>
+</html>

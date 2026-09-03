@@ -1,0 +1,16 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-gem-auth-steam"
+version = "0.1.0"
+edition = "2024"
+description = "Azoth Steam authentication provider (azoth.auth.steam)"
+
+[lints]
+workspace = true
+
+[dependencies]
+az-gem-auth = { workspace = true }
+az-gem-contract = { workspace = true }
+az-gem-steam = { workspace = true }
+serde = { workspace = true, features = ["derive"] }

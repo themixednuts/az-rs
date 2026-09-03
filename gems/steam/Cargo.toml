@@ -1,0 +1,21 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-gem-steam"
+version = "0.1.0"
+edition = "2024"
+description = "Azoth Steam platform integration gem"
+
+
+[lints]
+workspace = true
+[features]
+default = []
+runtime = ["dep:bevy", "dep:bevy-steamworks"]
+
+[dependencies]
+az-gem-contract = { workspace = true }
+bevy = { workspace = true, features = ["default_app"], optional = true }
+bevy-steamworks = { workspace = true, optional = true }
+serde = { workspace = true, features = ["derive"] }
+steam-locator = { workspace = true }

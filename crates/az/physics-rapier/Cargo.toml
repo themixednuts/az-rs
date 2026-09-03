@@ -1,0 +1,19 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-physics-rapier"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Rapier solver adapter for Azoth's backend-neutral physics scene"
+
+[lints]
+workspace = true
+
+[dependencies]
+az-physics = { workspace = true }
+bevy = { workspace = true, features = ["default_app"] }
+bevy_math = { workspace = true }
+glam = { workspace = true }
+rapier3d = { workspace = true }
+smallvec = { workspace = true }

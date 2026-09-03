@@ -1,0 +1,24 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "cry-character-assets"
+version = "0.1.0"
+edition.workspace = true
+description = "Cry/Lumberyard character definition and parameter source transforms"
+
+[lints]
+workspace = true
+
+[dependencies]
+az-animation = { workspace = true }
+az-asset-builder = { workspace = true }
+az-core = { workspace = true, features = ["serde"] }
+az-gem-contract = { workspace = true }
+az-xml = { workspace = true }
+bevy_math = { workspace = true }
+quick-xml = { workspace = true }
+ron = { workspace = true }
+serde = { workspace = true }
+smallvec = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }

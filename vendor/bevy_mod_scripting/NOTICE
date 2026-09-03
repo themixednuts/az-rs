@@ -1,0 +1,13 @@
+bevy_mod_scripting 0.19.0 workspace snapshot
+
+Upstream: https://github.com/makspll/bevy_mod_scripting
+Recorded upstream revisions: 1391f0d0615a89f391ea55e7b168a6288168e8dd,
+2d7609263d8c504612407abfd747bb46d138533a, and
+d1f53048056a475ed21eef8ed571b834274e40d7.
+Local status: workspace packages are patched to the workspace's Bevy version.
+License: MIT OR Apache-2.0
+
+The full standard license texts are included at:
+
+- ../gpu-allocator/LICENSE-MIT
+- ../gpu-allocator/LICENSE-APACHE

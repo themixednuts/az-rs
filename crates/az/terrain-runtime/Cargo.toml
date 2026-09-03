@@ -1,0 +1,29 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-terrain-runtime"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Azoth native terrain runtime product formats"
+
+[lints]
+workspace = true
+
+[features]
+default = []
+bevy = ["dep:bevy_app", "dep:bevy_asset", "dep:bevy_ecs", "dep:bevy_reflect"]
+
+[dependencies]
+az-core = { workspace = true }
+az-gem-contract = { workspace = true }
+bevy_app = { workspace = true, optional = true }
+bevy_asset = { workspace = true, optional = true }
+bevy_ecs = { workspace = true, optional = true }
+bevy_reflect = { workspace = true, optional = true }
+glam = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }
+
+[build-dependencies]
+az-build-fingerprint = { workspace = true }

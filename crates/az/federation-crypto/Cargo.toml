@@ -1,0 +1,20 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-federation-crypto"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Role-scoped signing and verification contracts for Azoth Certified Federation"
+
+[lints]
+workspace = true
+
+[dependencies]
+arrayvec = { workspace = true }
+blake3 = { workspace = true }
+ed25519-dalek = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+futures = { workspace = true }

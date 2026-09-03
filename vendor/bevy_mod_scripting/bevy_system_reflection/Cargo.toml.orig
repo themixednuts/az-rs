@@ -1,0 +1,29 @@
+[package]
+name = "bevy_system_reflection"
+description = "Utilities for reflecting systems, schedules, system sets and rendering schedules"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme.workspace = true
+
+
+[dependencies]
+bevy_ecs = { workspace = true, default-features = false, features = [] }
+bevy_reflect = { workspace = true, default-features = false, features = [] }
+bevy_platform = { workspace = true, default-features = false, features = [] }
+bevy_log = { workspace = true, default-features = false, features = [] }
+dot-writer = { workspace = true }
+
+
+[dev-dependencies]
+bevy_app = { workspace = true, default-features = false, features = [] }
+pretty_assertions = { workspace = true }
+manifest-dir-macros = { workspace = true }
+
+[lints]
+workspace = true

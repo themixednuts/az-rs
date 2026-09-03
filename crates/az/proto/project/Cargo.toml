@@ -1,0 +1,29 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-proto-project"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Cap'n Proto protocol types for Azoth project-host authored data services"
+
+
+[lints]
+workspace = true
+[dependencies]
+az-core = { workspace = true }
+az-node-graph = { workspace = true }
+az-proto-authoring = { path = "../authoring" }
+az-proto-asset = { path = "../asset" }
+az-proto-core = { path = "../core" }
+az-proto-runtime = { path = "../runtime" }
+blake3 = { workspace = true }
+capnp = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }
+
+[build-dependencies]
+az-proto-build = { path = "../build" }
+
+[dev-dependencies]
+tempfile = "3"

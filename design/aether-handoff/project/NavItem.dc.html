@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#181b20;}
+  .ms{font-family:'Material Symbols Outlined';font-weight:400;font-style:normal;line-height:1;display:inline-block;vertical-align:middle;-webkit-font-smoothing:antialiased;user-select:none;}
+</style>
+</helmet>
+<div data-htmlswap-component="nav-item" data-htmlswap-tone="neutral" data-htmlswap-variant="ghost" onClick="{{ handleClick }}" style="{{ itemStyle }}" style-hover="background:#22262c;color:#d6dae0;">
+  <span class="ms" style="font-size:18px;">{{ icon }}</span><span style="font-family:'IBM Plex Sans',system-ui,sans-serif;">{{ label }}</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:212,&quot;height&quot;:52},&quot;label&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Recent Projects&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Content&quot;},&quot;icon&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;folder_open&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Content&quot;},&quot;active&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;State&quot;},&quot;onClick&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;() =&gt; void&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const active = !!p.active;
+    return {
+      label: p.label ?? 'Recent Projects',
+      icon: p.icon ?? 'folder_open',
+      handleClick: typeof p.onClick === 'function' ? p.onClick : () => {},
+      itemStyle: {
+        display: 'flex', alignItems: 'center', gap: '10px', height: '36px',
+        padding: '0 11px', borderRadius: '7px', marginBottom: '2px', fontSize: '12.5px',
+        cursor: 'default', userSelect: 'none',
+        color: active ? '#e4e7ec' : '#9aa1ac',
+        background: active ? 'rgba(65,136,224,0.14)' : 'transparent',
+        boxShadow: active ? 'inset 2px 0 0 #4188e0' : 'none',
+        fontWeight: active ? 500 : 400
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

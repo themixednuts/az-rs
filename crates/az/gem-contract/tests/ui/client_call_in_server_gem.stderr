@@ -1,0 +1,30 @@
+error[E0277]: this registrar's capability floor `az_gem_contract::HasClient` is not declared by `ServerGemCaps`
+  --> tests/ui/client_call_in_server_gem.rs:24:9
+   |
+24 |     ctx.registrar::<ClientSystemReg>()
+   |         ^^^^^^^^^ this registry requires host capability `az_gem_contract::HasClient`
+   |
+help: the trait `Provides<az_gem_contract::HasClient>` is not implemented for `ServerGemCaps`
+  --> tests/ui/client_call_in_server_gem.rs:21:1
+   |
+21 | declare_caps!(ServerGemCaps: HasAuthority, HostsWorld);
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   = note: declare the capability in this contribution's floor (`caps = [...]` or `declare_caps!`), or move the call inside `GemContext::when`
+help: `ServerGemCaps` implements trait `Provides<C>`
+  --> tests/ui/client_call_in_server_gem.rs:21:1
+   |
+21 | declare_caps!(ServerGemCaps: HasAuthority, HostsWorld);
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | `Provides<az_gem_contract::HasAuthority>`
+   | `Provides<az_gem_contract::HostsWorld>`
+   = note: required for `ServerGemCaps` to implement `Satisfies<az_gem_contract::HasClient>`
+note: required by a bound in `GemContext::<'_, D>::registrar`
+  --> src/context.rs
+   |
+   |     pub fn registrar<T>(&mut self) -> Registrar<'_, T>
+   |            --------- required by a bound in this associated function
+...
+   |         D: Satisfies<T::Requires>,
+   |            ^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `GemContext::<'_, D>::registrar`
+   = note: this error originates in the macro `declare_caps` (in Nightly builds, run with -Z macro-backtrace for more info)

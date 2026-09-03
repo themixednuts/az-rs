@@ -1,0 +1,125 @@
+error[E0308]: mismatched types
+  --> tests/ui/fail/identities_are_not_interchangeable.rs:20:20
+   |
+20 |     takes_instance(WorldInstancePlacementId::new());
+   |     -------------- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `WorldInstanceId`, found `WorldInstancePlacementId`
+   |     |
+   |     arguments to this function are incorrect
+   |
+note: function defined here
+  --> tests/ui/fail/identities_are_not_interchangeable.rs:9:4
+   |
+ 9 | fn takes_instance(_: WorldInstanceId) {}
+   |    ^^^^^^^^^^^^^^ ------------------
+
+error[E0308]: mismatched types
+  --> tests/ui/fail/identities_are_not_interchangeable.rs:21:21
+   |
+21 |     takes_placement(ServerProcessId::new());
+   |     --------------- ^^^^^^^^^^^^^^^^^^^^^^ expected `WorldInstancePlacementId`, found `ServerProcessId`
+   |     |
+   |     arguments to this function are incorrect
+   |
+note: function defined here
+  --> tests/ui/fail/identities_are_not_interchangeable.rs:10:4
+   |
+10 | fn takes_placement(_: WorldInstancePlacementId) {}
+   |    ^^^^^^^^^^^^^^^ ---------------------------
+
+error[E0308]: mismatched types
+  --> tests/ui/fail/identities_are_not_interchangeable.rs:22:19
+   |
+22 |     takes_process(IngressRouteId::new());
+   |     ------------- ^^^^^^^^^^^^^^^^^^^^^ expected `ServerProcessId`, found `IngressRouteId`
+   |     |
+   |     arguments to this function are incorrect
+   |
+note: function defined here
+  --> tests/ui/fail/identities_are_not_interchangeable.rs:11:4
+   |
+11 | fn takes_process(_: ServerProcessId) {}
+   |    ^^^^^^^^^^^^^ ------------------
+
+error[E0308]: mismatched types
+  --> tests/ui/fail/identities_are_not_interchangeable.rs:23:17
+   |
+23 |     takes_route(AdmissionTicketId::new());
+   |     ----------- ^^^^^^^^^^^^^^^^^^^^^^^^ expected `IngressRouteId`, found `AdmissionTicketId`
+   |     |
+   |     arguments to this function are incorrect
+   |
+note: function defined here
+  --> tests/ui/fail/identities_are_not_interchangeable.rs:12:4
+   |
+12 | fn takes_route(_: IngressRouteId) {}
+   |    ^^^^^^^^^^^ -----------------
+
+error[E0308]: mismatched types
+  --> tests/ui/fail/identities_are_not_interchangeable.rs:24:18
+   |
+24 |     takes_ticket(PlayerPresenceId::new());
+   |     ------------ ^^^^^^^^^^^^^^^^^^^^^^^ expected `AdmissionTicketId`, found `PlayerPresenceId`
+   |     |
+   |     arguments to this function are incorrect
+   |
+note: function defined here
+  --> tests/ui/fail/identities_are_not_interchangeable.rs:13:4
+   |
+13 | fn takes_ticket(_: AdmissionTicketId) {}
+   |    ^^^^^^^^^^^^ --------------------
+
+error[E0308]: mismatched types
+  --> tests/ui/fail/identities_are_not_interchangeable.rs:25:20
+   |
+25 |     takes_presence(WorldTransferId::new());
+   |     -------------- ^^^^^^^^^^^^^^^^^^^^^^ expected `PlayerPresenceId`, found `WorldTransferId`
+   |     |
+   |     arguments to this function are incorrect
+   |
+note: function defined here
+  --> tests/ui/fail/identities_are_not_interchangeable.rs:14:4
+   |
+14 | fn takes_presence(_: PlayerPresenceId) {}
+   |    ^^^^^^^^^^^^^^ -------------------
+
+error[E0308]: mismatched types
+  --> tests/ui/fail/identities_are_not_interchangeable.rs:26:20
+   |
+26 |     takes_transfer(CheckpointId::new());
+   |     -------------- ^^^^^^^^^^^^^^^^^^^ expected `WorldTransferId`, found `CheckpointId`
+   |     |
+   |     arguments to this function are incorrect
+   |
+note: function defined here
+  --> tests/ui/fail/identities_are_not_interchangeable.rs:15:4
+   |
+15 | fn takes_transfer(_: WorldTransferId) {}
+   |    ^^^^^^^^^^^^^^ ------------------
+
+error[E0308]: mismatched types
+  --> tests/ui/fail/identities_are_not_interchangeable.rs:27:22
+   |
+27 |     takes_checkpoint(WorldInstanceOperationId::new());
+   |     ---------------- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `CheckpointId`, found `WorldInstanceOperationId`
+   |     |
+   |     arguments to this function are incorrect
+   |
+note: function defined here
+  --> tests/ui/fail/identities_are_not_interchangeable.rs:16:4
+   |
+16 | fn takes_checkpoint(_: CheckpointId) {}
+   |    ^^^^^^^^^^^^^^^^ ---------------
+
+error[E0308]: mismatched types
+  --> tests/ui/fail/identities_are_not_interchangeable.rs:28:21
+   |
+28 |     takes_operation(WorldInstanceId::new());
+   |     --------------- ^^^^^^^^^^^^^^^^^^^^^^ expected `WorldInstanceOperationId`, found `WorldInstanceId`
+   |     |
+   |     arguments to this function are incorrect
+   |
+note: function defined here
+  --> tests/ui/fail/identities_are_not_interchangeable.rs:17:4
+   |
+17 | fn takes_operation(_: WorldInstanceOperationId) {}
+   |    ^^^^^^^^^^^^^^^ ---------------------------

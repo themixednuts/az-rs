@@ -1,0 +1,90 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "gridmate"
+version = "0.1.0"
+edition = "2024"
+
+
+[lints]
+workspace = true
+[lib]
+name = "gridmate"
+path = "src/lib.rs"
+
+[features]
+# `client` and `server` are independent and additive. Each enables the
+# corresponding direction's transport pipeline. A binary may enable
+# either or both (relay / test harness).
+#
+# Gridmate-core has **no Bevy runtime dependency**. The Bevy plugin,
+# `IoTaskPool` spawner adapter, and ECS-shaped resources live in
+# `gridmate-bevy`. Embedders using tokio / smol / async-std register
+# their own [`Spawner`] via `gridmate::set_spawner` instead.
+#
+# `bevy_math` is a soft dep (only used for `Aabb3d` wire marshalers);
+# we depend on it directly rather than the full Bevy facade so the
+# core crate's compile-time / link-time footprint stays small.
+default = []
+transport = ["dep:foreign-types", "dep:openssl", "dep:openssl-sys"]
+client = ["transport"]
+server = ["transport"]
+# Compile a selected native type-registry snapshot into debug-only validation
+# tables. Runtime protocol lookup is driven by the host's composed
+# ClassRegistration entries, not this feature or resources/typeregistry.json.
+native-type-registry-debug = []
+
+[dependencies]
+# AzCore-equivalent foundational types that don't have a Bevy analog
+# (interned names, AZ-flavored CRC-32). Bevy math supplies Aabb3d,
+# BoundingSphere, Ray3d, colors, vectors, matrices, quaternions, and affine
+# transforms directly.
+az-core = { path = "../core" }
+az-derive = { path = "../derive" }
+az-gem-contract = { workspace = true }
+az-secret-value = { workspace = true }
+# Shared dependencies (used by both client and server)
+arrayvec = { workspace = true }
+derive_more = { workspace = true }
+foreign-types = { workspace = true, optional = true }
+hex.workspace = true
+indexmap = { workspace = true }
+lzzzz = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+smallvec = { workspace = true }
+thiserror = { workspace = true }
+# Async runtime (replaces tokio)
+async-io = { workspace = true }
+futures-lite = { workspace = true }
+futures-util = { workspace = true }
+async-channel = { workspace = true }
+async-lock = { workspace = true }
+dashmap = { workspace = true }
+uuid = { workspace = true, features = ["serde", "v4", "v7"] }
+tracing = { workspace = true }
+openssl = { workspace = true, optional = true }
+openssl-sys = { workspace = true, optional = true }
+# Pulling `bevy_math` directly instead of the full `bevy` facade keeps
+# gridmate-core off the ECS/runtime crates while preserving the same math
+# types used by Bevy components.
+bevy_math = { workspace = true }
+bevy_color = { workspace = true }
+bevy_reflect = { workspace = true, features = ["uuid"] }
+futures-timer = { workspace = true }
+bytes = { workspace = true }
+gridmate-derive = { path = "../gridmate-derive" }
+num_enum = { workspace = true }
+phf = { workspace = true, features = ["macros"] }
+half = "2.7.1"
+
+[target.'cfg(windows)'.dependencies]
+# `SIO_UDP_CONNRESET` ioctl: disable Windows' default behaviour of
+# raising `WSAECONNRESET` on `recv_from` after an outbound datagram
+# triggers an ICMP port-unreachable. Without this, a server peer
+# disconnecting silently breaks the demux's `recv_from` for *all*
+# subsequent peers — see `multi_peer::disable_udp_connreset`.
+windows-sys = { version = "0.59", features = ["Win32_Networking_WinSock", "Win32_Foundation", "Win32_System_IO"] }
+
+[build-dependencies]
+phf_codegen = { workspace = true }
+serde_json = { workspace = true }

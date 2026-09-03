@@ -1,0 +1,32 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-core"
+version = "0.1.0"
+edition.workspace = true
+
+
+[lints]
+workspace = true
+[lib]
+name = "az_core"
+path = "src/lib.rs"
+
+[dependencies]
+az-derive = { workspace = true }
+bevy_app = { workspace = true, optional = true }
+bevy_color = { workspace = true }
+bevy_ecs = { workspace = true, optional = true }
+bevy_math = { workspace = true, features = ["bevy_reflect"] }
+bevy_reflect = { workspace = true }
+az-gem-contract = { workspace = true }
+thiserror = { workspace = true }
+
+glam = { workspace = true }
+serde = { workspace = true, features = ["derive"], optional = true }
+uuid = { version = "1.23", features = ["serde"] }
+
+[features]
+default = []
+bevy = ["dep:bevy_app", "dep:bevy_ecs"]
+serde = ["dep:serde"]

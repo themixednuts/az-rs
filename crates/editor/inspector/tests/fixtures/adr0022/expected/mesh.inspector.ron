@@ -1,0 +1,16 @@
+(
+    case: "mesh",
+    schema: "azoth.render.Mesh",
+    type_label: "Mesh",
+    category: Some("Rendering"),
+    icon: Some("deployed_code"),
+    fields: [
+        (name: "mesh", label: "Mesh", schema_type: "core.asset-path", widget: "asset:mesh", default: Some("asset:"), constraints: ()),
+        (name: "visible", label: "Visible", schema_type: "core.bool", widget: "toggle", default: Some("bool:true"), constraints: ()),
+        (name: "cast_shadows", label: "Cast Shadows", schema_type: "core.bool", widget: "toggle", default: Some("bool:true"), constraints: ()),
+        (name: "receive_shadows", label: "Receive Shadows", schema_type: "core.bool", widget: "toggle", default: Some("bool:true"), constraints: ()),
+        (name: "lod_bias", label: "LOD Bias", schema_type: "core.i32", widget: "slider:-2:2:1:", default: Some("signed:0"), constraints: (min: Some(-2.0), max: Some(2.0))),
+    ],
+    add_component: Some((editor_export: true, runtime_export: true, provides: ["azoth.renderable", "azoth.material-slots", "azoth.bounds-provider"], requires: ["azoth.transform"], incompatible: ["azoth.renderable"], default_available: true)),
+    behaviors: ["asset_picker", "toggle", "slider_range", "add_component"],
+)

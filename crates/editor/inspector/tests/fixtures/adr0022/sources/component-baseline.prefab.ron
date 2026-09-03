@@ -1,0 +1,89 @@
+(
+    document: (
+        schema: "azoth.authored-document/v1",
+        id: "prefabs/adr0022-phase0-components.prefab.ron",
+    ),
+    objects: [
+        (
+            id: "018f0c5a-0022-7000-8000-000000000001",
+            schema: "azoth.prefab.Prefab",
+            schema_version: 1,
+            value: Struct({
+                49525662: Bool(true),
+                105446707: List([]),
+                2369371622: String("ADR 0022 Phase 0 Components"),
+                3372870890: List([ObjectRef("018f0c5a-0022-7000-8000-000000000002")]),
+                3669025293: ObjectRef("018f0c5a-0022-7000-8000-000000000002"),
+            }),
+        ),
+        (
+            id: "018f0c5a-0022-7000-8000-000000000002",
+            schema: "azoth.prefab.Entity",
+            schema_version: 1,
+            value: Struct({
+                49525662: Bool(true),
+                469045609: List([
+                    ObjectRef("018f0c5a-0022-7000-8000-000000000003"),
+                    ObjectRef("018f0c5a-0022-7000-8000-000000000004"),
+                    ObjectRef("018f0c5a-0022-7000-8000-000000000005"),
+                    ObjectRef("018f0c5a-0022-7000-8000-000000000006"),
+                    ObjectRef("018f0c5a-0022-7000-8000-000000000007"),
+                ]),
+                2369371622: String("fixture-root"),
+            }),
+        ),
+        (
+            id: "018f0c5a-0022-7000-8000-000000000003",
+            schema: "azoth.transform.Transform",
+            schema_version: 1,
+            value: Struct({
+                564937055: Struct({1: Float(0.0), 2: Float(0.0), 3: Float(0.0), 4: Float(1.0)}),
+                2190941297: Struct({1: Float(1.0), 2: Float(1.0), 3: Float(1.0)}),
+                2471448074: Struct({1: Float(2.0), 2: Float(3.0), 3: Float(4.0)}),
+            }),
+        ),
+        (
+            id: "018f0c5a-0022-7000-8000-000000000004",
+            schema: "azoth.render.Mesh",
+            schema_version: 2,
+            value: Struct({
+                1369013588: Bool(true),
+                1425709473: Bool(true),
+                1824142916: Signed(0),
+                2701180604: AssetPath("meshes/fixture.azmesh"),
+                3624765792: Bool(true),
+            }),
+        ),
+        (
+            id: "018f0c5a-0022-7000-8000-000000000005",
+            schema: "azoth.render.MaterialAssignment",
+            schema_version: 1,
+            value: Struct({
+                1023330342: List([]),
+                2470140894: AssetPath("materials/fixture.azmaterial.ron"),
+            }),
+        ),
+        (
+            id: "018f0c5a-0022-7000-8000-000000000006",
+            schema: "azoth.render.Camera",
+            schema_version: 1,
+            value: Struct({
+                1425233679: Float(0.1),
+                1932267671: Signed(0),
+                3170376174: Float(1000.0),
+                3648362799: Bool(true),
+                3830020480: Variant(id: 3741716405, value: Some(Struct({3730337318: Float(60.0)}))),
+            }),
+        ),
+        (
+            id: "018f0c5a-0022-7000-8000-000000000007",
+            schema: "azoth.phase0.NestedCollections",
+            schema_version: 1,
+            value: Struct({
+                1: List([Struct({11: String("first"), 12: Float(0.5)})]),
+                2: Map({"first": Float(0.5)}),
+                3: Variant(id: 21, value: None),
+            }),
+        ),
+    ],
+)

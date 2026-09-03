@@ -1,0 +1,22 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-proto-federation"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Bounded canonical wire records for Azoth Certified Federation"
+
+[lints]
+workspace = true
+
+[dependencies]
+az-federation = { workspace = true }
+az-federation-crypto = { workspace = true }
+az-world-instance = { workspace = true }
+blake3 = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+futures = { workspace = true }

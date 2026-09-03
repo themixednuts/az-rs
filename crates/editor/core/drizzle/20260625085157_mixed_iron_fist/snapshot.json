@@ -1,0 +1,114 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "id": "8da46919-90bb-4e3c-bf5f-a1a201e5072f",
+  "prevIds": [
+    "00000000-0000-0000-0000-000000000000"
+  ],
+  "ddl": [
+    {
+      "entityType": "tables",
+      "name": "project_manager_preferences"
+    },
+    {
+      "entityType": "columns",
+      "table": "project_manager_preferences",
+      "name": "row_id",
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "project_manager_preferences",
+      "name": "recent_layout",
+      "type": "text",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "project_manager_preferences",
+      "name": "recent_sort",
+      "type": "text",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "project_manager_preferences",
+      "name": "pinned_project_ids_json",
+      "type": "text",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "project_manager_preferences",
+      "name": "updated_unix_ms",
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "pks",
+      "table": "project_manager_preferences",
+      "name": "project_manager_preferences_pkey",
+      "columns": [
+        "row_id"
+      ],
+      "nameExplicit": false
+    },
+    {
+      "entityType": "tables",
+      "name": "db_info"
+    },
+    {
+      "entityType": "columns",
+      "table": "db_info",
+      "name": "row_id",
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "columns",
+      "table": "db_info",
+      "name": "version",
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": null,
+      "default": null,
+      "generated": null,
+      "collate": null
+    },
+    {
+      "entityType": "pks",
+      "table": "db_info",
+      "name": "db_info_pkey",
+      "columns": [
+        "row_id"
+      ],
+      "nameExplicit": false
+    }
+  ],
+  "renames": []
+}

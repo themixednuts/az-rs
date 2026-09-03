@@ -1,0 +1,5 @@
+error: `#[contribution]` marks one contribution, and this block is already `runtime`; a second contribution is a second type and a second block
+ --> tests/ui/contribution_named_twice.rs:9:25
+  |
+9 | #[contribution(runtime, tooling)]
+  |                         ^^^^^^^

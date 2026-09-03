@@ -1,0 +1,52 @@
+[package]
+name = "bevy_mod_scripting_core"
+description = "Core traits and structures required for other parts of bevy_mod_scripting"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme.workspace = true
+
+[lib]
+name = "bevy_mod_scripting_core"
+path = "src/lib.rs"
+
+[features]
+default = []
+
+
+[dependencies]
+bevy_mod_scripting_derive = { workspace = true }
+bevy_mod_scripting_asset = { workspace = true }
+bevy_mod_scripting_bindings = { workspace = true }
+bevy_system_reflection = { workspace = true }
+bevy_mod_scripting_display = { workspace = true }
+bevy_mod_scripting_script = { workspace = true }
+bevy_reflect = { workspace = true, default-features = false, features = [] }
+bevy_ecs = { workspace = true, default-features = false, features = [] }
+bevy_app = { workspace = true, default-features = false, features = [] }
+bevy_log = { workspace = true, default-features = false, features = [] }
+bevy_asset = { workspace = true, default-features = false, features = [] }
+bevy_diagnostic = { workspace = true, default-features = false, features = [] }
+bevy_platform = { workspace = true, default-features = false, features = [] }
+bevy_utils = { workspace = true }
+
+parking_lot = { workspace = true }
+smallvec = { workspace = true }
+itertools = { workspace = true }
+profiling = { workspace = true }
+fixedbitset = { workspace = true }
+serde = { workspace = true, features = ["derive", "std"] }
+uuid = { workspace = true }
+variadics_please = { workspace = true }
+
+[dev-dependencies]
+test_utils = { workspace = true }
+pretty_assertions = { workspace = true, features = ["alloc"] }
+
+[lints]
+workspace = true

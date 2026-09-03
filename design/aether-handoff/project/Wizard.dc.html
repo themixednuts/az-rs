@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#0f1115;}
+  .ms{font-family:'Material Symbols Outlined';font-weight:400;font-style:normal;line-height:1;display:inline-block;vertical-align:middle;-webkit-font-smoothing:antialiased;user-select:none;}
+  input{font-family:inherit;outline:none;}
+</style>
+</helmet>
+<div data-htmlswap-component="wizard" data-htmlswap-region="editor.data.new-manager" style="width:880px;max-width:94vw;height:640px;max-height:90vh;background:#1b1e23;border:1px solid #363c46;border-radius:12px;box-shadow:0 30px 80px rgba(0,0,0,0.55);display:flex;flex-direction:column;overflow:hidden;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#d6dae0;">
+  <!-- header -->
+  <div style="height:54px;flex:0 0 54px;display:flex;align-items:center;gap:12px;padding:0 18px;border-bottom:1px solid #2c313a;background:#202429;">
+    <span style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:rgba(65,136,224,0.16);border:1px solid rgba(65,136,224,0.4);"><span class="ms" style="font-size:18px;color:#5e9bf0;">hub</span></span>
+    <div><div style="font-size:14px;font-weight:600;color:#e8ebef;">New Data Manager</div><div style="font-size:10.5px;color:#6b7280;">Generates a descriptor in the owning gem — not a data asset</div></div>
+    <div onClick="{{ wiz.onClose }}" style="margin-left:auto;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:7px;color:#9aa1ac;cursor:default;" style-hover="background:#2a2f37;color:#e4e7ec;"><span class="ms" style="font-size:19px;">close</span></div>
+  </div>
+  <!-- step rail -->
+  <div style="flex:0 0 auto;display:flex;align-items:center;gap:6px;padding:13px 20px;border-bottom:1px solid #23272e;background:#181b20;">
+    <sc-for list="{{ wiz.steps }}" as="s" hint-placeholder-count="4">
+      <div onClick="{{ s.onClick }}" style="display:flex;align-items:center;gap:8px;cursor:default;">
+        <span style="{{ s.dotStyle }}">{{ s.n }}</span>
+        <span style="{{ s.labelStyle }}">{{ s.label }}</span>
+      </div>
+      <sc-if value="{{ s.notLast }}" hint-placeholder-val="{{ true }}"><div style="width:26px;height:1px;background:#2c313a;"></div></sc-if>
+    </sc-for>
+  </div>
+  <!-- body -->
+  <div style="flex:1 1 auto;overflow-y:auto;min-height:0;padding:20px 22px;">
+
+    <!-- STEP 1: IDENTITY -->
+    <sc-if value="{{ wiz.s1 }}" hint-placeholder-val="{{ true }}">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#5f6670;margin-bottom:7px;">Manager name</div>
+      <input value="{{ wiz.name }}" onInput="{{ wiz.onName }}" spellcheck="false" placeholder="e.g. WeaponDataManager" style="width:100%;height:38px;padding:0 13px;background:#16181c;border:1px solid #2c313a;border-radius:8px;outline:none;color:#e8ebef;font-size:13px;box-sizing:border-box;" style-focus="border-color:#3160a8;" />
+      <div style="font-size:10px;color:#6b7280;margin-top:6px;font-family:'IBM Plex Mono',monospace;">Logic will call <span style="color:#9aa1ac;">{{ wiz.name }}::get(key)</span></div>
+
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#5f6670;margin:20px 0 7px;">Owner gem · authoring crate</div>
+      <div style="display:flex;gap:4px;background:#16181c;border:1px solid #2c313a;border-radius:8px;padding:4px;">
+        <sc-for list="{{ wiz.ownerOpts }}" as="o" hint-placeholder-count="3"><div onClick="{{ o.onClick }}" style="{{ o.style }}" style-hover="color:#d6dae0;">{{ o.label }}</div></sc-for>
+      </div>
+
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#5f6670;margin:20px 0 8px;">Manager kind</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;">
+        <sc-for list="{{ wiz.kindCards }}" as="k" hint-placeholder-count="6">
+          <div onClick="{{ k.onClick }}" style="{{ k.style }}" style-hover="border-color:#4a525e;">
+            <span style="{{ k.iconWrap }}"><span class="ms" style="{{ k.iconStyle }}">{{ k.icon }}</span></span>
+            <span style="min-width:0;"><span style="{{ k.nameStyle }}">{{ k.label }}</span><span style="display:block;font-size:10px;line-height:1.45;color:#7c838f;margin-top:2px;">{{ k.blurb }}</span></span>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- STEP 2: SOURCES -->
+    <sc-if value="{{ wiz.s2 }}" hint-placeholder-val="{{ false }}">
+      <div style="font-size:11px;color:#9aa1ac;line-height:1.55;margin-bottom:16px;">Pick the inputs this manager reads. Mix GameData tables, table families, product assets (prefabs, audio), and other managers — <span style="color:#cfd4db;">{{ wiz.srcCount }} selected</span>.</div>
+
+      <div style="font-size:9.5px;text-transform:uppercase;letter-spacing:.6px;color:#5f6670;margin-bottom:8px;display:flex;align-items:center;gap:6px;"><span class="ms" style="font-size:14px;color:#5ac0c0;">table_rows</span>Tables</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:18px;">
+        <sc-for list="{{ wiz.wizTables }}" as="r" hint-placeholder-count="6">
+          <div onClick="{{ r.onClick }}" style="{{ r.style }}" style-hover="border-color:#3a4150;">
+            <span style="{{ r.checkStyle }}"><sc-if value="{{ r.on }}" hint-placeholder-val="{{ false }}"><span class="ms" style="font-size:13px;color:#fff;">check</span></sc-if></span>
+            <span class="ms" style="font-size:15px;color:{{ r.color }};flex:0 0 auto;">{{ r.icon }}</span>
+            <span style="min-width:0;flex:1 1 auto;"><span style="display:block;font-size:11.5px;color:#d6dae0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ r.label }}</span><span style="display:block;font-size:9px;color:#6b7280;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ r.sub }}</span></span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="font-size:9.5px;text-transform:uppercase;letter-spacing:.6px;color:#5f6670;margin-bottom:8px;display:flex;align-items:center;gap:6px;"><span class="ms" style="font-size:14px;color:#d6a23b;">dataset</span>Table families</div>
+      <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:18px;">
+        <sc-for list="{{ wiz.wizFamilies }}" as="r" hint-placeholder-count="1">
+          <div onClick="{{ r.onClick }}" style="{{ r.style }}" style-hover="border-color:#3a4150;">
+            <span style="{{ r.checkStyle }}"><sc-if value="{{ r.on }}" hint-placeholder-val="{{ false }}"><span class="ms" style="font-size:13px;color:#fff;">check</span></sc-if></span>
+            <span class="ms" style="font-size:15px;color:{{ r.color }};flex:0 0 auto;">{{ r.icon }}</span>
+            <span style="min-width:0;flex:1 1 auto;"><span style="display:block;font-size:11.5px;color:#d6dae0;">{{ r.label }}</span><span style="display:block;font-size:9px;color:#6b7280;">{{ r.sub }}</span></span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display:flex;gap:18px;">
+        <div style="flex:1 1 0;min-width:0;">
+          <div style="font-size:9.5px;text-transform:uppercase;letter-spacing:.6px;color:#5f6670;margin-bottom:8px;display:flex;align-items:center;gap:6px;"><span class="ms" style="font-size:14px;color:#b78fd6;">hub</span>Managers</div>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <sc-for list="{{ wiz.wizManagers }}" as="r" hint-placeholder-count="4">
+              <div onClick="{{ r.onClick }}" style="{{ r.style }}" style-hover="border-color:#3a4150;">
+                <span style="{{ r.checkStyle }}"><sc-if value="{{ r.on }}" hint-placeholder-val="{{ false }}"><span class="ms" style="font-size:13px;color:#fff;">check</span></sc-if></span>
+                <span class="ms" style="font-size:15px;color:{{ r.color }};flex:0 0 auto;">{{ r.icon }}</span>
+                <span style="min-width:0;flex:1 1 auto;"><span style="display:block;font-size:11.5px;color:#d6dae0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ r.label }}</span><span style="display:block;font-size:9px;color:#6b7280;">{{ r.sub }}</span></span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="flex:1 1 0;min-width:0;">
+          <div style="font-size:9.5px;text-transform:uppercase;letter-spacing:.6px;color:#5f6670;margin-bottom:8px;display:flex;align-items:center;gap:6px;"><span class="ms" style="font-size:14px;color:#7aa0d6;">widgets</span>Product assets</div>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <sc-for list="{{ wiz.wizAssets }}" as="r" hint-placeholder-count="3">
+              <div onClick="{{ r.onClick }}" style="{{ r.style }}" style-hover="border-color:#3a4150;">
+                <span style="{{ r.checkStyle }}"><sc-if value="{{ r.on }}" hint-placeholder-val="{{ false }}"><span class="ms" style="font-size:13px;color:#fff;">check</span></sc-if></span>
+                <span class="ms" style="font-size:15px;color:{{ r.color }};flex:0 0 auto;">{{ r.icon }}</span>
+                <span style="min-width:0;flex:1 1 auto;"><span style="display:block;font-size:11.5px;color:#d6dae0;">{{ r.label }}</span><span style="display:block;font-size:9px;color:#6b7280;">{{ r.sub }}</span></span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- STEP 3: POLICIES -->
+    <sc-if value="{{ wiz.s3 }}" hint-placeholder-val="{{ false }}">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#5f6670;margin-bottom:8px;">Key field</div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:20px;">
+        <sc-for list="{{ wiz.keyFieldOpts }}" as="f" hint-placeholder-count="4"><div onClick="{{ f.onClick }}" style="{{ f.style }}" style-hover="border-color:#3a4150;"><span class="ms" style="font-size:13px;color:#d6a23b;">key</span>{{ f.label }}</div></sc-for>
+      </div>
+
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#5f6670;margin-bottom:8px;">Key lowering / transforms</div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:20px;">
+        <sc-for list="{{ wiz.transformChips }}" as="t" hint-placeholder-count="3"><div onClick="{{ t.onClick }}" style="{{ t.style }}" style-hover="filter:brightness(1.15);"><sc-if value="{{ t.on }}" hint-placeholder-val="{{ false }}"><span class="ms" style="font-size:13px;">check</span></sc-if>{{ t.label }}</div></sc-for>
+      </div>
+
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#5f6670;margin-bottom:8px;">Duplicate key policy</div>
+      <div style="display:flex;gap:4px;background:#16181c;border:1px solid #2c313a;border-radius:8px;padding:4px;max-width:380px;margin-bottom:20px;">
+        <sc-for list="{{ wiz.dupOpts }}" as="d" hint-placeholder-count="3"><div onClick="{{ d.onClick }}" style="{{ d.style }}" style-hover="color:#d6dae0;">{{ d.label }}</div></sc-for>
+      </div>
+
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#5f6670;margin-bottom:7px;">Output projection type</div>
+      <input value="{{ wiz.projType }}" onInput="{{ wiz.onProjType }}" spellcheck="false" placeholder="{{ wiz.projPlaceholder }}" style="width:100%;max-width:380px;height:36px;padding:0 13px;background:#16181c;border:1px solid #2c313a;border-radius:8px;outline:none;color:#8fc97e;font-size:12px;font-family:'IBM Plex Mono',monospace;box-sizing:border-box;" style-focus="border-color:#3160a8;" />
+      <div style="font-size:10px;color:#6b7280;margin-top:6px;">The clean runtime struct rows are projected onto.</div>
+    </sc-if>
+
+    <!-- STEP 4: REVIEW -->
+    <sc-if value="{{ wiz.s4 }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;gap:9px;margin-bottom:16px;flex-wrap:wrap;">
+        <span style="display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:7px;background:#16181c;border:1px solid #2c313a;font-size:12px;color:#e8ebef;font-weight:600;">{{ wiz.rvName }}</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 11px;border-radius:7px;background:#16181c;border:1px solid #2c313a;font-size:11px;color:#c0c6cf;"><span class="ms" style="font-size:14px;color:{{ wiz.rvKindColor }};">{{ wiz.rvKindIcon }}</span>{{ wiz.rvKind }}</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 11px;border-radius:7px;background:#16181c;border:1px solid #2c313a;font-size:11px;color:#7c838f;font-family:'IBM Plex Mono',monospace;"><span class="ms" style="font-size:13px;">deployed_code</span>{{ wiz.rvOwner }}</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 11px;border-radius:7px;background:#16181c;border:1px solid #2c313a;font-size:11px;color:#8fc97e;font-family:'IBM Plex Mono',monospace;"><span class="ms" style="font-size:13px;">view_column</span>{{ wiz.rvRowType }}</span>
+      </div>
+
+      <div style="font-size:9.5px;text-transform:uppercase;letter-spacing:.6px;color:#5f6670;margin-bottom:8px;">Sources</div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px;">
+        <sc-for list="{{ wiz.rvSources }}" as="s" hint-placeholder-count="2"><span style="display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px 0 9px;border-radius:7px;background:#16181c;border:1px solid #2c313a;font-size:11px;color:#c2c8d0;"><span class="ms" style="font-size:14px;color:{{ s.color }};">{{ s.icon }}</span>{{ s.name }}</span></sc-for>
+      </div>
+
+      <div style="font-size:9.5px;text-transform:uppercase;letter-spacing:.6px;color:#5f6670;margin-bottom:8px;display:flex;align-items:center;gap:6px;"><span class="ms" style="font-size:14px;color:#e0a060;">code</span>Generated descriptor preview</div>
+      <div style="border:1px solid #2c313a;border-radius:9px;overflow:hidden;background:#0f1115;">
+        <div style="padding:13px 14px;overflow-x:auto;font-family:'IBM Plex Mono',monospace;font-size:11.5px;line-height:1.65;">
+          <sc-for list="{{ wiz.rvCodeLines }}" as="ln" hint-placeholder-count="12">
+            <div style="white-space:pre;"><sc-for list="{{ ln.tokens }}" as="tk" hint-placeholder-count="3"><span style="{{ tk.style }}">{{ tk.text }}</span></sc-for></div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+  </div>
+  <!-- footer -->
+  <div style="height:56px;flex:0 0 56px;display:flex;align-items:center;gap:10px;padding:0 18px;border-top:1px solid #2c313a;background:#181b20;">
+    <div onClick="{{ wiz.onBack }}" style="{{ wiz.backStyle }}" style-hover="background:#2a2f37;"><span class="ms" style="font-size:16px;">chevron_left</span>Back</div>
+    <div style="margin-left:auto;display:flex;gap:9px;">
+      <div onClick="{{ wiz.onClose }}" style="height:32px;padding:0 16px;display:flex;align-items:center;border-radius:7px;background:#22262c;border:1px solid #2c313a;color:#c2c8d0;font-size:12px;cursor:default;" style-hover="background:#2a2f37;">Cancel</div>
+      <sc-if value="{{ wiz.notLast }}" hint-placeholder-val="{{ true }}">
+        <div onClick="{{ wiz.onNext }}" style="{{ wiz.nextStyle }}" style-hover="filter:brightness(1.1);">Next<span class="ms" style="font-size:16px;">chevron_right</span></div>
+      </sc-if>
+      <sc-if value="{{ wiz.s4 }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ wiz.onCreate }}" style="{{ wiz.createStyle }}" style-hover="filter:brightness(1.1);"><span class="ms" style="font-size:16px;">auto_awesome</span>Create manager</div>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:880,&quot;height&quot;:640},&quot;wiz&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;WizardModel&quot;,&quot;section&quot;:&quot;Data&quot;}}">
+class Component extends DCLogic {
+  state = { local: undefined };
+  pill(active) {
+    return { flex: '1 1 0', textAlign: 'center', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '6px', fontSize: '11.5px', cursor: 'default', color: active ? '#e4e7ec' : '#9aa1ac', background: active ? '#2c313a' : 'transparent' };
+  }
+  defaultWiz() {
+    const step = this.state.local !== undefined ? this.state.local : 1;
+    const go = (n) => () => this.setState({ local: n });
+    const stepDefs = [[1, 'Identity'], [2, 'Sources'], [3, 'Policies'], [4, 'Review']];
+    const steps = stepDefs.map(([n, label], ix) => {
+      const cur = step === n, done = step > n;
+      return { key: n, n: String(n), label, notLast: ix < 3, onClick: go(n),
+        dotStyle: { width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 600, color: (cur || done) ? '#fff' : '#8b919c', background: cur ? '#3160a8' : (done ? '#3a8f4e' : '#2c313a') },
+        labelStyle: { fontSize: '11.5px', color: cur ? '#e4e7ec' : '#7c838f', fontWeight: cur ? 600 : 400 } };
+    });
+    const card = (id, icon, label, blurb, sel) => ({ key: id, icon, label, blurb,
+      onClick: () => {}, style: { display: 'flex', gap: '10px', padding: '12px', borderRadius: '9px', cursor: 'default', border: sel ? '1px solid #3160a8' : '1px solid #2c313a', background: sel ? 'rgba(65,136,224,0.08)' : '#16181c' },
+      iconWrap: 'width:32px;height:32px;border-radius:8px;background:#22262c;display:flex;align-items:center;justify-content:center;flex:0 0 auto;',
+      iconStyle: 'font-size:18px;color:#5e9bf0;', nameStyle: 'display:block;font-size:12px;font-weight:600;color:#e4e7ec;' });
+    return {
+      onClose: () => {}, name: 'WeaponDataManager', onName: () => {},
+      steps, s1: step === 1, s2: step === 2, s3: step === 3, s4: step === 4,
+      ownerOpts: [['game_logic', true], ['weapons_gem', false], ['core', false]].map(([l, a]) => ({ key: l, label: l, onClick: () => {}, style: this.pill(a) })),
+      kindCards: [
+        card('keyed', 'key', 'Keyed lookup', 'Hash-indexed get(key) over a single table.', true),
+        card('joined', 'merge', 'Joined view', 'Joins multiple tables on a shared key.', false),
+        card('agg', 'functions', 'Aggregate', 'Reduces rows into computed summaries.', false),
+        card('graph', 'account_tree', 'Graph', 'Builds a node/edge graph from rows.', false)
+      ],
+      srcCount: '3',
+      wizTables: [], wizFamilies: [], wizManagers: [], wizAssets: [],
+      keyFieldOpts: [], transformChips: [], dupOpts: [], projType: 'WeaponDef', projPlaceholder: 'RuntimeStruct',
+      onProjType: () => {},
+      rvName: 'WeaponDataManager', rvKind: 'Keyed lookup', rvKindIcon: 'key', rvKindColor: '#d6a23b',
+      rvOwner: 'game_logic', rvRowType: 'WeaponDef', rvSources: [], rvCodeLines: [],
+      onBack: () => this.setState(s => ({ local: Math.max(1, (s.local || 1) - 1) })),
+      onNext: () => this.setState(s => ({ local: Math.min(4, (s.local || 1) + 1) })),
+      onCreate: () => {},
+      notLast: step < 4,
+      backStyle: { display: step > 1 ? 'flex' : 'none', alignItems: 'center', gap: '5px', height: '32px', padding: '0 14px', borderRadius: '7px', background: '#22262c', border: '1px solid #2c313a', color: '#c2c8d0', fontSize: '12px', cursor: 'default' },
+      nextStyle: { display: 'flex', alignItems: 'center', gap: '5px', height: '32px', padding: '0 16px', borderRadius: '7px', background: '#2f6ad0', color: '#fff', fontSize: '12px', fontWeight: 600, cursor: 'default' },
+      createStyle: { display: 'flex', alignItems: 'center', gap: '6px', height: '32px', padding: '0 16px', borderRadius: '7px', background: '#3a8f4e', color: '#fff', fontSize: '12px', fontWeight: 600, cursor: 'default' }
+    };
+  }
+  renderVals() {
+    return { wiz: this.props.wiz || this.defaultWiz() };
+  }
+}
+</script>
+</body>
+</html>

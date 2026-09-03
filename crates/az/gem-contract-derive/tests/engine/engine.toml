@@ -1,0 +1,30 @@
+# Fixture engine for the manifest forms of `#[contribution]`, shaped like
+# `az-rs/engine.toml`: the manifest sits at the engine root, one contribution
+# crate sits beside it and another below it, and the stanza grammar is the
+# gem's verbatim. The only difference from `../mount/gem.toml` is the section
+# the id lives in — which is the whole of D2, stated as a fixture.
+[manifest]
+kind = "engine"
+schema = "azoth.engine/v1"
+
+[engine]
+id = "azoth"
+name = "Azoth"
+version = "0.1.0"
+
+# A build-side bundle: the three build roles provide no host capabilities at
+# all, so its floor is the empty one an omitted `caps` means.
+[[contributions]]
+id = "builders"
+kind = "builder"
+package = "az-engine-mount"
+roles = ["asset-processor", "asset-worker", "project-host"]
+
+# A runtime-side bundle with a declared floor, so the witness has something to
+# enforce on an engine stanza.
+[[contributions]]
+id = "prefab-types"
+kind = "code"
+package = "az-engine-mount-types"
+roles = ["server", "client"]
+caps = ["HostsWorld"]

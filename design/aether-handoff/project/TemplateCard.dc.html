@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#15171b;}
+  .ms{font-family:'Material Symbols Outlined';font-weight:400;font-style:normal;line-height:1;display:inline-block;vertical-align:middle;-webkit-font-smoothing:antialiased;user-select:none;}
+</style>
+</helmet>
+<div data-htmlswap-component="template-card" data-htmlswap-region="project.manager.create" onClick="{{ handleClick }}" style="{{ cardStyle }}" style-hover="border-color:#3a4150;">
+  <div style="{{ iconWrapStyle }}"><span class="ms" style="font-size:24px;color:{{ iconColor }};">{{ icon }}</span></div>
+  <div style="font-size:13px;font-weight:600;color:#e4e7ec;font-family:'IBM Plex Sans',system-ui,sans-serif;">{{ name }}</div>
+  <div style="font-size:11px;color:#8b919c;line-height:1.45;font-family:'IBM Plex Sans',system-ui,sans-serif;">{{ desc }}</div>
+  <sc-if value="{{ selected }}" hint-placeholder-val="{{ false }}"><span class="ms" style="position:absolute;top:9px;right:9px;font-size:18px;color:#4188e0;">check_circle</span></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:190,&quot;height&quot;:150},&quot;template&quot;:{&quot;editor&quot;:null,&quot;default&quot;:{&quot;id&quot;:&quot;3d&quot;,&quot;name&quot;:&quot;3D&quot;,&quot;icon&quot;:&quot;view_in_ar&quot;,&quot;color&quot;:&quot;#4188e0&quot;,&quot;desc&quot;:&quot;Lit 3D scene with physics, terrain &amp; navmesh.&quot;},&quot;tsType&quot;:&quot;{ id:string; name:string; icon:string; color:string; desc:string }&quot;},&quot;selected&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;State&quot;},&quot;toggle&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;State&quot;},&quot;onClick&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(id: string) =&gt; void&quot;}}">
+class Component extends DCLogic {
+  state = { sel: undefined };
+  renderVals() {
+    const p = this.props;
+    const t = p.template || {};
+    const controlled = typeof p.onClick === 'function' && !p.toggle;
+    const seed = p.selected != null ? !!p.selected : false;
+    const selected = controlled ? seed : (this.state.sel !== undefined ? this.state.sel : seed);
+    return {
+      name: t.name ?? p.name ?? '3D',
+      desc: t.desc ?? p.desc ?? 'Lit 3D scene with physics, terrain & navmesh.',
+      icon: t.icon ?? p.icon ?? 'view_in_ar',
+      iconColor: t.color ?? p.iconColor ?? '#4188e0',
+      selected,
+      handleClick: () => {
+        if (p.toggle && !controlled) this.setState({ sel: !selected });
+        if (typeof p.onClick === 'function') p.onClick(t.id ?? null);
+      },
+      cardStyle: {
+        position: 'relative', display: 'flex', flexDirection: 'column', gap: '7px',
+        padding: '14px', borderRadius: '10px', cursor: 'default',
+        border: selected ? '1px solid #3160a8' : '1px solid #2c313a',
+        background: selected ? 'rgba(65,136,224,0.10)' : '#1b1e23'
+      },
+      iconWrapStyle: { width: '42px', height: '42px', borderRadius: '9px', background: '#22262c', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2px' }
+    };
+  }
+}
+</script>
+</body>
+</html>

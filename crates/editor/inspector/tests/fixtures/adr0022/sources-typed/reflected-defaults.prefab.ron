@@ -1,0 +1,63 @@
+(
+    version: 1,
+    type_versions: {
+        "Camera": 1,
+        "DirectionalLight": 1,
+        "InspectorBehaviors": 1,
+        "MaterialAssignment": 1,
+        "Mesh": 2,
+        "NestedCollections": 1,
+        "PointLight": 1,
+        "Transform": 1,
+        "TypedMapKeys": 1,
+    },
+    entities: {
+        "defaults": (
+            components: {
+                "Transform": (
+                    position: (0.0, 0.0, 0.0),
+                    rotation: (0.0, 0.0, 0.0, 1.0),
+                    scale: (1.0, 1.0, 1.0),
+                ),
+                "Mesh": (
+                    visible: true,
+                    cast_shadows: true,
+                    receive_shadows: true,
+                    lod_bias: 0,
+                ),
+                "MaterialAssignment": (default: None, slots: []),
+                "Camera": (
+                    projection: Perspective((fov_y_degrees: 60.0)),
+                    near: 0.1,
+                    far: 1000.0,
+                    active: true,
+                    order: 0,
+                ),
+                "DirectionalLight": (
+                    color: (1.0, 1.0, 1.0, 1.0),
+                    illuminance_lux: 10000.0,
+                    shadows_enabled: false,
+                    angular_diameter_degrees: 0.53,
+                ),
+                "PointLight": (
+                    color: (1.0, 1.0, 1.0, 1.0),
+                    intensity_lumens: 1500.0,
+                    range: 10.0,
+                    radius: 0.0,
+                    shadows_enabled: false,
+                ),
+                "NestedCollections": (items: [], weights_by_name: {}, mode: Automatic),
+                "TypedMapKeys": (values: {}),
+                "InspectorBehaviors": (
+                    scalar: 1.0,
+                    notes: "line one\nline two",
+                    locked: true,
+                    internal: false,
+                    asset: "",
+                    object: (entity_alias: ""),
+                ),
+            },
+        ),
+    },
+    instances: {},
+)

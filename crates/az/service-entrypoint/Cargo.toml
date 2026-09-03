@@ -1,0 +1,33 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-service-entrypoint"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Shared launch contract helpers for generated Azoth project service binaries"
+
+
+[lints]
+workspace = true
+[dependencies]
+az-observability = { path = "../observability" }
+az-observability-control = { path = "../observability-control" }
+az-proto-core = { path = "../proto/core" }
+az-rpc = { workspace = true }
+az-service-catalog = { workspace = true }
+az-service-supervision = { workspace = true }
+az-source-control = { workspace = true }
+clap = { workspace = true, features = ["derive"] }
+capnp = { workspace = true }
+capnp-rpc = { workspace = true }
+futures = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+toml = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

@@ -1,0 +1,6 @@
+{
+  "git": {
+    "sha1": "2d7609263d8c504612407abfd747bb46d138533a"
+  },
+  "path_in_vcs": "crates/bevy_mod_scripting_bindings"
+}

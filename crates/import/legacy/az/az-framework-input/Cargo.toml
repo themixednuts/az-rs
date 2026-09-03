@@ -1,0 +1,21 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-framework-input"
+version = "0.1.0"
+edition.workspace = true
+description = "Parser for AzFramework input binding assets"
+
+
+[lints]
+workspace = true
+[dependencies]
+az-asset-builder = { workspace = true }
+az-core = { workspace = true }
+az-derive = { workspace = true }
+az-gem-contract = { workspace = true }
+az-objectstream = { path = "../../../../formats/legacy/az/object-stream" }
+ron = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }

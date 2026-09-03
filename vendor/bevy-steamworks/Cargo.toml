@@ -1,0 +1,19 @@
+[package]
+name = "bevy-steamworks"
+version = "0.16.0"
+edition = "2021"
+authors = ["james7132 <contact@jamessliu.com>"]
+description = "A Bevy plugin for integrating with the Steamworks SDK."
+readme = "README.md"
+keywords = ["bevy", "gamedev", "steam"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/HouraiTeahouse/bevy-steamworks"
+
+[features]
+default = []
+serde = ["steamworks/serde"]
+
+[dependencies]
+bevy_app = { version = "0.19", default-features = false }
+bevy_ecs = { version = "0.19", default-features = false }
+steamworks = "0.12.2"

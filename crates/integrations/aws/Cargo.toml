@@ -1,0 +1,44 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "aws-plugin"
+version = "0.1.0"
+edition = "2024"
+
+
+[lints]
+workspace = true
+[dependencies]
+bevy = { workspace = true, features = ["default_app"] }
+reqwest = { workspace = true, default-features = false, features = [
+    "json",
+    "rustls",
+    "http2",
+] }
+tokio = { workspace = true, default-features = false, features = [
+    "rt",
+    "net",
+    "io-util",
+    "sync",
+] }
+tracing = { workspace = true }
+thiserror = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+serde_bytes = { workspace = true, features = ["alloc"] }
+hex = { workspace = true }
+bytes = { workspace = true }
+futures = { workspace = true }
+async-io = { workspace = true }
+aws-sigv4 = { workspace = true }
+aws-credential-types = { workspace = true }
+aws-smithy-runtime-api = { workspace = true }
+http = { workspace = true }
+ags-auth-protocol = { workspace = true }
+zeroize = { workspace = true }
+http-plugin = { path = "../http" }
+logging-registry = { path = "../logging-registry" }
+bevy-steamworks = { workspace = true }
+
+[dev-dependencies]
+tracing-subscriber = { workspace = true }

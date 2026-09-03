@@ -1,0 +1,27 @@
+error: Prefab migration chain has a version gap
+  --> tests/ui/fail/gapped_migration_chain.rs:13:77
+   |
+13 | #[prefab(tag = "Gapped", version = 3, migration(from = 1, to = 3, migrate = migrate))]
+   |                                                                             ^^^^^^^
+
+error[E0277]: the trait bound `PrefabTypeData: FromType<GappedMigration>` is not satisfied
+  --> tests/ui/fail/gapped_migration_chain.rs:12:31
+   |
+11 | #[derive(Component, Reflect, Default, Prefab)]
+   |                     ------- required by a bound introduced by this call
+12 | #[reflect(Component, Default, Prefab)]
+   |                               ^^^^^^ the trait `FromType<GappedMigration>` is not implemented for `PrefabTypeData`
+   |
+help: the trait `FromType<GappedMigration>` is not implemented for `PrefabTypeData`
+      but trait `FromType<MultiInstanceOf>` is implemented for it
+  --> $WORKSPACE/crates/az/prefab/src/multi_instance.rs
+   |
+   | #[derive(Component, Reflect, Clone, Default, PartialEq, Eq, Prefab)]
+   |                                                             ^^^^^^
+   = help: for that trait implementation, expected `MultiInstanceOf`, found `GappedMigration`
+note: required by a bound in `TypeRegistration::register_type_data`
+  --> $CARGO/bevy_reflect-$VERSION/src/type_registry.rs
+   |
+   |     pub fn register_type_data<T: TypeData + FromType<V>, V>(&mut self) {
+   |                                             ^^^^^^^^^^^ required by this bound in `TypeRegistration::register_type_data`
+   = note: this error originates in the derive macro `Prefab` (in Nightly builds, run with -Z macro-backtrace for more info)

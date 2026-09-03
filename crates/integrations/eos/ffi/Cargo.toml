@@ -1,0 +1,16 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "eos-ffi"
+version = "0.1.0"
+edition = "2024"
+
+
+[lints]
+workspace = true
+[lib]
+name = "eos_ffi"
+path = "src/lib.rs"
+
+[build-dependencies]
+bindgen = { workspace = true }

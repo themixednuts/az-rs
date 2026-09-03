@@ -1,0 +1,160 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  merge_group:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  lint-test:
+    name: fmt, clippy, tests
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install Rust toolchain
+        shell: pwsh
+        run: |
+          rustup show
+          rustc --version
+          cargo --version
+
+      - name: Cache vcpkg packages
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/vcpkg-binary-cache
+          key: windows-vcpkg-openssl-capnproto-x64-windows-static-md-${{ hashFiles('.github/workflows/*.yml', '.cargo/config.toml') }}
+
+      - name: Use the long-form temp directory
+        # The hosted Windows image sets TEMP to an 8.3 short path (RUNNER~1).
+        # Azoth canonicalizes every root it records, so tests that build
+        # expectations from the raw temp path would compare the short spelling
+        # against the long one. Give them the same long path every developer has.
+        shell: pwsh
+        run: |
+          $temp = (Get-Item -LiteralPath $env:TEMP).FullName
+          "TEMP=$temp" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "TMP=$temp" | Out-File -FilePath $env:GITHUB_ENV -Append
+          $temp
+
+      - name: Set up OpenSSL
+        shell: pwsh
+        run: |
+          $binaryCache = Join-Path $env:RUNNER_TEMP "vcpkg-binary-cache"
+          New-Item -ItemType Directory -Force $binaryCache | Out-Null
+          $env:VCPKG_BINARY_SOURCES = "clear;files,$binaryCache,readwrite"
+          $vcpkgRoot = $env:VCPKG_INSTALLATION_ROOT
+          if (-not $vcpkgRoot) {
+            $vcpkg = Get-Command vcpkg -ErrorAction SilentlyContinue
+            if ($vcpkg) {
+              $vcpkgRoot = Split-Path $vcpkg.Source -Parent
+            }
+          }
+          if (-not $vcpkgRoot -or -not (Test-Path (Join-Path $vcpkgRoot "vcpkg.exe"))) {
+            $vcpkgRoot = Join-Path $env:RUNNER_TEMP "vcpkg"
+            git clone https://github.com/microsoft/vcpkg $vcpkgRoot
+            & (Join-Path $vcpkgRoot "bootstrap-vcpkg.bat")
+          }
+          & (Join-Path $vcpkgRoot "vcpkg.exe") install openssl:x64-windows-static-md capnproto:x64-windows-static-md
+          $capnp = Get-ChildItem `
+            -LiteralPath (Join-Path $vcpkgRoot "installed/x64-windows-static-md/tools") `
+            -Filter capnp.exe `
+            -File `
+            -Recurse | Select-Object -First 1
+          if (-not $capnp) {
+            throw "vcpkg installed capnproto without capnp.exe"
+          }
+          "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "VCPKGRS_TRIPLET=x64-windows-static-md" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "OPENSSL_STATIC=1" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "CAPNP=$($capnp.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
+          & $capnp.FullName --version
+
+      - name: Cache Rust build artifacts
+        uses: Swatinem/rust-cache@v2.9.1
+        with:
+          shared-key: windows-ci-rust-${{ hashFiles('rust-toolchain.toml') }}
+          cache-on-failure: false
+          save-if: ${{ github.event_name == 'push' }}
+
+      - name: Install just
+        run: cargo install just --locked --version 1.45.0
+
+      - name: Check Justfile
+        run: just --list --list-submodules
+
+      - name: Format
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets --locked --profile ci -- -D warnings
+
+      - name: Test
+        run: cargo test --workspace --locked --profile ci --no-fail-fast
+
+      - name: Check release toolkit targets
+        run: >
+          cargo check --locked --profile ci
+          -p azoth --bin azoth
+          -p az-editor --bin az-editor
+          -p az-daemon --bin azd
+          -p az-sessiond --bin az-sessiond
+
+      - name: Write CI cache manifest
+        if: success() && github.event_name == 'push'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force .ci | Out-Null
+          "windows-ci-rust-${{ hashFiles('rust-toolchain.toml') }}" | Set-Content .ci/rust-cache-key.txt
+          "${{ github.sha }}" | Set-Content .ci/head-sha.txt
+
+      - name: Upload CI cache manifest
+        if: success() && github.event_name == 'push'
+        uses: actions/upload-artifact@v7
+        with:
+          name: ci-cache-manifest
+          path: .ci/
+          retention-days: 7
+
+  linux-cross:
+    name: Linux host and Windows cross-check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install cross-compilation prerequisites
+        run: |
+          rustup target add x86_64-pc-windows-msvc
+          sudo apt-get update
+          sudo apt-get install --yes clang lld capnproto libcapnp-dev
+          cargo install cargo-xwin --version 0.23.0 --locked
+
+      - name: Cache Rust build artifacts
+        uses: Swatinem/rust-cache@v2.9.1
+        with:
+          shared-key: linux-cross-${{ hashFiles('rust-toolchain.toml') }}
+
+      - name: Test portable build planning
+        run: cargo test --locked --profile ci -p az-daemon
+
+      - name: Check a Windows MSVC crate from Linux
+        run: cargo xwin check --locked -p az-core --target x86_64-pc-windows-msvc

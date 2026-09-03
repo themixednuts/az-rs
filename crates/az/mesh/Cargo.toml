@@ -1,0 +1,19 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-mesh"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Azoth mesh asset identities shared by builders and runtimes"
+
+[lints]
+workspace = true
+
+[dependencies]
+az-core = { workspace = true }
+az-gem-contract = { workspace = true }
+uuid = { workspace = true }
+
+[build-dependencies]
+az-build-fingerprint = { workspace = true }

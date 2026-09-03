@@ -1,0 +1,47 @@
+# Fixture gem for the manifest forms of `#[contribution]`. Shaped like a real
+# one: the manifest sits at the gem root, contribution crates sit beside it and
+# below it, and an assets contribution declares no package at all. The crate
+# beside it implements two contributions, which is what the bare-token form is
+# for; each crate below it implements one, which the package alone selects. The
+# third declares a generated product, so the expansion — not its author —
+# writes the call that registers what its build script compiled in.
+[manifest]
+kind = "gem"
+schema = "azoth.gem/v3"
+
+[gem]
+id = "azoth.mount"
+name = "Mount"
+version = "0.1.0"
+
+[[contributions]]
+id = "runtime"
+kind = "code"
+package = "az-gem-mount"
+roles = ["server", "unified"]
+caps = ["HasAuthority", "HostsWorld"]
+
+[[contributions]]
+id = "runtime-host"
+kind = "code"
+package = "az-gem-mount"
+roles = ["runtime-host"]
+
+[[contributions]]
+id = "prefab-types"
+kind = "builder"
+package = "az-gem-mount-prefab"
+roles = ["asset-worker"]
+
+[[contributions]]
+id = "graphs"
+kind = "code"
+package = "az-gem-mount-graphs"
+roles = ["server"]
+products = ["graphs"]
+
+[[contributions]]
+id = "assets"
+kind = "assets"
+root = "assets"
+roles = ["client", "server", "unified"]

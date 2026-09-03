@@ -1,0 +1,35 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-gem-contract-derive"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Contribution descriptor attribute for the Azoth typed gem contract"
+
+[lib]
+proc-macro = true
+
+[lints]
+workspace = true
+
+[dependencies]
+proc-macro2 = { workspace = true }
+quote = { workspace = true }
+syn = { workspace = true }
+# Build-time only, and never linked into a gem: the zero-argument
+# `#[contribution]` reads the gem's `gem.toml` while it expands.
+toml = { workspace = true }
+
+[dev-dependencies]
+# A dev-dependency cycle back onto the crate this one is a macro for: the
+# fixture units below are real contribution crates, and proving the expansion
+# composes means composing it. `tests/mount` is a gem, `tests/engine` is an
+# engine, and the reader is the same one — which is the fixture's whole claim.
+az-gem-contract = { workspace = true }
+az-gem-mount = { path = "tests/mount" }
+az-gem-mount-graphs = { path = "tests/mount/graphs" }
+az-gem-mount-prefab = { path = "tests/mount/prefab" }
+az-engine-mount = { path = "tests/engine" }
+az-engine-mount-types = { path = "tests/engine/types" }
+az-graph-runtime = { workspace = true }

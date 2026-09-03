@@ -1,0 +1,30 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "oodle-fetch"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Materialize the proprietary Oodle SDKs from a licensed Unreal Engine checkout"
+publish = false
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "oodle-fetch"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1"
+az-filesystem = { workspace = true }
+clap = { workspace = true, features = ["derive"] }
+flate2 = { workspace = true }
+quick-xml = { workspace = true }
+reqwest = { workspace = true, features = ["blocking"] }
+serde = { workspace = true }
+sha1 = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

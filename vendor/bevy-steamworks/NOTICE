@@ -1,0 +1,10 @@
+bevy-steamworks 0.16.0
+
+Upstream: https://github.com/HouraiTeahouse/bevy-steamworks
+Local status: adapted to the workspace's Bevy version.
+License: MIT OR Apache-2.0
+
+The full standard license texts are included at:
+
+- ../gpu-allocator/LICENSE-MIT
+- ../gpu-allocator/LICENSE-APACHE

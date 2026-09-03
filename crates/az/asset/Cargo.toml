@@ -1,0 +1,37 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-asset"
+version = "0.1.0"
+edition.workspace = true
+
+
+[lints]
+workspace = true
+[lib]
+name = "az_asset"
+path = "src/lib.rs"
+
+[features]
+default = []
+oodle = ["dep:oodle-safe", "dep:oodle-sys"]
+
+[dependencies]
+az-core = { workspace = true, features = ["serde"] }
+az-filesystem = { workspace = true }
+bevy_app = { workspace = true }
+bevy_reflect = { workspace = true }
+blake3 = { workspace = true }
+crc32fast = { workspace = true }
+oodle-safe = { workspace = true, optional = true }
+oodle-sys = { workspace = true, optional = true }
+rayon = { workspace = true }
+rustc-hash = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true, features = ["serde", "v5"] }
+
+[dev-dependencies]
+ron = { workspace = true }
+tempfile = "3"

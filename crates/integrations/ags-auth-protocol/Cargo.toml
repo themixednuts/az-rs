@@ -1,0 +1,23 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "ags-auth-protocol"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Typed Amazon Games Services authentication protocol contracts"
+
+
+[lints]
+workspace = true
+[lib]
+name = "ags_auth_protocol"
+path = "src/lib.rs"
+
+[dependencies]
+az-core = { workspace = true }
+schemars = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+utoipa = { version = "5", features = ["axum_extras"] }
+zeroize = { workspace = true }

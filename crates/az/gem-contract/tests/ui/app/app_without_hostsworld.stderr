@@ -1,0 +1,40 @@
+error[E0277]: host capability `az_gem_contract::HostsWorld` is not declared by `WorkerGemCaps`
+ --> tests/ui/app/app_without_hostsworld.rs:9:17
+  |
+9 |     let _ = ctx.app();
+  |                 ^^^ requires host capability `az_gem_contract::HostsWorld`
+  |
+help: the trait `Provides<az_gem_contract::HostsWorld>` is not implemented for `WorkerGemCaps`
+ --> tests/ui/app/app_without_hostsworld.rs:6:1
+  |
+6 | declare_caps!(WorkerGemCaps:);
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  = note: declare the capability in this contribution's floor (`caps = [...]` or `declare_caps!`), or use `GemContext::when` for optional narrowing
+help: the following other types implement trait `Provides<C>`
+ --> src/capability.rs
+  |
+  |           impl<D> Provides<$token> for $wrapper<D> {}
+  |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `WithHostsWorld<D>`
+  |           $(impl<D: Provides<$other>> Provides<$other> for $wrapper<D> {})*
+  |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |             |
+  |             `WithAuthority<D>`
+  |             `WithClient<D>`
+  |             `WithFixedClock<D>`
+...
+  | / capabilities! {
+  | |     HostsWorld => WithHostsWorld forwards [HasClient, HasAuthority, OwnsFixedClock],
+  | |     HasClient => WithClient forwards [HostsWorld, HasAuthority, OwnsFixedClock],
+  | |     HasAuthority => WithAuthority forwards [HostsWorld, HasClient, OwnsFixedClock],
+  | |     OwnsFixedClock => WithFixedClock forwards [HostsWorld, HasClient, HasAuthority],
+  | | }
+  | |_- in this macro invocation
+note: required by a bound in `GemContext::<'_, D>::app`
+ --> src/context.rs
+  |
+  |     pub fn app(&mut self) -> &mut App
+  |            --- required by a bound in this associated function
+  |     where
+  |         D: Provides<HostsWorld>,
+  |            ^^^^^^^^^^^^^^^^^^^^ required by this bound in `GemContext::<'_, D>::app`
+  = note: this error originates in the macro `declare_caps` which comes from the expansion of the macro `capabilities` (in Nightly builds, run with -Z macro-backtrace for more info)

@@ -1,0 +1,9 @@
+Selected Zed GPUI crates
+
+Upstream: https://github.com/zed-industries/zed
+Recorded upstream revision: 17c0ebb0f7b8b512d99f396e543e71c1775ff6f6
+Local status: reduced workspace with local Windows compositor integration.
+License: Apache-2.0
+
+The full standard license text is included at
+../gpu-allocator/LICENSE-APACHE.

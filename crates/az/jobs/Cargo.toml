@@ -1,0 +1,18 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-jobs"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Local parallel work and cooperative cancellation primitives."
+
+[lints]
+workspace = true
+
+[dependencies]
+crossbeam-channel = { workspace = true }
+ctrlc = { workspace = true }
+rayon = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }

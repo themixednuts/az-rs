@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#1c2025;}
+  .ms{font-family:'Material Symbols Outlined';font-weight:400;font-style:normal;line-height:1;display:inline-block;vertical-align:middle;-webkit-font-smoothing:antialiased;user-select:none;}
+</style>
+</helmet>
+<div data-htmlswap-component="transport" data-htmlswap-slot="play-controls" style="flex:0 0 auto;display:flex;align-items:center;gap:3px;background:#16181c;border:1px solid #2c313a;border-radius:8px;padding:3px;width:fit-content;">
+  <div data-htmlswap-tone="success" data-htmlswap-variant="solid" onClick="{{ onPlayClick }}" style="{{ playBtnStyle }}" style-hover="filter:brightness(1.12);" title="Play (Ctrl+P)"><span class="ms" style="font-size:19px;">{{ playIcon }}</span></div>
+  <div data-htmlswap-tone="danger" data-htmlswap-variant="ghost" onClick="{{ onStopClick }}" style="{{ stopBtnStyle }}" style-hover="background:#2a2f37;color:#d6dae0;" title="Stop"><span class="ms" style="font-size:18px;">stop</span></div>
+  <div onClick="{{ onStepClick }}" style="width:30px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:5px;color:#9aa1ac;cursor:default;" style-hover="background:#2a2f37;color:#d6dae0;" title="Step frame"><span class="ms" style="font-size:18px;">skip_next</span></div>
+  <div style="width:1px;height:18px;background:#2c313a;margin:0 2px;"></div>
+  <div onClick="{{ onSimClick }}" style="{{ simBtnStyle }}" style-hover="background:#2a2f37;color:#d6dae0;" title="Simulate physics"><span class="ms" style="font-size:17px;">smart_toy</span></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:180,&quot;height&quot;:40},&quot;playState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;stopped&quot;,&quot;paused&quot;,&quot;playing&quot;],&quot;default&quot;:&quot;stopped&quot;,&quot;tsType&quot;:&quot;'stopped'|'paused'|'playing'&quot;,&quot;section&quot;:&quot;State&quot;},&quot;simulating&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;State&quot;},&quot;onPlay&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;() =&gt; void&quot;},&quot;onStop&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;() =&gt; void&quot;},&quot;onStep&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;() =&gt; void&quot;},&quot;onSimulate&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;() =&gt; void&quot;}}">
+class Component extends DCLogic {
+  state = { play: undefined, sim: undefined };
+  renderVals() {
+    const p = this.props;
+    const controlled = typeof p.onPlay === 'function';
+    const play = controlled ? (p.playState || 'stopped') : (this.state.play !== undefined ? this.state.play : (p.playState || 'stopped'));
+    const sim = controlled ? !!p.simulating : (this.state.sim !== undefined ? this.state.sim : !!p.simulating);
+    const isPlaying = play === 'playing';
+    const onPlayClick = () => {
+      if (!controlled) this.setState(s => ({ play: (s.play !== undefined ? s.play : play) === 'playing' ? 'paused' : 'playing' }));
+      if (typeof p.onPlay === 'function') p.onPlay();
+    };
+    const onStopClick = () => { if (!controlled) this.setState({ play: 'stopped' }); if (typeof p.onStop === 'function') p.onStop(); };
+    const onStepClick = () => { if (typeof p.onStep === 'function') p.onStep(); };
+    const onSimClick = () => { if (!controlled) this.setState(s => ({ sim: !(s.sim !== undefined ? s.sim : sim) })); if (typeof p.onSimulate === 'function') p.onSimulate(); };
+    return {
+      playIcon: isPlaying ? 'pause' : 'play_arrow',
+      onPlayClick, onStopClick, onStepClick, onSimClick,
+      playBtnStyle: { width: '34px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '5px', cursor: 'default', color: '#fff', background: isPlaying ? '#bb8a2e' : '#3a8f4e' },
+      stopBtnStyle: { width: '30px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '5px', cursor: 'default', color: play === 'stopped' ? '#5f6670' : '#cfd4db' },
+      simBtnStyle: { width: '30px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '5px', cursor: 'default', color: sim ? '#4188e0' : '#9aa1ac', background: sim ? 'rgba(65,136,224,0.14)' : 'transparent' }
+    };
+  }
+}
+</script>
+</body>
+</html>

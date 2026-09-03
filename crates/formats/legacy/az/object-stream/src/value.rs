@@ -1,0 +1,3752 @@
+//! Typed value readers for `ObjectStream` leaf elements.
+
+use std::array::TryFromSliceError;
+use std::borrow::Cow;
+use std::fmt::{self, Write as _};
+use std::str::Utf8Error;
+
+use thiserror::Error;
+use uuid::Uuid;
+
+use crate::codec::ObjectStreamValueCodec;
+use crate::types::{
+    AZ_S8, AZ_S64, AZ_U64, AZ_UUID, AZSTD_BASIC_STRING, AZSTD_STRING, AZSTD_STRING_LEGACY_XML,
+    BOOL, BYTE_STREAM, CHAR, COLOR, CRC32, DOUBLE, ENTITY_ID, FLOAT, INT, LONG, MATRIX3X3,
+    MATRIX4X4, QUATERNION, SHORT, SIGNED_CHAR, TRANSFORM, UNSIGNED_CHAR, UNSIGNED_INT,
+    UNSIGNED_LONG, UNSIGNED_SHORT, VECTOR_FLOAT, VECTOR2, VECTOR3, VECTOR4,
+};
+use crate::visit::ElementHeader;
+use crate::{Element, PayloadEncoding};
+
+const ENTITY_ID_FIELD_CRC: u32 = 0xbf39_6750;
+const CRC32_VALUE_FIELD_CRC: u32 = 0x1d77_5834;
+
+#[derive(Debug, Error)]
+pub enum ObjectStreamValueError {
+    #[error("{0}")]
+    Message(String),
+    #[error("field `{field}` has type {actual}, expected {expected}")]
+    UnexpectedType {
+        field: String,
+        expected: &'static str,
+        actual: Uuid,
+    },
+    #[error("field `{field}` has invalid value, expected {expected}")]
+    InvalidValue {
+        field: String,
+        expected: &'static str,
+    },
+    #[error("field `{field}` has no value bytes")]
+    MissingData { field: String },
+    #[error(
+        "field `{field}` has unresolved ObjectStream type {raw_id} (specialization {specialization:?})"
+    )]
+    UnresolvedType {
+        field: String,
+        raw_id: Uuid,
+        specialization: Option<Uuid>,
+    },
+    #[error(
+        "field `{field}` has {actual:?} payload bytes; typed decoding requires canonical big-endian bytes"
+    )]
+    UnexpectedPayloadEncoding {
+        field: String,
+        actual: PayloadEncoding,
+    },
+    #[error("field `{field}` is missing")]
+    MissingField { field: String },
+    #[error("field `{field}` is not consumed by this ObjectStream object")]
+    UnknownField { field: String },
+    #[error("field `{field}` has {actual} value bytes, expected {expected}")]
+    InvalidLength {
+        field: String,
+        expected: usize,
+        actual: usize,
+    },
+    #[error("field `{field}` is not valid UTF-8")]
+    Utf8 {
+        field: String,
+        #[source]
+        source: Utf8Error,
+    },
+    #[error("field `{field}` serializer conversion failed")]
+    SerializerConversion {
+        field: String,
+        #[source]
+        source: crate::codec::ValueCodecError,
+    },
+    #[error("field `{field}` has no proven executable ClassData serializer")]
+    MissingSerializer { field: String },
+    #[error("field `{field}` integer value {value} does not fit {target}")]
+    IntegerOutOfRange {
+        field: String,
+        value: u64,
+        target: &'static str,
+    },
+    #[error("field `{field}` has reflected container shape {actual:?}, expected {expected}")]
+    UnexpectedContainerShape {
+        field: String,
+        expected: &'static str,
+        actual: Option<crate::context::ContainerShape>,
+    },
+}
+
+impl serde::de::Error for ObjectStreamValueError {
+    fn custom<T>(msg: T) -> Self
+    where
+        T: fmt::Display,
+    {
+        Self::Message(msg.to_string())
+    }
+}
+
+mod sealed {
+    pub trait Sealed {}
+
+    impl Sealed for crate::Element {}
+    impl Sealed for crate::visit::ElementHeader<'_> {}
+}
+
+/// Borrowed value surface shared by owned DOM elements and streaming headers.
+///
+/// This trait is sealed so external types cannot manufacture semantic or
+/// serializer proof for typed readers.
+pub trait ElementValue: sealed::Sealed {
+    fn raw_type_id(&self) -> Uuid;
+    fn specialization_type_id(&self) -> Option<Uuid>;
+    fn resolved_type_id(&self) -> Option<Uuid>;
+    fn reflected_enum_type_id(&self) -> Option<Uuid>;
+    fn builtin_serializer(&self) -> Option<crate::codec::BuiltinSerializerDescriptor>;
+    fn container_shape(&self) -> Option<crate::context::ContainerShape>;
+    fn version_state(&self) -> crate::context::VersionConversionState;
+    fn element_version(&self) -> u32;
+    fn field_name(&self) -> Option<&str>;
+    fn data(&self) -> Option<&[u8]>;
+    fn payload_encoding(&self) -> PayloadEncoding;
+}
+
+impl ElementValue for Element {
+    #[inline]
+    fn raw_type_id(&self) -> Uuid {
+        *Self::raw_type_id(self)
+    }
+
+    #[inline]
+    fn specialization_type_id(&self) -> Option<Uuid> {
+        Self::specialization(self).copied()
+    }
+
+    #[inline]
+    fn resolved_type_id(&self) -> Option<Uuid> {
+        Self::resolved_type_id(self).copied()
+    }
+
+    #[inline]
+    fn reflected_enum_type_id(&self) -> Option<Uuid> {
+        Self::reflected_enum_type_id(self).copied()
+    }
+
+    #[inline]
+    fn builtin_serializer(&self) -> Option<crate::codec::BuiltinSerializerDescriptor> {
+        Self::builtin_serializer(self)
+    }
+
+    #[inline]
+    fn container_shape(&self) -> Option<crate::context::ContainerShape> {
+        Self::container_shape(self)
+    }
+
+    #[inline]
+    fn version_state(&self) -> crate::context::VersionConversionState {
+        self.version_state
+    }
+
+    #[inline]
+    fn element_version(&self) -> u32 {
+        Self::version(self).unwrap_or(0)
+    }
+
+    #[inline]
+    fn field_name(&self) -> Option<&str> {
+        Self::field(self).map(arcstr::ArcStr::as_str)
+    }
+
+    #[inline]
+    fn data(&self) -> Option<&[u8]> {
+        Self::data(self)
+    }
+
+    #[inline]
+    fn payload_encoding(&self) -> PayloadEncoding {
+        Self::payload_encoding(self)
+    }
+}
+
+impl ElementValue for ElementHeader<'_> {
+    #[inline]
+    fn raw_type_id(&self) -> Uuid {
+        self.id
+    }
+
+    #[inline]
+    fn specialization_type_id(&self) -> Option<Uuid> {
+        self.specialization
+    }
+
+    #[inline]
+    fn resolved_type_id(&self) -> Option<Uuid> {
+        ElementHeader::resolved_type_id(self).copied()
+    }
+
+    #[inline]
+    fn reflected_enum_type_id(&self) -> Option<Uuid> {
+        ElementHeader::reflected_enum_type_id(self).copied()
+    }
+
+    #[inline]
+    fn builtin_serializer(&self) -> Option<crate::codec::BuiltinSerializerDescriptor> {
+        ElementHeader::builtin_serializer(self)
+    }
+
+    #[inline]
+    fn container_shape(&self) -> Option<crate::context::ContainerShape> {
+        ElementHeader::container_shape(self)
+    }
+
+    #[inline]
+    fn version_state(&self) -> crate::context::VersionConversionState {
+        self.version_state
+    }
+
+    #[inline]
+    fn element_version(&self) -> u32 {
+        self.version.unwrap_or(0)
+    }
+
+    #[inline]
+    fn field_name(&self) -> Option<&str> {
+        self.field.map(arcstr::ArcStr::as_str)
+    }
+
+    #[inline]
+    fn data(&self) -> Option<&[u8]> {
+        self.data
+    }
+
+    #[inline]
+    fn payload_encoding(&self) -> PayloadEncoding {
+        self.payload_encoding
+    }
+}
+
+/// Decode an AZ value from any borrowed `ObjectStream` element source.
+pub trait DecodeAzValue<'a>: Sized {
+    /// Decode `Self` from a borrowed element source.
+    ///
+    /// # Errors
+    ///
+    /// Implementation-defined, but every implementation in this crate delegates
+    /// to one of the `read_*` readers below, so the failures are theirs:
+    /// [`ObjectStreamValueError::UnexpectedType`] for the wrong AZ type,
+    /// [`ObjectStreamValueError::MissingData`] for a missing payload,
+    /// [`ObjectStreamValueError::InvalidLength`] for a wrong-width payload, and
+    /// [`ObjectStreamValueError::Utf8`] for malformed string bytes.
+    fn decode_az_value<E>(element: &'a E) -> Result<Self, ObjectStreamValueError>
+    where
+        E: ElementValue + ?Sized;
+}
+
+impl<'a> DecodeAzValue<'a> for bool {
+    #[inline]
+    fn decode_az_value<E>(element: &'a E) -> Result<Self, ObjectStreamValueError>
+    where
+        E: ElementValue + ?Sized,
+    {
+        read_bool(element)
+    }
+}
+
+impl<'a> DecodeAzValue<'a> for i8 {
+    #[inline]
+    fn decode_az_value<E>(element: &'a E) -> Result<Self, ObjectStreamValueError>
+    where
+        E: ElementValue + ?Sized,
+    {
+        read_i8(element)
+    }
+}
+
+impl<'a> DecodeAzValue<'a> for i16 {
+    #[inline]
+    fn decode_az_value<E>(element: &'a E) -> Result<Self, ObjectStreamValueError>
+    where
+        E: ElementValue + ?Sized,
+    {
+        read_i16(element)
+    }
+}
+
+impl<'a> DecodeAzValue<'a> for i32 {
+    #[inline]
+    fn decode_az_value<E>(element: &'a E) -> Result<Self, ObjectStreamValueError>
+    where
+        E: ElementValue + ?Sized,
+    {
+        read_i32(element)
+    }
+}
+
+impl<'a> DecodeAzValue<'a> for i64 {
+    #[inline]
+    fn decode_az_value<E>(element: &'a E) -> Result<Self, ObjectStreamValueError>
+    where
+        E: ElementValue + ?Sized,
+    {
+        read_i64(element)
+    }
+}
+
+impl<'a> DecodeAzValue<'a> for u8 {
+    #[inline]
+    fn decode_az_value<E>(element: &'a E) -> Result<Self, ObjectStreamValueError>
+    where
+        E: ElementValue + ?Sized,
+    {
+        read_u8(element)
+    }
+}
+
+impl<'a> DecodeAzValue<'a> for u16 {
+    #[inline]
+    fn decode_az_value<E>(element: &'a E) -> Result<Self, ObjectStreamValueError>
+    where
+        E: ElementValue + ?Sized,
+    {
+        read_u16(element)
+    }
+}
+
+impl<'a> DecodeAzValue<'a> for u32 {
+    #[inline]
+    fn decode_az_value<E>(element: &'a E) -> Result<Self, ObjectStreamValueError>
+    where
+        E: ElementValue + ?Sized,
+    {
+        read_u32(element)
+    }
+}
+
+impl<'a> DecodeAzValue<'a> for u64 {
+    #[inline]
+    fn decode_az_value<E>(element: &'a E) -> Result<Self, ObjectStreamValueError>
+    where
+        E: ElementValue + ?Sized,
+    {
+        read_u64(element)
+    }
+}
+
+impl<'a> DecodeAzValue<'a> for f32 {
+    #[inline]
+    fn decode_az_value<E>(element: &'a E) -> Result<Self, ObjectStreamValueError>
+    where
+        E: ElementValue + ?Sized,
+    {
+        read_f32_value(element)
+    }
+}
+
+impl<'a> DecodeAzValue<'a> for f64 {
+    #[inline]
+    fn decode_az_value<E>(element: &'a E) -> Result<Self, ObjectStreamValueError>
+    where
+        E: ElementValue + ?Sized,
+    {
+        read_f64(element)
+    }
+}
+
+impl<'a> DecodeAzValue<'a> for Uuid {
+    #[inline]
+    fn decode_az_value<E>(element: &'a E) -> Result<Self, ObjectStreamValueError>
+    where
+        E: ElementValue + ?Sized,
+    {
+        read_uuid(element)
+    }
+}
+
+impl<'a> DecodeAzValue<'a> for &'a str {
+    #[inline]
+    fn decode_az_value<E>(element: &'a E) -> Result<Self, ObjectStreamValueError>
+    where
+        E: ElementValue + ?Sized,
+    {
+        read_string(element)
+    }
+}
+
+impl<'a> DecodeAzValue<'a> for String {
+    #[inline]
+    fn decode_az_value<E>(element: &'a E) -> Result<Self, ObjectStreamValueError>
+    where
+        E: ElementValue + ?Sized,
+    {
+        read_string(element).map(str::to_owned)
+    }
+}
+
+impl<'a> DecodeAzValue<'a> for Box<str> {
+    #[inline]
+    fn decode_az_value<E>(element: &'a E) -> Result<Self, ObjectStreamValueError>
+    where
+        E: ElementValue + ?Sized,
+    {
+        read_string(element).map(Self::from)
+    }
+}
+
+impl<'a> DecodeAzValue<'a> for &'a [u8] {
+    #[inline]
+    fn decode_az_value<E>(element: &'a E) -> Result<Self, ObjectStreamValueError>
+    where
+        E: ElementValue + ?Sized,
+    {
+        read_byte_stream(element)
+    }
+}
+
+impl<'a> DecodeAzValue<'a> for [f32; 2] {
+    #[inline]
+    fn decode_az_value<E>(element: &'a E) -> Result<Self, ObjectStreamValueError>
+    where
+        E: ElementValue + ?Sized,
+    {
+        read_vec2(element)
+    }
+}
+
+impl<'a> DecodeAzValue<'a> for [f32; 3] {
+    #[inline]
+    fn decode_az_value<E>(element: &'a E) -> Result<Self, ObjectStreamValueError>
+    where
+        E: ElementValue + ?Sized,
+    {
+        read_vec3(element)
+    }
+}
+
+impl<'a> DecodeAzValue<'a> for [f32; 4] {
+    #[inline]
+    fn decode_az_value<E>(element: &'a E) -> Result<Self, ObjectStreamValueError>
+    where
+        E: ElementValue + ?Sized,
+    {
+        read_float4(element)
+    }
+}
+
+impl<'a> DecodeAzValue<'a> for [f32; 9] {
+    #[inline]
+    fn decode_az_value<E>(element: &'a E) -> Result<Self, ObjectStreamValueError>
+    where
+        E: ElementValue + ?Sized,
+    {
+        read_matrix3x3(element)
+    }
+}
+
+impl<'a> DecodeAzValue<'a> for [f32; 12] {
+    #[inline]
+    fn decode_az_value<E>(element: &'a E) -> Result<Self, ObjectStreamValueError>
+    where
+        E: ElementValue + ?Sized,
+    {
+        read_transform(element)
+    }
+}
+
+impl<'a> DecodeAzValue<'a> for [f32; 16] {
+    #[inline]
+    fn decode_az_value<E>(element: &'a E) -> Result<Self, ObjectStreamValueError>
+    where
+        E: ElementValue + ?Sized,
+    {
+        read_matrix4x4(element)
+    }
+}
+
+/// Forward-only field lookup over an element source.
+pub trait FieldAccess {
+    type Value: ElementValue + ?Sized;
+
+    fn field(&mut self, field: &str) -> Option<&Self::Value>;
+
+    fn field_any<'f>(&mut self, fields: &[&'f str]) -> Option<(&'f str, &Self::Value)>;
+
+    /// Read an optional field with `read`.
+    ///
+    /// # Errors
+    ///
+    /// A missing field is `Ok(None)`, not an error. When the field is present,
+    /// returns whatever `read` returns for it.
+    fn read<T, F>(&mut self, field: &str, read: F) -> Result<Option<T>, ObjectStreamValueError>
+    where
+        F: FnOnce(&Self::Value) -> Result<T, ObjectStreamValueError>,
+    {
+        self.field(field).map(read).transpose()
+    }
+
+    /// Read an optional string field, trimming surrounding whitespace
+    /// and preserving the difference between a missing field and a
+    /// present-but-empty field.
+    ///
+    /// # Errors
+    ///
+    /// A missing field is `Ok(None)`, not an error. When the field is present,
+    /// returns whatever the reader for it returns.
+    /// [`read_trimmed_string`] contributes
+    /// [`ObjectStreamValueError::UnexpectedType`] for a non-string element,
+    /// [`ObjectStreamValueError::MissingData`] for one with no payload and
+    /// [`ObjectStreamValueError::Utf8`] for bytes that are not valid UTF-8.
+    fn read_trimmed_string<'a>(
+        &'a mut self,
+        field: &str,
+    ) -> Result<Option<Option<&'a str>>, ObjectStreamValueError>
+    where
+        Self::Value: 'a,
+    {
+        self.field(field)
+            .map(crate::value::read_trimmed_string)
+            .transpose()
+    }
+
+    /// Read an optional string field as an owned value, trimming
+    /// surrounding whitespace and preserving the difference between a
+    /// missing field and a present-but-empty field.
+    ///
+    /// # Errors
+    ///
+    /// Returns any error [`Self::read_trimmed_string`] returns.
+    fn read_trimmed_string_owned(
+        &mut self,
+        field: &str,
+    ) -> Result<Option<Option<String>>, ObjectStreamValueError> {
+        self.read(field, crate::value::read_trimmed_string_owned)
+    }
+
+    /// Read an optional enum-like signed 32-bit scalar field.
+    ///
+    /// # Errors
+    ///
+    /// A missing field is `Ok(None)`, not an error. When the field is present,
+    /// returns whatever the reader for it returns.
+    /// [`read_i32_scalar`] contributes
+    /// [`ObjectStreamValueError::MissingData`] for a field with no payload and
+    /// [`ObjectStreamValueError::InvalidLength`] for one that is not four bytes
+    /// wide.
+    fn read_i32_scalar(&mut self, field: &str) -> Result<Option<i32>, ObjectStreamValueError> {
+        self.read(field, crate::value::read_i32_scalar)
+    }
+
+    /// Read an optional unsigned 32-bit scalar field.
+    ///
+    /// # Errors
+    ///
+    /// A missing field is `Ok(None)`, not an error. When the field is present,
+    /// returns whatever the reader for it returns.
+    /// [`read_u32_scalar`] contributes
+    /// [`ObjectStreamValueError::MissingSerializer`],
+    /// [`ObjectStreamValueError::InvalidValue`],
+    /// [`ObjectStreamValueError::MissingData`],
+    /// [`ObjectStreamValueError::InvalidLength`] and
+    /// [`ObjectStreamValueError::IntegerOutOfRange`].
+    fn read_u32_scalar(&mut self, field: &str) -> Result<Option<u32>, ObjectStreamValueError> {
+        self.read(field, crate::value::read_u32_scalar)
+    }
+
+    /// Read the first field matching any alias in `fields`, with `read`.
+    ///
+    /// # Errors
+    ///
+    /// No matching alias is `Ok(None)`, not an error. When one matches, returns
+    /// whatever `read` returns for it.
+    fn read_any<'f, T, F>(
+        &mut self,
+        fields: &[&'f str],
+        read: F,
+    ) -> Result<Option<(&'f str, T)>, ObjectStreamValueError>
+    where
+        F: Fn(&Self::Value) -> Result<T, ObjectStreamValueError>,
+    {
+        self.field_any(fields)
+            .map(|(field, value)| read(value).map(|value| (field, value)))
+            .transpose()
+    }
+
+    /// Read the first matching string alias, trimming surrounding
+    /// whitespace and preserving the matched alias plus the difference
+    /// between a missing field and a present-but-empty field.
+    ///
+    /// # Errors
+    ///
+    /// No matching alias is `Ok(None)`, not an error. When one matches, returns
+    /// any error [`read_trimmed_string`] returns —
+    /// [`ObjectStreamValueError::UnexpectedType`],
+    /// [`ObjectStreamValueError::MissingData`] or
+    /// [`ObjectStreamValueError::Utf8`].
+    fn read_trimmed_string_any<'a, 's, 'f>(
+        &'a mut self,
+        fields: &'s [&'f str],
+    ) -> Result<Option<(&'f str, Option<&'a str>)>, ObjectStreamValueError>
+    where
+        Self::Value: 'a,
+    {
+        self.field_any(fields)
+            .map(|(field, value)| {
+                crate::value::read_trimmed_string(value).map(|value| (field, value))
+            })
+            .transpose()
+    }
+
+    /// Read the first matching string alias as an owned value,
+    /// trimming surrounding whitespace and preserving the matched alias
+    /// plus the difference between a missing field and a
+    /// present-but-empty field.
+    ///
+    /// # Errors
+    ///
+    /// Returns any error [`Self::read_trimmed_string_any`] returns.
+    fn read_trimmed_string_any_owned<'f>(
+        &mut self,
+        fields: &[&'f str],
+    ) -> Result<Option<(&'f str, Option<String>)>, ObjectStreamValueError> {
+        self.field_any(fields)
+            .map(|(field, value)| {
+                crate::value::read_trimmed_string_owned(value).map(|value| (field, value))
+            })
+            .transpose()
+    }
+
+    /// Read an optional field, decoding it as `T`.
+    ///
+    /// # Errors
+    ///
+    /// A missing field is `Ok(None)`, not an error. When the field is present,
+    /// returns any error `T`'s [`DecodeAzValue`] implementation returns.
+    fn decode<'a, T>(&'a mut self, field: &str) -> Result<Option<T>, ObjectStreamValueError>
+    where
+        Self::Value: 'a,
+        T: DecodeAzValue<'a>,
+    {
+        self.field(field).map(T::decode_az_value).transpose()
+    }
+
+    /// Advance to the field named `field` and borrow it undecoded.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ObjectStreamValueError::MissingField`] naming `field` when no
+    /// remaining child matches it.
+    fn required_element<'a>(
+        &'a mut self,
+        field: &str,
+    ) -> Result<&'a Self::Value, ObjectStreamValueError>
+    where
+        Self::Value: 'a,
+    {
+        self.field(field)
+            .ok_or_else(|| ObjectStreamValueError::MissingField {
+                field: field.to_string(),
+            })
+    }
+
+    /// Read the first field matching any alias in `fields`, decoding it as `T`.
+    ///
+    /// # Errors
+    ///
+    /// No matching alias is `Ok(None)`, not an error. When one matches, returns
+    /// any error `T`'s [`DecodeAzValue`] implementation returns.
+    fn decode_any<'a, 's, 'f, T>(
+        &'a mut self,
+        fields: &'s [&'f str],
+    ) -> Result<Option<(&'f str, T)>, ObjectStreamValueError>
+    where
+        Self::Value: 'a,
+        T: DecodeAzValue<'a>,
+    {
+        self.field_any(fields)
+            .map(|(field, value)| T::decode_az_value(value).map(|value| (field, value)))
+            .transpose()
+    }
+
+    /// # Errors
+    ///
+    /// Returns [`ObjectStreamValueError::MissingField`] naming the aliases joined
+    /// by `|` when none of them matches, plus any error [`Self::decode_any`]
+    /// returns.
+    fn required_any<'a, 's, 'f, T>(
+        &'a mut self,
+        fields: &'s [&'f str],
+    ) -> Result<(&'f str, T), ObjectStreamValueError>
+    where
+        Self::Value: 'a,
+        T: DecodeAzValue<'a>,
+    {
+        self.decode_any(fields)?
+            .ok_or_else(|| ObjectStreamValueError::MissingField {
+                field: fields.join("|"),
+            })
+    }
+
+    /// # Errors
+    ///
+    /// No matching alias yields `T::default()` rather than an error. When one
+    /// matches, returns any error [`Self::decode_any`] returns.
+    fn decode_any_or_default<'a, 's, 'f, T>(
+        &'a mut self,
+        fields: &'s [&'f str],
+    ) -> Result<T, ObjectStreamValueError>
+    where
+        Self::Value: 'a,
+        T: DecodeAzValue<'a> + Default,
+    {
+        self.decode_any(fields)
+            .map(|value| value.map_or_else(T::default, |(_, value)| value))
+    }
+
+    /// # Errors
+    ///
+    /// Returns [`ObjectStreamValueError::MissingField`] naming `field` when it is
+    /// absent, plus any error [`Self::decode`] returns.
+    fn required<'a, T>(&'a mut self, field: &str) -> Result<T, ObjectStreamValueError>
+    where
+        Self::Value: 'a,
+        T: DecodeAzValue<'a>,
+    {
+        self.decode(field)?
+            .ok_or_else(|| ObjectStreamValueError::MissingField {
+                field: field.to_string(),
+            })
+    }
+
+    /// # Errors
+    ///
+    /// A missing field yields `default` rather than an error. When the field is
+    /// present, returns any error [`Self::decode`] returns.
+    fn decode_or<'a, T>(&'a mut self, field: &str, default: T) -> Result<T, ObjectStreamValueError>
+    where
+        Self::Value: 'a,
+        T: DecodeAzValue<'a>,
+    {
+        self.decode(field).map(|value| value.unwrap_or(default))
+    }
+
+    /// # Errors
+    ///
+    /// A missing field yields `T::default()` rather than an error. When the field
+    /// is present, returns any error [`Self::decode`] returns.
+    fn decode_or_default<'a, T>(&'a mut self, field: &str) -> Result<T, ObjectStreamValueError>
+    where
+        Self::Value: 'a,
+        T: DecodeAzValue<'a> + Default,
+    {
+        self.decode(field)
+            .map(std::option::Option::unwrap_or_default)
+    }
+}
+
+/// Forward-only field lookup over an element's children.
+///
+/// This is useful when a decoder reads fields in serialized order:
+/// each successful lookup advances the cursor past the matched child.
+///
+/// Deliberately not `Copy`: the cursor position is consumed state, and an
+/// implicit copy would silently rewind it.
+#[derive(Debug, Clone)]
+pub struct FieldCursor<'a> {
+    remaining: &'a [Element],
+}
+
+impl<'a> FieldCursor<'a> {
+    #[inline]
+    #[must_use]
+    pub const fn new(children: &'a [Element]) -> Self {
+        Self {
+            remaining: children,
+        }
+    }
+
+    #[inline]
+    #[must_use]
+    pub fn from_element(element: &'a Element) -> Self {
+        Self::new(element.children())
+    }
+
+    #[inline]
+    #[must_use]
+    pub const fn remaining(&self) -> &'a [Element] {
+        self.remaining
+    }
+
+    #[inline]
+    #[must_use]
+    pub const fn is_empty(&self) -> bool {
+        self.remaining.is_empty()
+    }
+
+    pub fn find(&mut self, field: &str) -> Option<&'a Element> {
+        let index = self
+            .remaining
+            .iter()
+            .position(|child| field_eq(child, field))?;
+        let (consumed, rest) = self.remaining.split_at(index + 1);
+        self.remaining = rest;
+        consumed.last()
+    }
+
+    pub fn find_any<'s, 'f>(&mut self, fields: &'s [&'f str]) -> Option<(&'f str, &'a Element)> {
+        let (index, field) = self
+            .remaining
+            .iter()
+            .enumerate()
+            .find_map(|(index, child)| matching_field(child, fields).map(|field| (index, field)))?;
+        let (consumed, rest) = self.remaining.split_at(index + 1);
+        self.remaining = rest;
+        consumed.last().map(|child| (field, child))
+    }
+}
+
+impl<'a> Iterator for FieldCursor<'a> {
+    type Item = &'a Element;
+
+    #[inline]
+    fn next(&mut self) -> Option<Self::Item> {
+        let (first, rest) = self.remaining.split_first()?;
+        self.remaining = rest;
+        Some(first)
+    }
+}
+
+impl FieldAccess for FieldCursor<'_> {
+    type Value = Element;
+
+    #[inline]
+    fn field(&mut self, field: &str) -> Option<&Self::Value> {
+        FieldCursor::find(self, field)
+    }
+
+    #[inline]
+    fn field_any<'f>(&mut self, fields: &[&'f str]) -> Option<(&'f str, &Self::Value)> {
+        FieldCursor::find_any(self, fields)
+    }
+}
+
+/// Non-consuming field lookup over an element's direct children.
+///
+/// Unlike [`FieldCursor`], repeated lookups always scan the full child
+/// list. Use this when reflected fields may be read independently rather
+/// than in serialized order.
+#[derive(Debug, Clone, Copy)]
+pub struct ElementFields<'a> {
+    element: &'a Element,
+}
+
+impl<'a> ElementFields<'a> {
+    #[inline]
+    #[must_use]
+    pub const fn new(element: &'a Element) -> Self {
+        Self { element }
+    }
+
+    #[inline]
+    #[must_use]
+    pub const fn element(&self) -> &'a Element {
+        self.element
+    }
+}
+
+impl FieldAccess for ElementFields<'_> {
+    type Value = Element;
+
+    #[inline]
+    fn field(&mut self, field: &str) -> Option<&Self::Value> {
+        child_by_field(self.element, field)
+    }
+
+    #[inline]
+    fn field_any<'f>(&mut self, fields: &[&'f str]) -> Option<(&'f str, &Self::Value)> {
+        self.element
+            .children()
+            .iter()
+            .find_map(|child| matching_field(child, fields).map(|field| (field, child)))
+    }
+}
+
+#[inline]
+#[must_use]
+pub fn child_by_field<'a>(element: &'a Element, field: &str) -> Option<&'a Element> {
+    element
+        .children()
+        .iter()
+        .find(|child| field_eq(child, field))
+}
+
+/// Find the first child whose field name matches any alias in `fields`.
+///
+/// Search order follows the serialized child order, not the alias order.
+#[inline]
+#[must_use]
+pub fn child_by_field_any<'a>(element: &'a Element, fields: &[&str]) -> Option<&'a Element> {
+    element
+        .children()
+        .iter()
+        .find(|child| matching_field(child, fields).is_some())
+}
+
+/// Find a named child, falling back to a fixed child index.
+///
+/// Some reflected legacy `ObjectStreams` preserve a stable child order
+/// even when field names are missing or renamed. This helper keeps the
+/// named lookup as the preferred path while supporting those ordered
+/// payloads without duplicating fallback logic in callers.
+#[inline]
+#[must_use]
+pub fn child_by_field_or_index<'a>(
+    element: &'a Element,
+    field: &str,
+    index: usize,
+) -> Option<&'a Element> {
+    child_by_field(element, field).or_else(|| element.children().get(index))
+}
+
+/// Read a named child, falling back to a fixed child index when the
+/// field name is absent.
+///
+/// # Errors
+///
+/// A child that is neither named `field` nor present at `index` is `Ok(None)`,
+/// not an error. Otherwise returns whatever `read` returns for it.
+pub fn read_child_by_field_or_index<T>(
+    element: &Element,
+    field: &str,
+    index: usize,
+    read: impl FnOnce(&Element) -> Result<T, ObjectStreamValueError>,
+) -> Result<Option<T>, ObjectStreamValueError> {
+    child_by_field_or_index(element, field, index)
+        .map(read)
+        .transpose()
+}
+
+/// Decode a named child, falling back to a fixed child index when the
+/// field name is absent.
+///
+/// # Errors
+///
+/// A child that is neither named `field` nor present at `index` is `Ok(None)`,
+/// not an error. Otherwise returns any error `T`'s [`DecodeAzValue`]
+/// implementation returns.
+pub fn decode_child_by_field_or_index<'a, T>(
+    element: &'a Element,
+    field: &str,
+    index: usize,
+) -> Result<Option<T>, ObjectStreamValueError>
+where
+    T: DecodeAzValue<'a>,
+{
+    child_by_field_or_index(element, field, index)
+        .map(T::decode_az_value)
+        .transpose()
+}
+
+/// Read a reflected AZ `bool`.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element's semantic
+/// type is not [`BOOL`], [`ObjectStreamValueError::MissingData`] if it carries no
+/// value bytes, [`ObjectStreamValueError::InvalidLength`] if the payload is not
+/// exactly one bytes wide, and, for a payload that is not already canonical
+/// big-endian, [`ObjectStreamValueError::UnexpectedPayloadEncoding`] when no
+/// serializer can normalize it, [`ObjectStreamValueError::Utf8`] for malformed
+/// text bytes and [`ObjectStreamValueError::SerializerConversion`] when the
+/// codec rejects them.
+pub fn read_bool(element: &(impl ElementValue + ?Sized)) -> Result<bool, ObjectStreamValueError> {
+    let data = typed_data(element, BOOL, "bool")?;
+    fixed_bytes::<1>(element, &data).map(|bytes| bytes[0] != 0)
+}
+
+/// Read a reflected AZ `s8`.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element's semantic
+/// type is not [`CHAR`], [`SIGNED_CHAR`] or [`AZ_S8`],
+/// [`ObjectStreamValueError::MissingSerializer`] if no proven `I8` serializer
+/// backs it, [`ObjectStreamValueError::MissingData`] if it carries no value
+/// bytes, and [`ObjectStreamValueError::InvalidLength`] if the payload is not
+/// exactly one byte wide. Payload normalization additionally contributes
+/// [`ObjectStreamValueError::UnexpectedPayloadEncoding`],
+/// [`ObjectStreamValueError::Utf8`] and
+/// [`ObjectStreamValueError::SerializerConversion`].
+pub fn read_i8(element: &(impl ElementValue + ?Sized)) -> Result<i8, ObjectStreamValueError> {
+    let actual = type_id(element);
+    if !matches!(actual, CHAR | SIGNED_CHAR | AZ_S8) {
+        return Err(ObjectStreamValueError::UnexpectedType {
+            field: field_name(element),
+            expected: "AZ::s8",
+            actual,
+        });
+    }
+    require_serializer_kind(element, crate::codec::BuiltinSerializerKind::I8)?;
+    fixed_bytes::<1>(element, &canonical_data(element)?).map(i8::from_be_bytes)
+}
+
+/// Read a reflected AZ `short`.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element's semantic
+/// type is not [`SHORT`], [`ObjectStreamValueError::MissingData`] if it carries no
+/// value bytes, [`ObjectStreamValueError::InvalidLength`] if the payload is not
+/// exactly two bytes wide, and, for a payload that is not already canonical
+/// big-endian, [`ObjectStreamValueError::UnexpectedPayloadEncoding`] when no
+/// serializer can normalize it, [`ObjectStreamValueError::Utf8`] for malformed
+/// text bytes and [`ObjectStreamValueError::SerializerConversion`] when the
+/// codec rejects them.
+pub fn read_i16(element: &(impl ElementValue + ?Sized)) -> Result<i16, ObjectStreamValueError> {
+    let data = typed_data(element, SHORT, "short")?;
+    fixed_bytes::<2>(element, &data).map(i16::from_be_bytes)
+}
+
+/// Read a reflected AZ `int`.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element's semantic
+/// type is not [`INT`], [`ObjectStreamValueError::MissingData`] if it carries no
+/// value bytes, [`ObjectStreamValueError::InvalidLength`] if the payload is not
+/// exactly four bytes wide, and, for a payload that is not already canonical
+/// big-endian, [`ObjectStreamValueError::UnexpectedPayloadEncoding`] when no
+/// serializer can normalize it, [`ObjectStreamValueError::Utf8`] for malformed
+/// text bytes and [`ObjectStreamValueError::SerializerConversion`] when the
+/// codec rejects them.
+pub fn read_i32(element: &(impl ElementValue + ?Sized)) -> Result<i32, ObjectStreamValueError> {
+    let data = typed_data(element, INT, "int")?;
+    fixed_bytes::<4>(element, &data).map(i32::from_be_bytes)
+}
+
+/// Read a reflected AZ `s64`.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element's semantic
+/// type is not [`AZ_S64`], [`ObjectStreamValueError::MissingData`] if it carries no
+/// value bytes, [`ObjectStreamValueError::InvalidLength`] if the payload is not
+/// exactly eight bytes wide, and, for a payload that is not already canonical
+/// big-endian, [`ObjectStreamValueError::UnexpectedPayloadEncoding`] when no
+/// serializer can normalize it, [`ObjectStreamValueError::Utf8`] for malformed
+/// text bytes and [`ObjectStreamValueError::SerializerConversion`] when the
+/// codec rejects them.
+pub fn read_i64(element: &(impl ElementValue + ?Sized)) -> Result<i64, ObjectStreamValueError> {
+    let data = typed_data(element, AZ_S64, "AZ::s64")?;
+    fixed_bytes::<8>(element, &data).map(i64::from_be_bytes)
+}
+
+/// Read a reflected AZ `long` (four bytes under LLP64).
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element's semantic
+/// type is not [`LONG`], [`ObjectStreamValueError::MissingData`] if it carries no
+/// value bytes, [`ObjectStreamValueError::InvalidLength`] if the payload is not
+/// exactly four bytes wide, and, for a payload that is not already canonical
+/// big-endian, [`ObjectStreamValueError::UnexpectedPayloadEncoding`] when no
+/// serializer can normalize it, [`ObjectStreamValueError::Utf8`] for malformed
+/// text bytes and [`ObjectStreamValueError::SerializerConversion`] when the
+/// codec rejects them.
+pub fn read_long(element: &(impl ElementValue + ?Sized)) -> Result<i32, ObjectStreamValueError> {
+    let data = typed_data(element, LONG, "long (LLP64)")?;
+    fixed_bytes::<4>(element, &data).map(i32::from_be_bytes)
+}
+
+/// Read a reflected AZ `unsigned int`.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element's semantic
+/// type is not [`UNSIGNED_INT`], [`ObjectStreamValueError::MissingData`] if it carries no
+/// value bytes, [`ObjectStreamValueError::InvalidLength`] if the payload is not
+/// exactly four bytes wide, and, for a payload that is not already canonical
+/// big-endian, [`ObjectStreamValueError::UnexpectedPayloadEncoding`] when no
+/// serializer can normalize it, [`ObjectStreamValueError::Utf8`] for malformed
+/// text bytes and [`ObjectStreamValueError::SerializerConversion`] when the
+/// codec rejects them.
+pub fn read_u32(element: &(impl ElementValue + ?Sized)) -> Result<u32, ObjectStreamValueError> {
+    let data = typed_data(element, UNSIGNED_INT, "unsigned int")?;
+    fixed_bytes::<4>(element, &data).map(u32::from_be_bytes)
+}
+
+/// Read a reflected AZ `unsigned char`.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element's semantic
+/// type is not [`UNSIGNED_CHAR`], [`ObjectStreamValueError::MissingData`] if it carries no
+/// value bytes, [`ObjectStreamValueError::InvalidLength`] if the payload is not
+/// exactly one bytes wide, and, for a payload that is not already canonical
+/// big-endian, [`ObjectStreamValueError::UnexpectedPayloadEncoding`] when no
+/// serializer can normalize it, [`ObjectStreamValueError::Utf8`] for malformed
+/// text bytes and [`ObjectStreamValueError::SerializerConversion`] when the
+/// codec rejects them.
+pub fn read_u8(element: &(impl ElementValue + ?Sized)) -> Result<u8, ObjectStreamValueError> {
+    let data = typed_data(element, UNSIGNED_CHAR, "unsigned char")?;
+    fixed_bytes::<1>(element, &data).map(u8::from_be_bytes)
+}
+
+/// Read a reflected AZ `unsigned short`.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element's semantic
+/// type is not [`UNSIGNED_SHORT`], [`ObjectStreamValueError::MissingData`] if it carries no
+/// value bytes, [`ObjectStreamValueError::InvalidLength`] if the payload is not
+/// exactly two bytes wide, and, for a payload that is not already canonical
+/// big-endian, [`ObjectStreamValueError::UnexpectedPayloadEncoding`] when no
+/// serializer can normalize it, [`ObjectStreamValueError::Utf8`] for malformed
+/// text bytes and [`ObjectStreamValueError::SerializerConversion`] when the
+/// codec rejects them.
+pub fn read_u16(element: &(impl ElementValue + ?Sized)) -> Result<u16, ObjectStreamValueError> {
+    let data = typed_data(element, UNSIGNED_SHORT, "unsigned short")?;
+    fixed_bytes::<2>(element, &data).map(u16::from_be_bytes)
+}
+
+/// Numeric value of a context-proven reflected enum.
+///
+/// The enum UUID comes from captured `EnumType` metadata while the bytes are
+/// decoded by the captured underlying `ClassData` serializer. Variant names and
+/// Rust declaration order are intentionally not involved.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ReflectedEnumDiscriminant {
+    Signed(i64),
+    Unsigned(u64),
+}
+
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::InvalidValue`] when the element carries no
+/// captured `EnumType`-to-underlying mapping, or when the proven serializer is
+/// not one of the integral kinds,
+/// [`ObjectStreamValueError::MissingSerializer`] when no serializer is proven at
+/// all, [`ObjectStreamValueError::MissingData`] when there are no value bytes,
+/// and [`ObjectStreamValueError::InvalidLength`] when the payload width
+/// disagrees with that serializer. Payload normalization additionally
+/// contributes [`ObjectStreamValueError::UnexpectedPayloadEncoding`],
+/// [`ObjectStreamValueError::Utf8`] and
+/// [`ObjectStreamValueError::SerializerConversion`].
+pub fn read_reflected_enum_discriminant(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<ReflectedEnumDiscriminant, ObjectStreamValueError> {
+    use crate::codec::BuiltinSerializerKind as Kind;
+
+    if element.reflected_enum_type_id().is_none() {
+        return Err(ObjectStreamValueError::InvalidValue {
+            field: field_name(element),
+            expected: "captured EnumType-to-underlying reflection mapping",
+        });
+    }
+    let descriptor = require_any_serializer(element)?;
+    let data = canonical_data(element)?;
+    let value =
+        match descriptor.kind {
+            Kind::I8 => ReflectedEnumDiscriminant::Signed(i64::from(i8::from_be_bytes(
+                fixed_bytes::<1>(element, &data)?,
+            ))),
+            Kind::I16 => ReflectedEnumDiscriminant::Signed(i64::from(i16::from_be_bytes(
+                fixed_bytes::<2>(element, &data)?,
+            ))),
+            Kind::I32 => ReflectedEnumDiscriminant::Signed(i64::from(i32::from_be_bytes(
+                fixed_bytes::<4>(element, &data)?,
+            ))),
+            Kind::Long if data.len() == 4 => ReflectedEnumDiscriminant::Signed(i64::from(
+                i32::from_be_bytes(fixed_bytes::<4>(element, &data)?),
+            )),
+            Kind::I64 | Kind::Long => ReflectedEnumDiscriminant::Signed(i64::from_be_bytes(
+                fixed_bytes::<8>(element, &data)?,
+            )),
+            Kind::U8 => ReflectedEnumDiscriminant::Unsigned(u64::from(u8::from_be_bytes(
+                fixed_bytes::<1>(element, &data)?,
+            ))),
+            Kind::U16 => ReflectedEnumDiscriminant::Unsigned(u64::from(u16::from_be_bytes(
+                fixed_bytes::<2>(element, &data)?,
+            ))),
+            Kind::U32 => ReflectedEnumDiscriminant::Unsigned(u64::from(u32::from_be_bytes(
+                fixed_bytes::<4>(element, &data)?,
+            ))),
+            Kind::UnsignedLong if data.len() == 4 => ReflectedEnumDiscriminant::Unsigned(
+                u64::from(u32::from_be_bytes(fixed_bytes::<4>(element, &data)?)),
+            ),
+            Kind::U64 | Kind::UnsignedLong => ReflectedEnumDiscriminant::Unsigned(
+                u64::from_be_bytes(fixed_bytes::<8>(element, &data)?),
+            ),
+            _ => {
+                return Err(ObjectStreamValueError::InvalidValue {
+                    field: field_name(element),
+                    expected: "integral captured enum-underlying serializer",
+                });
+            }
+        };
+    Ok(value)
+}
+
+/// Read an enum-like signed 32-bit scalar.
+///
+/// Lumberyard `ObjectStreams` often serialize reflected enum/class UUIDs with the
+/// same four big-endian value bytes as `int`. For plain AZ `int` this uses the
+/// proven I32 path; for any other wire UUID it accepts exactly four payload
+/// bytes.
+///
+/// # Errors
+///
+/// For a plain [`INT`] element, returns everything [`read_i32`] returns. For
+/// any other wire UUID, returns [`ObjectStreamValueError::MissingData`] when
+/// there are no value bytes and
+/// [`ObjectStreamValueError::InvalidLength`] when the raw payload is not
+/// exactly four bytes wide.
+pub fn read_i32_scalar(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<i32, ObjectStreamValueError> {
+    if type_id(element) == INT {
+        return read_i32(element);
+    }
+    fixed_bytes::<4>(element, raw_data(element)?).map(i32::from_be_bytes)
+}
+
+/// Read a strict reflected `unsigned int` scalar.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::MissingSerializer`] when no unsigned
+/// serializer is proven, [`ObjectStreamValueError::InvalidValue`] when the
+/// proven serializer is not `U32`,
+/// [`ObjectStreamValueError::MissingData`] when there are no value bytes,
+/// [`ObjectStreamValueError::InvalidLength`] when the payload width disagrees
+/// with that serializer, and [`ObjectStreamValueError::IntegerOutOfRange`] when
+/// the decoded value does not fit `u32`.
+#[inline]
+pub fn read_u32_scalar(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<u32, ObjectStreamValueError> {
+    let value = read_unsigned_scalar_with_kinds(
+        element,
+        &[crate::codec::BuiltinSerializerKind::U32],
+        "unsigned int serializer",
+    )?;
+    u32::try_from(value).map_err(|_| ObjectStreamValueError::IntegerOutOfRange {
+        field: field_name(element),
+        value,
+        target: "u32",
+    })
+}
+
+/// Read a reflected `unsigned short`, accepting widened
+/// `unsigned int` payloads for legacy fields that changed width.
+///
+/// Widened payloads are accepted only when the value fits without truncation.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::MissingSerializer`] when no unsigned
+/// serializer is proven, [`ObjectStreamValueError::InvalidValue`] when the
+/// proven serializer is neither `U16` nor `U32`,
+/// [`ObjectStreamValueError::MissingData`] when there are no value bytes,
+/// [`ObjectStreamValueError::InvalidLength`] when the payload width disagrees
+/// with that serializer, and [`ObjectStreamValueError::IntegerOutOfRange`] when
+/// a widened value does not fit `u16`.
+pub fn read_u16_scalar(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<u16, ObjectStreamValueError> {
+    let value = read_unsigned_scalar_with_kinds(
+        element,
+        &[
+            crate::codec::BuiltinSerializerKind::U16,
+            crate::codec::BuiltinSerializerKind::U32,
+        ],
+        "unsigned short or unsigned int serializer",
+    )?;
+    u16::try_from(value).map_err(|_| ObjectStreamValueError::IntegerOutOfRange {
+        field: field_name(element),
+        value,
+        target: "u16",
+    })
+}
+
+/// Read a reflected `unsigned char`, accepting widened unsigned payloads used by
+/// some reflected fields.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::MissingSerializer`] when no unsigned
+/// serializer is proven, [`ObjectStreamValueError::InvalidValue`] when the
+/// proven serializer is none of `U8`, `U16` or `U32`,
+/// [`ObjectStreamValueError::MissingData`] when there are no value bytes,
+/// [`ObjectStreamValueError::InvalidLength`] when the payload width disagrees
+/// with that serializer, and [`ObjectStreamValueError::IntegerOutOfRange`] when
+/// a widened value does not fit `u8`.
+pub fn read_u8_scalar(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<u8, ObjectStreamValueError> {
+    let value = read_unsigned_scalar_with_kinds(
+        element,
+        &[
+            crate::codec::BuiltinSerializerKind::U8,
+            crate::codec::BuiltinSerializerKind::U16,
+            crate::codec::BuiltinSerializerKind::U32,
+        ],
+        "unsigned char, unsigned short, or unsigned int serializer",
+    )?;
+    u8::try_from(value).map_err(|_| ObjectStreamValueError::IntegerOutOfRange {
+        field: field_name(element),
+        value,
+        target: "u8",
+    })
+}
+
+/// Read a reflected AZ `u64`.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element's semantic
+/// type is not [`AZ_U64`], [`ObjectStreamValueError::MissingData`] if it carries no
+/// value bytes, [`ObjectStreamValueError::InvalidLength`] if the payload is not
+/// exactly eight bytes wide, and, for a payload that is not already canonical
+/// big-endian, [`ObjectStreamValueError::UnexpectedPayloadEncoding`] when no
+/// serializer can normalize it, [`ObjectStreamValueError::Utf8`] for malformed
+/// text bytes and [`ObjectStreamValueError::SerializerConversion`] when the
+/// codec rejects them.
+pub fn read_u64(element: &(impl ElementValue + ?Sized)) -> Result<u64, ObjectStreamValueError> {
+    let data = typed_data(element, AZ_U64, "AZ::u64")?;
+    fixed_bytes::<8>(element, &data).map(u64::from_be_bytes)
+}
+
+/// Read a reflected AZ `unsigned long` (four bytes under LLP64).
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element's semantic
+/// type is not [`UNSIGNED_LONG`], [`ObjectStreamValueError::MissingData`] if it carries no
+/// value bytes, [`ObjectStreamValueError::InvalidLength`] if the payload is not
+/// exactly four bytes wide, and, for a payload that is not already canonical
+/// big-endian, [`ObjectStreamValueError::UnexpectedPayloadEncoding`] when no
+/// serializer can normalize it, [`ObjectStreamValueError::Utf8`] for malformed
+/// text bytes and [`ObjectStreamValueError::SerializerConversion`] when the
+/// codec rejects them.
+pub fn read_unsigned_long(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<u32, ObjectStreamValueError> {
+    let data = typed_data(element, UNSIGNED_LONG, "unsigned long (LLP64)")?;
+    fixed_bytes::<4>(element, &data).map(u32::from_be_bytes)
+}
+
+/// Read exactly `N` value bytes from a reflected fixed-width payload.
+///
+/// Use this for reflected wrapper types whose UUID carries domain meaning but
+/// whose value bytes are still a fixed-width primitive payload. Prefer
+/// canonical big-endian when a serializer is proven; otherwise accept the raw
+/// bytes.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::MissingData`] when the element carries no
+/// value bytes and [`ObjectStreamValueError::InvalidLength`] when the payload
+/// is not exactly `N` bytes wide. When a serializer is proven, payload
+/// normalization also contributes
+/// [`ObjectStreamValueError::UnexpectedPayloadEncoding`],
+/// [`ObjectStreamValueError::Utf8`] and
+/// [`ObjectStreamValueError::SerializerConversion`].
+pub fn read_payload_bytes<const N: usize>(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<[u8; N], ObjectStreamValueError> {
+    if (element.builtin_serializer().is_some()
+        || (element.resolved_type_id().is_none()
+            && crate::codec::builtin_serializer_kind(element.raw_type_id()).is_some()))
+        && let Ok(data) = canonical_data(element)
+    {
+        return fixed_bytes(element, &data);
+    }
+    fixed_bytes(element, raw_data(element)?)
+}
+
+/// Read exactly `N` raw value bytes when a value payload is present.
+///
+/// Missing value bytes are reported as `Ok(None)` instead of
+/// [`ObjectStreamValueError::MissingData`]. Use this for reflected
+/// wrappers where no payload means a domain default, but malformed
+/// present payloads should still fail.
+///
+/// # Errors
+///
+/// Missing value bytes are `Ok(None)`, not
+/// [`ObjectStreamValueError::MissingData`]. A payload that is present returns
+/// the same errors as [`read_payload_bytes`], chiefly
+/// [`ObjectStreamValueError::InvalidLength`].
+pub fn read_optional_payload_bytes<const N: usize>(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<Option<[u8; N]>, ObjectStreamValueError> {
+    if element.data().is_none() {
+        return Ok(None);
+    }
+    read_payload_bytes(element).map(Some)
+}
+
+/// Read a serializer-proven big-endian `u64` payload.
+///
+/// # Errors
+///
+/// Returns any error [`read_payload_bytes`] returns for an eight-byte
+/// payload — [`ObjectStreamValueError::MissingData`] or
+/// [`ObjectStreamValueError::InvalidLength`].
+pub fn read_u64_payload(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<u64, ObjectStreamValueError> {
+    read_payload_bytes::<8>(element).map(u64::from_be_bytes)
+}
+
+/// Read a reflected unsigned 64-bit scalar, accepting widened
+/// `unsigned int` payloads used by older editor-authored fields.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::MissingSerializer`] when no unsigned
+/// serializer is proven, [`ObjectStreamValueError::InvalidValue`] when the
+/// proven serializer is none of `UnsignedLong`, `U64` or `U32`,
+/// [`ObjectStreamValueError::MissingData`] when there are no value bytes, and
+/// [`ObjectStreamValueError::InvalidLength`] when the payload width disagrees
+/// with that serializer.
+pub fn read_u64_scalar(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<u64, ObjectStreamValueError> {
+    read_unsigned_scalar_with_kinds(
+        element,
+        &[
+            crate::codec::BuiltinSerializerKind::UnsignedLong,
+            crate::codec::BuiltinSerializerKind::U64,
+            crate::codec::BuiltinSerializerKind::U32,
+        ],
+        "unsigned long, AZ::u64, or unsigned int serializer",
+    )
+}
+
+/// Read a reflected `AZ::Uuid`.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element's semantic
+/// type is not [`AZ_UUID`], [`ObjectStreamValueError::MissingData`] if it carries no
+/// value bytes, [`ObjectStreamValueError::InvalidLength`] if the payload is not
+/// exactly sixteen bytes wide, and, for a payload that is not already canonical
+/// big-endian, [`ObjectStreamValueError::UnexpectedPayloadEncoding`] when no
+/// serializer can normalize it, [`ObjectStreamValueError::Utf8`] for malformed
+/// text bytes and [`ObjectStreamValueError::SerializerConversion`] when the
+/// codec rejects them.
+pub fn read_uuid(element: &(impl ElementValue + ?Sized)) -> Result<Uuid, ObjectStreamValueError> {
+    let data = typed_data(element, AZ_UUID, "AZ::Uuid")?;
+    fixed_bytes::<16>(element, &data).map(Uuid::from_bytes)
+}
+
+/// Decode a reflected `AZ::EntityId`.
+///
+/// `ObjectStream` XML uses lowercase `id`; binary/Lumberyard samples may
+/// use `Id`, and some LyShine/UI payloads use `ID`. The reader accepts
+/// all known aliases and keeps that format detail out of callers.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element is not
+/// [`ENTITY_ID`], [`ObjectStreamValueError::MissingField`] if it has no `id`
+/// child under any accepted spelling,
+/// [`ObjectStreamValueError::UnknownField`] if it carries any other child, and
+/// the leaf-decode failures of the `id` child itself —
+/// [`ObjectStreamValueError::MissingData`] and
+/// [`ObjectStreamValueError::InvalidLength`].
+pub fn read_entity_id(element: &Element) -> Result<u64, ObjectStreamValueError> {
+    let actual = type_id(element);
+    if actual != ENTITY_ID {
+        return Err(ObjectStreamValueError::UnexpectedType {
+            field: field_name(element),
+            expected: "AZ::EntityId",
+            actual,
+        });
+    }
+
+    let matches_id = |child: &Element| {
+        matching_field(child, &["id", "Id", "ID"]).is_some()
+            || child.name_crc() == Some(ENTITY_ID_FIELD_CRC)
+    };
+    validate_exact_single_child(element, matches_id, "id|Id|ID")?;
+    let mut fields = ElementFields::new(element);
+    match fields.required_any(&["id", "Id", "ID"]) {
+        Ok((_, id)) => Ok(id),
+        Err(ObjectStreamValueError::MissingField { .. }) => {
+            let id = element
+                .children()
+                .iter()
+                .find(|child| child.name_crc() == Some(ENTITY_ID_FIELD_CRC))
+                .ok_or_else(|| ObjectStreamValueError::MissingField {
+                    field: "id|Id|ID".to_owned(),
+                })?;
+            u64::decode_az_value(id)
+        }
+        Err(err) => Err(err),
+    }
+}
+
+/// Decode entity ids from the `AZ::EntityId` children of a reflected vector.
+///
+/// Prefer a proven sequence container when `ClassData` is available. Raw vector
+/// fixtures still decode by filtering entity-id-typed children, matching the
+/// Lumberyard DOM shape used by `ObjectStream` dumps.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedContainerShape`] when the
+/// element's reflected container family is proven to be something other than a
+/// sequence; an element with no captured shape is accepted. Per-child failures
+/// from [`read_entity_id`] propagate unchanged — children of other types are
+/// filtered out rather than rejected.
+pub fn read_entity_id_vector(element: &Element) -> Result<Vec<u64>, ObjectStreamValueError> {
+    ensure_sequence_container_soft(element)?;
+    element
+        .children()
+        .iter()
+        .filter(|child| {
+            child.resolved_type_id().copied() == Some(ENTITY_ID)
+                || (child.resolved_type_id().is_none() && *child.raw_type_id() == ENTITY_ID)
+        })
+        .map(read_entity_id)
+        .collect()
+}
+
+/// Decode a reflected `AZ::Crc32`.
+///
+/// Accepts `value` and `Value` payload field spellings.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element is not
+/// [`CRC32`], [`ObjectStreamValueError::MissingField`] if it has no `value`
+/// child under either spelling,
+/// [`ObjectStreamValueError::UnknownField`] if it carries any other child, and
+/// [`ObjectStreamValueError::MissingData`] or
+/// [`ObjectStreamValueError::InvalidLength`] from the four-byte payload.
+pub fn read_crc32(element: &Element) -> Result<u32, ObjectStreamValueError> {
+    let actual = type_id(element);
+    if actual != CRC32 {
+        return Err(ObjectStreamValueError::UnexpectedType {
+            field: field_name(element),
+            expected: "AZ::Crc32",
+            actual,
+        });
+    }
+
+    let matches_value = |child: &Element| {
+        matching_field(child, &["value", "Value"]).is_some()
+            || child.name_crc() == Some(CRC32_VALUE_FIELD_CRC)
+    };
+    validate_exact_single_child(element, matches_value, "value|Value")?;
+    let mut fields = ElementFields::new(element);
+    match fields.required_any(&["value", "Value"]) {
+        Ok((_, value)) => Ok(value),
+        Err(ObjectStreamValueError::MissingField { .. }) => {
+            let value = element
+                .children()
+                .iter()
+                .find(|child| child.name_crc() == Some(CRC32_VALUE_FIELD_CRC))
+                .ok_or_else(|| ObjectStreamValueError::MissingField {
+                    field: "value|Value".to_owned(),
+                })?;
+            u32::decode_az_value(value)
+        }
+        Err(err) => Err(err),
+    }
+}
+
+/// Decode a CRC32 value serialized either as reflected `AZ::Crc32` or
+/// as a legacy `unsigned int` payload.
+///
+/// # Errors
+///
+/// Returns any error [`read_crc32`] returns for a [`CRC32`] element, any error
+/// [`read_u32`] returns for an [`UNSIGNED_INT`] element, and
+/// [`ObjectStreamValueError::UnexpectedType`] for anything else.
+pub fn read_crc32_or_u32(element: &Element) -> Result<u32, ObjectStreamValueError> {
+    match type_id(element) {
+        CRC32 => read_crc32(element),
+        UNSIGNED_INT => read_u32(element),
+        actual => Err(ObjectStreamValueError::UnexpectedType {
+            field: field_name(element),
+            expected: "AZ::Crc32 or unsigned int",
+            actual,
+        }),
+    }
+}
+
+/// Decode CRC32 values from the `AZ::Crc32` children of a reflected vector.
+///
+/// Non-CRC32 children are ignored because reflected vector payloads may include
+/// bookkeeping fields beside the values.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedContainerShape`] when the
+/// element's reflected container family is proven to be something other than a
+/// sequence. Per-child failures from [`read_crc32`] propagate unchanged —
+/// non-CRC32 children are ignored rather than rejected.
+pub fn read_crc32_vector(element: &Element) -> Result<Vec<u32>, ObjectStreamValueError> {
+    ensure_sequence_container_soft(element)?;
+    element
+        .children()
+        .iter()
+        .filter(|child| {
+            child.resolved_type_id().copied() == Some(CRC32)
+                || (child.resolved_type_id().is_none() && *child.raw_type_id() == CRC32)
+        })
+        .map(read_crc32)
+        .collect()
+}
+
+/// Read a reflected AZ `float`.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element's semantic
+/// type is not [`FLOAT`], [`ObjectStreamValueError::MissingData`] if it carries no
+/// value bytes, [`ObjectStreamValueError::InvalidLength`] if the payload is not
+/// exactly four bytes wide, and, for a payload that is not already canonical
+/// big-endian, [`ObjectStreamValueError::UnexpectedPayloadEncoding`] when no
+/// serializer can normalize it, [`ObjectStreamValueError::Utf8`] for malformed
+/// text bytes and [`ObjectStreamValueError::SerializerConversion`] when the
+/// codec rejects them.
+pub fn read_f32(element: &(impl ElementValue + ?Sized)) -> Result<f32, ObjectStreamValueError> {
+    let data = typed_data(element, FLOAT, "float")?;
+    fixed_bytes::<4>(element, &data).map(f32::from_be_bytes)
+}
+
+/// Read a Rust `f32` from either a primitive float or AZ math `VectorFloat`.
+///
+/// # Errors
+///
+/// Returns any error [`read_f32`] returns for a [`FLOAT`] element, any error
+/// [`read_vector_float`] returns for a [`VECTOR_FLOAT`] element, and
+/// [`ObjectStreamValueError::UnexpectedType`] for anything else.
+pub fn read_f32_value(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<f32, ObjectStreamValueError> {
+    match type_id(element) {
+        FLOAT => read_f32(element),
+        VECTOR_FLOAT => read_vector_float(element),
+        actual => Err(ObjectStreamValueError::UnexpectedType {
+            field: field_name(element),
+            expected: "float or VectorFloat",
+            actual,
+        }),
+    }
+}
+
+/// Read a reflected AZ `double`.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element's semantic
+/// type is not [`DOUBLE`], [`ObjectStreamValueError::MissingData`] if it carries no
+/// value bytes, [`ObjectStreamValueError::InvalidLength`] if the payload is not
+/// exactly eight bytes wide, and, for a payload that is not already canonical
+/// big-endian, [`ObjectStreamValueError::UnexpectedPayloadEncoding`] when no
+/// serializer can normalize it, [`ObjectStreamValueError::Utf8`] for malformed
+/// text bytes and [`ObjectStreamValueError::SerializerConversion`] when the
+/// codec rejects them.
+pub fn read_f64(element: &(impl ElementValue + ?Sized)) -> Result<f64, ObjectStreamValueError> {
+    let data = typed_data(element, DOUBLE, "double")?;
+    fixed_bytes::<8>(element, &data).map(f64::from_be_bytes)
+}
+
+/// Read a reflected numeric scalar as `f64`.
+///
+/// Script and editor-authored `ObjectStreams` commonly serialize numeric
+/// properties as either `double` or `float`; callers that only need the
+/// semantic number should not have to duplicate that width choice.
+///
+/// # Errors
+///
+/// Returns any error [`read_f64`] returns for a [`DOUBLE`] element, any error
+/// [`read_f32`] returns for a [`FLOAT`] element, and
+/// [`ObjectStreamValueError::UnexpectedType`] for anything else.
+pub fn read_f64_scalar(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<f64, ObjectStreamValueError> {
+    match type_id(element) {
+        DOUBLE => read_f64(element),
+        FLOAT => read_f32(element).map(f64::from),
+        actual => Err(ObjectStreamValueError::UnexpectedType {
+            field: field_name(element),
+            expected: "double or float",
+            actual,
+        }),
+    }
+}
+
+/// Read a reflected `AZStd::string` payload as borrowed text.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element is none of
+/// [`AZSTD_STRING`], [`AZSTD_BASIC_STRING`] or [`AZSTD_STRING_LEGACY_XML`],
+/// [`ObjectStreamValueError::MissingData`] if it carries no value bytes, and
+/// [`ObjectStreamValueError::Utf8`] if those bytes are not valid UTF-8.
+pub fn read_string(element: &(impl ElementValue + ?Sized)) -> Result<&str, ObjectStreamValueError> {
+    if !matches!(
+        type_id(element),
+        AZSTD_STRING | AZSTD_BASIC_STRING | AZSTD_STRING_LEGACY_XML
+    ) {
+        return Err(ObjectStreamValueError::UnexpectedType {
+            field: field_name(element),
+            expected: "AZStd::string",
+            actual: type_id(element),
+        });
+    }
+
+    // AZStd::string payloads are UTF-8 under every ObjectStream encoding
+    // (endian is a no-op for byte strings). Raw XML/JSON dumps convert the
+    // text attribute via text_to_data without stamping ClassData
+    // builtin_serializer on TypeResolution::Raw, so BinaryNativeEndian /
+    // leftover Text must be accepted by wire UUID the same way numeric
+    // readers fall back through payload_data.
+    let data = raw_data(element)?;
+    std::str::from_utf8(data).map_err(|source| ObjectStreamValueError::Utf8 {
+        field: field_name(element),
+        source,
+    })
+}
+
+/// Read an `AZStd::string`, trim surrounding whitespace, and return
+/// `None` when the trimmed value is empty.
+///
+/// # Errors
+///
+/// Returns any error [`read_string`] returns; an all-whitespace payload is
+/// `Ok(None)`, not an error.
+pub fn read_trimmed_string(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<Option<&str>, ObjectStreamValueError> {
+    let value = read_string(element)?.trim();
+    Ok((!value.is_empty()).then_some(value))
+}
+
+/// Read an `AZStd::string`, trim surrounding whitespace, and return an
+/// owned value when the trimmed value is not empty.
+///
+/// # Errors
+///
+/// Returns any error [`read_trimmed_string`] returns.
+pub fn read_trimmed_string_owned(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<Option<String>, ObjectStreamValueError> {
+    read_trimmed_string(element).map(|value| value.map(str::to_string))
+}
+
+/// Read an optional `AZStd::string` payload, trimming surrounding
+/// whitespace and treating missing value bytes as `None`.
+///
+/// # Errors
+///
+/// Missing value bytes are `Ok(None)`, not
+/// [`ObjectStreamValueError::MissingData`]. A payload that is present returns
+/// any error [`read_string`] returns, chiefly
+/// [`ObjectStreamValueError::UnexpectedType`] and
+/// [`ObjectStreamValueError::Utf8`].
+pub fn read_optional_trimmed_string(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<Option<&str>, ObjectStreamValueError> {
+    if element.data().is_none() {
+        return Ok(None);
+    }
+    read_trimmed_string(element)
+}
+
+/// Read an optional `AZStd::string` payload as an owned value, trimming
+/// surrounding whitespace and treating missing value bytes as `None`.
+///
+/// # Errors
+///
+/// Returns any error [`read_optional_trimmed_string`] returns.
+pub fn read_optional_trimmed_string_owned(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<Option<String>, ObjectStreamValueError> {
+    read_optional_trimmed_string(element).map(|value| value.map(str::to_string))
+}
+
+/// Read string-like children, trimming and dropping empty string values.
+///
+/// Soft container proof: `ClassData` / `AZStd` wire UUIDs must be sequence-shaped,
+/// but specialized raw `Vec` fixture UUIDs still decode (HEAD behavior).
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedContainerShape`] when the
+/// element's reflected container family is proven to be something other than a
+/// sequence. Per-child failures from [`read_string`] propagate unchanged —
+/// chiefly [`ObjectStreamValueError::MissingData`] and
+/// [`ObjectStreamValueError::Utf8`].
+pub fn read_string_vector(element: &Element) -> Result<Vec<&str>, ObjectStreamValueError> {
+    ensure_sequence_container_soft(element)?;
+    let mut values = Vec::new();
+    for child in element.children() {
+        if !matches!(
+            type_id(child),
+            AZSTD_STRING | AZSTD_BASIC_STRING | AZSTD_STRING_LEGACY_XML
+        ) {
+            continue;
+        }
+        if let Some(value) = read_trimmed_string(child)? {
+            values.push(value);
+        }
+    }
+    Ok(values)
+}
+
+/// Read string-like children as owned values, trimming and dropping
+/// empty values.
+///
+/// # Errors
+///
+/// Returns the same errors as [`read_string_vector`].
+pub fn read_string_vector_owned(element: &Element) -> Result<Vec<String>, ObjectStreamValueError> {
+    ensure_sequence_container_soft(element)?;
+    let mut values = Vec::new();
+    for child in element.children() {
+        if !matches!(
+            type_id(child),
+            AZSTD_STRING | AZSTD_BASIC_STRING | AZSTD_STRING_LEGACY_XML
+        ) {
+            continue;
+        }
+        if let Some(value) = read_trimmed_string(child)? {
+            values.push(value.to_string());
+        }
+    }
+    Ok(values)
+}
+
+/// Read bool-like children from an `ObjectStream` vector.
+///
+/// Soft container proof; non-bool children are ignored for raw dump fixtures.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedContainerShape`] when the
+/// element's reflected container family is proven to be something other than a
+/// sequence. Per-child failures from [`read_bool`] propagate unchanged —
+/// non-bool children are ignored rather than rejected.
+pub fn read_bool_vector(element: &Element) -> Result<Vec<bool>, ObjectStreamValueError> {
+    ensure_sequence_container_soft(element)?;
+    element
+        .children()
+        .iter()
+        .filter(|child| {
+            child.resolved_type_id().copied() == Some(BOOL)
+                || (child.resolved_type_id().is_none() && *child.raw_type_id() == BOOL)
+        })
+        .map(read_bool)
+        .collect()
+}
+
+/// Read numeric children from an `ObjectStream` vector as `f64`.
+///
+/// Accepts both `double` and `float` elements and rejects unrelated children,
+/// mirroring the scalar reader's width normalization without data loss.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedContainerShape`] when the
+/// element's reflected container family is proven to be something other than a
+/// sequence, [`ObjectStreamValueError::UnexpectedType`] for a child that is
+/// neither [`DOUBLE`] nor [`FLOAT`], and the per-child
+/// [`ObjectStreamValueError::MissingData`] and
+/// [`ObjectStreamValueError::InvalidLength`] failures of the numeric readers.
+pub fn read_f64_vector(element: &Element) -> Result<Vec<f64>, ObjectStreamValueError> {
+    ensure_sequence_container_soft(element)?;
+    element
+        .children()
+        .iter()
+        .map(|child| {
+            ensure_child_type(child, &[DOUBLE, FLOAT], "numeric vector element")?;
+            read_f64_scalar(child)
+        })
+        .collect()
+}
+
+/// Read numeric children from an `ObjectStream` vector as `f32`.
+///
+/// Accepts both `float` and `double` elements and narrows doubles to match
+/// reflected `AZStd::vector<float>` storage.
+///
+/// # Errors
+///
+/// Returns the same errors as [`read_f64_vector`]; the narrowing to `f32` after
+/// decoding cannot fail.
+// `f32::try_from(f64)` does not exist, so clippy's checked-conversion advice
+// cannot be applied; narrowing is this reader's documented contract.
+#[allow(clippy::cast_possible_truncation)]
+pub fn read_f32_vector(element: &Element) -> Result<Vec<f32>, ObjectStreamValueError> {
+    read_f64_vector(element).map(|values| values.into_iter().map(|value| value as f32).collect())
+}
+
+/// Read a reflected `AZ::ByteStream` payload as borrowed bytes.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element is not
+/// [`BYTE_STREAM`] and [`ObjectStreamValueError::MissingData`] if it carries no
+/// value bytes.
+pub fn read_byte_stream(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<&[u8], ObjectStreamValueError> {
+    let actual = type_id(element);
+    if actual != BYTE_STREAM {
+        return Err(ObjectStreamValueError::UnexpectedType {
+            field: field_name(element),
+            expected: "ByteStream",
+            actual,
+        });
+    }
+    // ByteStream binary payloads are opaque bytes. Text attributes are hex and
+    // are converted by decode_text_value / payload_data; once stored as
+    // BinaryBigEndian or BinaryNativeEndian the bytes are already decoded.
+    // Leftover Text without conversion is rejected — callers must use the
+    // codec path for hex. Raw dumps after text_to_data stamp BinaryNativeEndian
+    // without ClassData serializer proof, so accept that encoding by wire UUID.
+    match element.payload_encoding() {
+        PayloadEncoding::BinaryBigEndian | PayloadEncoding::BinaryNativeEndian => raw_data(element),
+        PayloadEncoding::Text => Err(ObjectStreamValueError::UnexpectedPayloadEncoding {
+            field: field_name(element),
+            actual: PayloadEncoding::Text,
+        }),
+    }
+}
+
+/// Read a reflected `AZ::VectorFloat`.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element's semantic
+/// type is not [`VECTOR_FLOAT`], [`ObjectStreamValueError::MissingData`] if it carries no
+/// value bytes, [`ObjectStreamValueError::InvalidLength`] if the payload is not
+/// exactly four bytes wide, and, for a payload that is not already canonical
+/// big-endian, [`ObjectStreamValueError::UnexpectedPayloadEncoding`] when no
+/// serializer can normalize it, [`ObjectStreamValueError::Utf8`] for malformed
+/// text bytes and [`ObjectStreamValueError::SerializerConversion`] when the
+/// codec rejects them.
+pub fn read_vector_float(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<f32, ObjectStreamValueError> {
+    let data = typed_data(element, VECTOR_FLOAT, "VectorFloat")?;
+    fixed_bytes::<4>(element, &data).map(f32::from_be_bytes)
+}
+
+/// Read a reflected `AZ::Vector3`.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element's semantic
+/// type is not [`VECTOR3`], [`ObjectStreamValueError::MissingData`] if it carries no
+/// value bytes, [`ObjectStreamValueError::InvalidLength`] if the payload is not
+/// exactly twelve bytes (three big-endian floats), and, for a non-canonical payload,
+/// [`ObjectStreamValueError::UnexpectedPayloadEncoding`],
+/// [`ObjectStreamValueError::Utf8`] or
+/// [`ObjectStreamValueError::SerializerConversion`] from the normalizing
+/// codec.
+pub fn read_vec3(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<[f32; 3], ObjectStreamValueError> {
+    let data = typed_data(element, VECTOR3, "Vector3")?;
+    read_f32_array::<3>(element, &data)
+}
+
+/// Read a reflected `AZ::Vector4`.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element's semantic
+/// type is not [`VECTOR4`], [`ObjectStreamValueError::MissingData`] if it carries no
+/// value bytes, [`ObjectStreamValueError::InvalidLength`] if the payload is not
+/// exactly sixteen bytes (four big-endian floats), and, for a non-canonical payload,
+/// [`ObjectStreamValueError::UnexpectedPayloadEncoding`],
+/// [`ObjectStreamValueError::Utf8`] or
+/// [`ObjectStreamValueError::SerializerConversion`] from the normalizing
+/// codec.
+pub fn read_vec4(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<[f32; 4], ObjectStreamValueError> {
+    let data = typed_data(element, VECTOR4, "Vector4")?;
+    read_f32_array::<4>(element, &data)
+}
+
+/// Read a reflected `AZ::Vector2`.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element's semantic
+/// type is not [`VECTOR2`], [`ObjectStreamValueError::MissingData`] if it carries no
+/// value bytes, [`ObjectStreamValueError::InvalidLength`] if the payload is not
+/// exactly eight bytes (two big-endian floats), and, for a non-canonical payload,
+/// [`ObjectStreamValueError::UnexpectedPayloadEncoding`],
+/// [`ObjectStreamValueError::Utf8`] or
+/// [`ObjectStreamValueError::SerializerConversion`] from the normalizing
+/// codec.
+pub fn read_vec2(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<[f32; 2], ObjectStreamValueError> {
+    let data = typed_data(element, VECTOR2, "Vector2")?;
+    read_f32_array::<2>(element, &data)
+}
+
+/// Read a reflected `AZ::Color`.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element's semantic
+/// type is not [`COLOR`], [`ObjectStreamValueError::MissingData`] if it carries no
+/// value bytes, [`ObjectStreamValueError::InvalidLength`] if the payload is not
+/// exactly sixteen bytes (four big-endian floats), and, for a non-canonical payload,
+/// [`ObjectStreamValueError::UnexpectedPayloadEncoding`],
+/// [`ObjectStreamValueError::Utf8`] or
+/// [`ObjectStreamValueError::SerializerConversion`] from the normalizing
+/// codec.
+pub fn read_color(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<[f32; 4], ObjectStreamValueError> {
+    let data = typed_data(element, COLOR, "Color")?;
+    read_f32_array::<4>(element, &data)
+}
+
+/// Read a reflected `AZ::Quaternion`.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element's semantic
+/// type is not [`QUATERNION`], [`ObjectStreamValueError::MissingData`] if it carries no
+/// value bytes, [`ObjectStreamValueError::InvalidLength`] if the payload is not
+/// exactly sixteen bytes (four big-endian floats), and, for a non-canonical payload,
+/// [`ObjectStreamValueError::UnexpectedPayloadEncoding`],
+/// [`ObjectStreamValueError::Utf8`] or
+/// [`ObjectStreamValueError::SerializerConversion`] from the normalizing
+/// codec.
+pub fn read_quat(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<[f32; 4], ObjectStreamValueError> {
+    let data = typed_data(element, QUATERNION, "Quaternion")?;
+    read_f32_array::<4>(element, &data)
+}
+
+/// Read any AZ leaf serializer whose Rust representation is four floats.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element is none of
+/// [`VECTOR4`], [`QUATERNION`] and [`COLOR`], plus the errors the matching
+/// reader returns — [`ObjectStreamValueError::MissingData`],
+/// [`ObjectStreamValueError::InvalidLength`] and the payload-normalization
+/// failures [`ObjectStreamValueError::UnexpectedPayloadEncoding`],
+/// [`ObjectStreamValueError::Utf8`] and
+/// [`ObjectStreamValueError::SerializerConversion`].
+pub fn read_float4(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<[f32; 4], ObjectStreamValueError> {
+    match type_id(element) {
+        VECTOR4 => read_vec4(element),
+        COLOR => read_color(element),
+        QUATERNION => read_quat(element),
+        actual => Err(ObjectStreamValueError::UnexpectedType {
+            field: field_name(element),
+            expected: "Vector4, Color, or Quaternion",
+            actual,
+        }),
+    }
+}
+
+/// Read a reflected `AZ::Transform`.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element's semantic
+/// type is not [`TRANSFORM`], [`ObjectStreamValueError::MissingData`] if it carries no
+/// value bytes, [`ObjectStreamValueError::InvalidLength`] if the payload is not
+/// exactly forty-eight bytes (twelve big-endian floats), and, for a non-canonical payload,
+/// [`ObjectStreamValueError::UnexpectedPayloadEncoding`],
+/// [`ObjectStreamValueError::Utf8`] or
+/// [`ObjectStreamValueError::SerializerConversion`] from the normalizing
+/// codec.
+pub fn read_transform(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<[f32; 12], ObjectStreamValueError> {
+    // Lumberyard `Code/Framework/AzCore/AzCore/Math/MathReflection.cpp`
+    // registers Transform version 0 with a serializer for a 3x4 float matrix.
+    let data = typed_data(element, TRANSFORM, "Transform")?;
+    read_f32_array::<12>(element, &data)
+}
+
+/// Read a reflected `AZ::Matrix3x3`.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element's semantic
+/// type is not [`MATRIX3X3`], [`ObjectStreamValueError::MissingData`] if it carries no
+/// value bytes, [`ObjectStreamValueError::InvalidLength`] if the payload is not
+/// exactly thirty-six bytes (nine big-endian floats), and, for a non-canonical payload,
+/// [`ObjectStreamValueError::UnexpectedPayloadEncoding`],
+/// [`ObjectStreamValueError::Utf8`] or
+/// [`ObjectStreamValueError::SerializerConversion`] from the normalizing
+/// codec.
+pub fn read_matrix3x3(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<[f32; 9], ObjectStreamValueError> {
+    let data = typed_data(element, MATRIX3X3, "Matrix3x3")?;
+    read_f32_array::<9>(element, &data)
+}
+
+/// Read a reflected `AZ::Matrix4x4`.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedType`] if the element's semantic
+/// type is not [`MATRIX4X4`], [`ObjectStreamValueError::MissingData`] if it carries no
+/// value bytes, [`ObjectStreamValueError::InvalidLength`] if the payload is not
+/// exactly sixty-four bytes (sixteen big-endian floats), and, for a non-canonical payload,
+/// [`ObjectStreamValueError::UnexpectedPayloadEncoding`],
+/// [`ObjectStreamValueError::Utf8`] or
+/// [`ObjectStreamValueError::SerializerConversion`] from the normalizing
+/// codec.
+pub fn read_matrix4x4(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<[f32; 16], ObjectStreamValueError> {
+    let data = typed_data(element, MATRIX4X4, "Matrix4x4")?;
+    read_f32_array::<16>(element, &data)
+}
+
+/// Decode a known `ObjectStream` leaf value into display/search text.
+///
+/// This covers AZ types with fixed payload serializers. Reflected
+/// objects such as `AZ::EntityId`, `AZ::Crc32`, `AZ::Aabb`, and
+/// `ColorF` are represented by child elements and are decoded by
+/// walking those children instead of treating the parent as a byte blob.
+pub fn read_leaf_text(element: &(impl ElementValue + ?Sized)) -> Option<String> {
+    match type_id(element) {
+        BOOL => read_bool(element).ok().map(|value| value.to_string()),
+        CHAR | SIGNED_CHAR | AZ_S8 => read_i8(element).ok().map(|value| value.to_string()),
+        SHORT => read_i16(element).ok().map(|value| value.to_string()),
+        INT => read_i32(element).ok().map(|value| value.to_string()),
+        LONG => read_long(element).ok().map(|value| value.to_string()),
+        AZ_S64 => read_i64(element).ok().map(|value| value.to_string()),
+        UNSIGNED_CHAR => read_u8(element).ok().map(|value| value.to_string()),
+        UNSIGNED_SHORT => read_u16(element).ok().map(|value| value.to_string()),
+        UNSIGNED_INT => read_u32(element).ok().map(|value| value.to_string()),
+        UNSIGNED_LONG => read_unsigned_long(element)
+            .ok()
+            .map(|value| value.to_string()),
+        AZ_U64 => read_u64(element).ok().map(|value| value.to_string()),
+        FLOAT => read_f32(element).ok().map(format_f32),
+        DOUBLE => read_f64(element).ok().map(format_f64),
+        AZ_UUID => read_uuid(element).ok().map(|value| value.to_string()),
+        AZSTD_STRING | AZSTD_BASIC_STRING | AZSTD_STRING_LEGACY_XML => {
+            read_string(element).ok().map(str::to_string)
+        }
+        BYTE_STREAM => read_byte_stream(element).ok().map(format_hex_preview),
+        VECTOR_FLOAT => read_vector_float(element).ok().map(format_f32),
+        VECTOR2 => read_vec2(element).ok().map(format_f32_array),
+        VECTOR3 => read_vec3(element).ok().map(format_f32_array),
+        VECTOR4 => read_vec4(element).ok().map(format_f32_array),
+        COLOR => read_color(element).ok().map(format_f32_array),
+        QUATERNION => read_quat(element).ok().map(format_f32_array),
+        TRANSFORM => read_transform(element).ok().map(format_f32_array),
+        MATRIX3X3 => read_matrix3x3(element).ok().map(format_f32_array),
+        MATRIX4X4 => read_matrix4x4(element).ok().map(format_f32_array),
+        _ => None,
+    }
+}
+
+fn format_f32(value: f32) -> String {
+    format!("{value:.7}")
+}
+
+fn format_f64(value: f64) -> String {
+    format!("{value:.7}")
+}
+
+fn format_f32_array<const N: usize>(values: [f32; N]) -> String {
+    values
+        .iter()
+        .map(|value| format!("{value:.7}"))
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+#[must_use]
+pub fn format_hex_preview(data: &[u8]) -> String {
+    const MAX_BYTES: usize = 96;
+    let mut out = String::new();
+    for (index, byte) in data.iter().take(MAX_BYTES).enumerate() {
+        if index > 0 {
+            out.push(' ');
+        }
+        write!(out, "{byte:02X}").expect("writing to a String cannot fail");
+    }
+    if data.len() > MAX_BYTES {
+        write!(out, " ... ({} bytes)", data.len()).expect("writing to a String cannot fail");
+    }
+    out
+}
+
+fn typed_data<'a, E: ElementValue + ?Sized>(
+    element: &'a E,
+    expected: Uuid,
+    expected_name: &'static str,
+) -> Result<Cow<'a, [u8]>, ObjectStreamValueError> {
+    let actual = type_id(element);
+    if actual != expected {
+        return Err(ObjectStreamValueError::UnexpectedType {
+            field: field_name(element),
+            expected: expected_name,
+            actual,
+        });
+    }
+    // Known AZ builtins are authorized by wire UUID alone for raw dumps and
+    // synthetic fixtures.
+    payload_data(element, expected)
+}
+
+fn require_any_serializer(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<crate::codec::BuiltinSerializerDescriptor, ObjectStreamValueError> {
+    if let Some(descriptor) = element.builtin_serializer() {
+        return Ok(descriptor);
+    }
+    // Raw inspection and synthetic fixtures carry only the wire UUID. Known
+    // builtin ClassData UUIDs imply their registered serializers.
+    if element.resolved_type_id().is_none()
+        && let Some(kind) = crate::codec::builtin_serializer_kind(element.raw_type_id())
+    {
+        return Ok(crate::codec::BuiltinSerializerDescriptor::new(kind, 0));
+    }
+    Err(ObjectStreamValueError::MissingSerializer {
+        field: field_name(element),
+    })
+}
+
+fn require_serializer_kind(
+    element: &(impl ElementValue + ?Sized),
+    expected: crate::codec::BuiltinSerializerKind,
+) -> Result<(), ObjectStreamValueError> {
+    let descriptor = require_any_serializer(element)?;
+    if descriptor.kind == expected {
+        Ok(())
+    } else {
+        Err(ObjectStreamValueError::MissingSerializer {
+            field: field_name(element),
+        })
+    }
+}
+
+/// Decode an unsigned scalar from the executable serializer attached to the
+/// resolved `ClassData`.
+///
+/// The semantic UUID can belong to a reflected wrapper such as
+/// `AZStd::ranged_int`; Lumberyard delegates that wrapper's serializer to the
+/// captured underlying unsigned serializer. Consequently the descriptor is
+/// the proof of width and signedness, while the UUID remains domain identity.
+fn read_unsigned_scalar_with_kinds(
+    element: &(impl ElementValue + ?Sized),
+    allowed: &[crate::codec::BuiltinSerializerKind],
+    expected: &'static str,
+) -> Result<u64, ObjectStreamValueError> {
+    use crate::codec::BuiltinSerializerKind as Kind;
+
+    let descriptor = require_any_serializer(element)?;
+    let storage_kind = match descriptor.kind {
+        Kind::RangedUnsigned { bytes: 1 } => Kind::U8,
+        Kind::RangedUnsigned { bytes: 2 } => Kind::U16,
+        Kind::RangedUnsigned { bytes: 4 } => Kind::U32,
+        Kind::RangedUnsigned { bytes: 8 } => Kind::U64,
+        kind => kind,
+    };
+    if !allowed.contains(&storage_kind) {
+        return Err(ObjectStreamValueError::InvalidValue {
+            field: field_name(element),
+            expected,
+        });
+    }
+
+    let data = canonical_data(element)?;
+    match descriptor.kind {
+        Kind::U8 | Kind::RangedUnsigned { bytes: 1 } => fixed_bytes::<1>(element, &data)
+            .map(u8::from_be_bytes)
+            .map(u64::from),
+        Kind::U16 | Kind::RangedUnsigned { bytes: 2 } => fixed_bytes::<2>(element, &data)
+            .map(u16::from_be_bytes)
+            .map(u64::from),
+        Kind::U32 | Kind::RangedUnsigned { bytes: 4 } => fixed_bytes::<4>(element, &data)
+            .map(u32::from_be_bytes)
+            .map(u64::from),
+        Kind::UnsignedLong if data.len() == 4 => fixed_bytes::<4>(element, &data)
+            .map(u32::from_be_bytes)
+            .map(u64::from),
+        Kind::UnsignedLong | Kind::U64 | Kind::RangedUnsigned { bytes: 8 } => {
+            fixed_bytes::<8>(element, &data).map(u64::from_be_bytes)
+        }
+        _ => unreachable!("allowed unsigned serializer kind checked above"),
+    }
+}
+
+fn type_id(element: &(impl ElementValue + ?Sized)) -> Uuid {
+    // Unresolved elements keep their wire UUID as typed identity for known
+    // builtins and for raw ObjectStream inspection fixtures.
+    element
+        .resolved_type_id()
+        .unwrap_or_else(|| element.raw_type_id())
+}
+
+fn ensure_child_type(
+    child: &Element,
+    expected: &[Uuid],
+    expected_name: &'static str,
+) -> Result<(), ObjectStreamValueError> {
+    let actual = type_id(child);
+    if expected.contains(&actual) {
+        Ok(())
+    } else {
+        Err(ObjectStreamValueError::UnexpectedType {
+            field: field_name(child),
+            expected: expected_name,
+            actual,
+        })
+    }
+}
+
+fn validate_exact_single_child(
+    element: &Element,
+    matches: impl Fn(&Element) -> bool,
+    expected: &'static str,
+) -> Result<(), ObjectStreamValueError> {
+    if element.children().len() == 1 && matches(&element.children()[0]) {
+        return Ok(());
+    }
+    if element.children().is_empty() {
+        return Err(ObjectStreamValueError::MissingField {
+            field: expected.to_owned(),
+        });
+    }
+    let unexpected = element
+        .children()
+        .iter()
+        .find(|child| !matches(child))
+        .map_or_else(|| expected.to_owned(), field_name);
+    Err(ObjectStreamValueError::UnknownField { field: unexpected })
+}
+
+/// Resolve the semantic type used by typed readers.
+///
+/// Prefer context-proven `ClassData` identity. When no resolution is available,
+/// fall back to the wire UUID (raw inspection and synthetic fixtures).
+///
+/// # Errors
+///
+/// This implementation always returns `Ok`: a resolved element yields its
+/// `ClassData` type and an unresolved element yields its wire UUID.
+pub fn semantic_type_id(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<Uuid, ObjectStreamValueError> {
+    Ok(type_id(element))
+}
+
+/// Require a sequence/map/set-like container family for typed vector readers.
+///
+/// Prefer context-proven `ClassData` container shape. When resolution is absent
+/// (raw `ObjectStream` dumps and synthetic fixtures), accept well-known `AZStd`
+/// container wire UUIDs with the same Lumberyard family mapping used by the
+/// native `GenericClassInfo` registry.
+///
+/// # Errors
+///
+/// Returns [`ObjectStreamValueError::UnexpectedContainerShape`] carrying
+/// `expected_name` and the observed family when the element's captured (or
+/// wire-UUID-inferred) container shape is not `expected`, including when it has
+/// no container shape at all.
+pub fn require_container_shape(
+    element: &(impl ElementValue + ?Sized),
+    expected: crate::context::ContainerShape,
+    expected_name: &'static str,
+) -> Result<(), ObjectStreamValueError> {
+    let actual = element
+        .container_shape()
+        .or_else(|| inferred_container_shape(element));
+    if actual == Some(expected) {
+        Ok(())
+    } else {
+        Err(ObjectStreamValueError::UnexpectedContainerShape {
+            field: field_name(element),
+            expected: expected_name,
+            actual,
+        })
+    }
+}
+
+/// Soft sequence-container proof for typed vector readers.
+///
+/// Reject only when `ClassData` or a known `AZStd` wire UUID proves a non-sequence
+/// family. Specialized Rust `Vec` fixture UUIDs without `ClassData` remain
+/// accepted.
+fn ensure_sequence_container_soft(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<(), ObjectStreamValueError> {
+    let actual = element
+        .container_shape()
+        .or_else(|| inferred_container_shape(element));
+    match actual {
+        None | Some(crate::context::ContainerShape::Sequence) => Ok(()),
+        Some(other) => Err(ObjectStreamValueError::UnexpectedContainerShape {
+            field: field_name(element),
+            expected: "captured sequence IDataContainer",
+            actual: Some(other),
+        }),
+    }
+}
+
+fn inferred_container_shape(
+    element: &(impl ElementValue + ?Sized),
+) -> Option<crate::context::ContainerShape> {
+    use crate::context::ContainerShape;
+    use crate::types::{
+        AZSTD_ARRAY, AZSTD_FIXED_VECTOR, AZSTD_FORWARD_LIST, AZSTD_INTRUSIVE_PTR, AZSTD_LIST,
+        AZSTD_MAP, AZSTD_OPTIONAL, AZSTD_PAIR, AZSTD_SET, AZSTD_SHARED_PTR, AZSTD_UNORDERED_MAP,
+        AZSTD_UNORDERED_MULTIMAP, AZSTD_UNORDERED_MULTISET, AZSTD_UNORDERED_SET, AZSTD_VECTOR,
+        AZSTD_VECTOR_LEGACY_XML,
+    };
+    const AZSTD_UNIQUE_PTR: Uuid = Uuid::from_u128(0xB55F_90DA_C21E_4EB4_9857_87BE_6529_BA6D);
+
+    // Only infer from the wire UUID when ClassData has not already decided.
+    if element.container_shape().is_some() {
+        return element.container_shape();
+    }
+    match type_id(element) {
+        AZSTD_VECTOR
+        | AZSTD_VECTOR_LEGACY_XML
+        | AZSTD_LIST
+        | AZSTD_FORWARD_LIST
+        | AZSTD_ARRAY
+        | AZSTD_FIXED_VECTOR => Some(ContainerShape::Sequence),
+        AZSTD_SET | AZSTD_UNORDERED_SET | AZSTD_UNORDERED_MULTISET => Some(ContainerShape::Set),
+        AZSTD_MAP | AZSTD_UNORDERED_MAP | AZSTD_UNORDERED_MULTIMAP => Some(ContainerShape::Map),
+        AZSTD_PAIR => Some(ContainerShape::Pair),
+        AZSTD_SHARED_PTR | AZSTD_INTRUSIVE_PTR | AZSTD_UNIQUE_PTR => {
+            Some(ContainerShape::SmartPointer)
+        }
+        AZSTD_OPTIONAL => Some(ContainerShape::Optional),
+        _ => None,
+    }
+}
+
+fn raw_data(element: &(impl ElementValue + ?Sized)) -> Result<&[u8], ObjectStreamValueError> {
+    element
+        .data()
+        .ok_or_else(|| ObjectStreamValueError::MissingData {
+            field: field_name(element),
+        })
+}
+
+/// Decode value bytes to canonical big-endian for typed readers.
+///
+/// Accepts:
+/// - proven `ClassData` serializers
+/// - raw wire UUIDs of known AZ builtins (synthetic fixtures / dumps)
+/// - leftover text payloads for those builtins (XML/JSON without `ClassData`)
+fn payload_data<E: ElementValue + ?Sized>(
+    element: &E,
+    semantic_type_id: Uuid,
+) -> Result<Cow<'_, [u8]>, ObjectStreamValueError> {
+    let data = raw_data(element)?;
+    match element.payload_encoding() {
+        PayloadEncoding::BinaryBigEndian => Ok(Cow::Borrowed(data)),
+        PayloadEncoding::BinaryNativeEndian | PayloadEncoding::Text => {
+            let codec = if let Some(serializer) = element.builtin_serializer() {
+                serializer.codec()
+            } else if let Some(kind) = crate::codec::builtin_serializer_kind(semantic_type_id) {
+                crate::codec::BuiltinValueCodec::new(kind, element.element_version())
+            } else {
+                return Err(ObjectStreamValueError::UnexpectedPayloadEncoding {
+                    field: field_name(element),
+                    actual: element.payload_encoding(),
+                });
+            };
+
+            if element.payload_encoding() == PayloadEncoding::Text {
+                let text =
+                    std::str::from_utf8(data).map_err(|source| ObjectStreamValueError::Utf8 {
+                        field: field_name(element),
+                        source,
+                    })?;
+                let payload = codec
+                    .text_to_data(
+                        semantic_type_id,
+                        text,
+                        element.element_version(),
+                        crate::codec::TextEncoding::Xml,
+                    )
+                    .map_err(|source| ObjectStreamValueError::SerializerConversion {
+                        field: field_name(element),
+                        source,
+                    })?;
+                // text_to_data emits native-endian; normalize to big-endian.
+                return codec
+                    .to_big_endian(
+                        semantic_type_id,
+                        &payload.bytes,
+                        payload.encoding,
+                        element.element_version(),
+                    )
+                    .map(Cow::Owned)
+                    .map_err(|source| ObjectStreamValueError::SerializerConversion {
+                        field: field_name(element),
+                        source,
+                    });
+            }
+
+            codec
+                .to_big_endian(
+                    semantic_type_id,
+                    data,
+                    PayloadEncoding::BinaryNativeEndian,
+                    element.element_version(),
+                )
+                .map(Cow::Owned)
+                .map_err(|source| ObjectStreamValueError::SerializerConversion {
+                    field: field_name(element),
+                    source,
+                })
+        }
+    }
+}
+
+fn canonical_data(
+    element: &(impl ElementValue + ?Sized),
+) -> Result<Cow<'_, [u8]>, ObjectStreamValueError> {
+    let semantic_type_id = type_id(element);
+    payload_data(element, semantic_type_id)
+}
+
+fn fixed_bytes<const N: usize>(
+    element: &(impl ElementValue + ?Sized),
+    data: &[u8],
+) -> Result<[u8; N], ObjectStreamValueError> {
+    data.try_into().map_err(
+        |_: TryFromSliceError| ObjectStreamValueError::InvalidLength {
+            field: field_name(element),
+            expected: N,
+            actual: data.len(),
+        },
+    )
+}
+
+fn read_f32_array<const N: usize>(
+    element: &(impl ElementValue + ?Sized),
+    data: &[u8],
+) -> Result<[f32; N], ObjectStreamValueError> {
+    if data.len() != N * 4 {
+        return Err(ObjectStreamValueError::InvalidLength {
+            field: field_name(element),
+            expected: N * 4,
+            actual: data.len(),
+        });
+    }
+
+    let mut values = [0.0; N];
+    for (slot, bytes) in values.iter_mut().zip(data.chunks_exact(4)) {
+        *slot = f32::from_be_bytes(bytes.try_into().expect("chunks_exact width is four"));
+    }
+    Ok(values)
+}
+
+/// Human-readable field name for error reporting.
+///
+/// Returns `"<unnamed>"` for elements without resolved field metadata.
+pub fn field_name(element: &(impl ElementValue + ?Sized)) -> String {
+    element.field_name().unwrap_or("<unnamed>").to_string()
+}
+
+fn field_eq(element: &Element, field: &str) -> bool {
+    element.field().is_some_and(|value| value.as_str() == field)
+}
+
+fn matching_field<'f>(element: &Element, fields: &[&'f str]) -> Option<&'f str> {
+    let actual = element.field()?;
+    fields
+        .iter()
+        .copied()
+        .find(|field| actual.as_str() == *field)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ST_BINARYFLAG_HAS_VALUE;
+    use crate::types;
+    use arcstr::ArcStr;
+
+    #[test]
+    fn reads_scalar_leaf_values() {
+        assert!(read_bool(&leaf("Visible", types::BOOL, vec![1])).unwrap());
+        assert_eq!(
+            read_i8(&leaf("Small", types::AZ_S8, (-3_i8).to_be_bytes())).unwrap(),
+            -3
+        );
+        assert_eq!(
+            read_i16(&leaf("Short", types::SHORT, (-9_i16).to_be_bytes())).unwrap(),
+            -9
+        );
+        assert_eq!(
+            read_i32(&leaf("ProjectionType", types::INT, 2_i32.to_be_bytes())).unwrap(),
+            2
+        );
+        assert_eq!(
+            read_u32(&leaf(
+                "SortPriority",
+                types::UNSIGNED_INT,
+                16_u32.to_be_bytes()
+            ))
+            .unwrap(),
+            16
+        );
+        assert_eq!(
+            read_u8(&leaf("AreaType", types::UNSIGNED_CHAR, [2])).unwrap(),
+            2
+        );
+        assert_eq!(
+            read_i64(&leaf("DelayMs", types::AZ_S64, (-1500_i64).to_be_bytes())).unwrap(),
+            -1500
+        );
+        assert_eq!(
+            read_u64(&leaf("Id", types::AZ_U64, 123_u64.to_be_bytes())).unwrap(),
+            123
+        );
+        assert_eq!(
+            read_uuid(&leaf(
+                "guid",
+                types::AZ_UUID,
+                uuid::Uuid::from_u128(0x11111111_2222_3333_4444_555555555555).as_bytes()
+            ))
+            .unwrap(),
+            uuid::Uuid::from_u128(0x11111111_2222_3333_4444_555555555555)
+        );
+        assert_eq!(
+            read_f32(&leaf("Depth", types::FLOAT, 1.25_f32.to_be_bytes()))
+                .unwrap()
+                .to_bits(),
+            1.25_f32.to_bits()
+        );
+        assert_eq!(
+            read_f64(&leaf("value", types::DOUBLE, 2.5_f64.to_be_bytes()))
+                .unwrap()
+                .to_bits(),
+            2.5_f64.to_bits()
+        );
+    }
+
+    #[test]
+    fn raw_payload_helpers_accept_fixed_width_bytes_without_serializer() {
+        let custom = Uuid::from_u128(0x11111111_2222_3333_4444_555555555555);
+        assert_eq!(
+            read_u64_payload(&leaf("Id", custom, 7_u64.to_be_bytes())).unwrap(),
+            7
+        );
+        assert_eq!(
+            read_payload_bytes::<1>(&leaf("State", custom, [2])).unwrap(),
+            [2]
+        );
+        assert_eq!(
+            read_optional_payload_bytes::<24>(&Element::new(custom)).unwrap(),
+            None
+        );
+        assert!(matches!(
+            read_payload_bytes::<12>(&leaf("Bytes", custom, [1])).unwrap_err(),
+            ObjectStreamValueError::InvalidLength {
+                expected: 12,
+                actual: 1,
+                ..
+            }
+        ));
+    }
+
+    #[test]
+    fn reads_enum_like_scalar_payloads() {
+        let enum_type = Uuid::from_u128(0x11111111_2222_3333_4444_555555555555);
+
+        assert_eq!(
+            read_i32_scalar(&leaf("Mode", types::INT, (-7_i32).to_be_bytes())).unwrap(),
+            -7
+        );
+        assert_eq!(
+            read_i32_scalar(&leaf("Mode", enum_type, 42_i32.to_be_bytes())).unwrap(),
+            42
+        );
+
+        let element =
+            Element::new(types::AZSTD_VECTOR)
+                .with_container_shape(crate::context::ContainerShape::Sequence)
+                .with_children([leaf("Mode", enum_type, 3_i32.to_be_bytes())
+                    .with_builtin_serializer(crate::codec::BuiltinSerializerDescriptor::new(
+                        crate::codec::BuiltinSerializerKind::I32,
+                        0,
+                    ))]);
+        let mut fields = FieldCursor::from_element(&element);
+        assert_eq!(fields.read_i32_scalar("Mode").unwrap(), Some(3));
+
+        let element = Element::new(types::AZSTD_VECTOR)
+            .with_container_shape(crate::context::ContainerShape::Sequence)
+            .with_children([leaf("Layer", types::UNSIGNED_INT, 9_u32.to_be_bytes())]);
+        let mut fields = FieldCursor::from_element(&element);
+        assert_eq!(fields.read_u32_scalar("Layer").unwrap(), Some(9));
+
+        assert_eq!(
+            read_u32_scalar(&leaf("Layer", types::UNSIGNED_INT, 9_u32.to_be_bytes())).unwrap(),
+            9
+        );
+        assert_eq!(
+            read_u16_scalar(&leaf(
+                "Granularity",
+                types::UNSIGNED_SHORT,
+                12_u16.to_be_bytes()
+            ))
+            .unwrap(),
+            12
+        );
+        assert_eq!(
+            read_u16_scalar(&leaf(
+                "Granularity",
+                types::UNSIGNED_INT,
+                13_u32.to_be_bytes()
+            ))
+            .unwrap(),
+            13
+        );
+        assert_eq!(
+            read_u8_scalar(&leaf("Index", types::UNSIGNED_INT, 14_u32.to_be_bytes())).unwrap(),
+            14
+        );
+        assert!(matches!(
+            read_u16_scalar(&leaf(
+                "Granularity",
+                types::UNSIGNED_INT,
+                (u32::from(u16::MAX) + 1).to_be_bytes()
+            )),
+            Err(ObjectStreamValueError::IntegerOutOfRange { target: "u16", .. })
+        ));
+        assert!(matches!(
+            read_u8_scalar(&leaf(
+                "Index",
+                types::UNSIGNED_SHORT,
+                (u16::from(u8::MAX) + 1).to_be_bytes()
+            )),
+            Err(ObjectStreamValueError::IntegerOutOfRange { target: "u8", .. })
+        ));
+        assert_eq!(
+            read_u64_scalar(&leaf("Id", types::AZ_U64, 0xCAFE_u64.to_be_bytes())).unwrap(),
+            0xCAFE
+        );
+        assert_eq!(
+            read_u64_scalar(&leaf("Id", types::UNSIGNED_INT, 0xBEEF_u32.to_be_bytes())).unwrap(),
+            0xBEEF
+        );
+        assert_eq!(
+            read_f64_scalar(&leaf("Delay", types::DOUBLE, 2.5_f64.to_be_bytes()))
+                .unwrap()
+                .to_bits(),
+            2.5_f64.to_bits()
+        );
+        assert_eq!(
+            read_f64_scalar(&leaf("Delay", types::FLOAT, 1.25_f32.to_be_bytes()))
+                .unwrap()
+                .to_bits(),
+            1.25_f64.to_bits()
+        );
+    }
+
+    #[test]
+    fn reads_wrapped_az_ids() {
+        assert_eq!(
+            read_entity_id(&class(types::ENTITY_ID).with_children([leaf(
+                "id",
+                types::AZ_U64,
+                0xCAFE_u64.to_be_bytes()
+            )]))
+            .unwrap(),
+            0xCAFE
+        );
+        assert_eq!(
+            read_entity_id(&class(types::ENTITY_ID).with_children([leaf(
+                "Id",
+                types::AZ_U64,
+                0xBEEF_u64.to_be_bytes()
+            )]))
+            .unwrap(),
+            0xBEEF
+        );
+        assert_eq!(
+            read_entity_id(&class(types::ENTITY_ID).with_children([leaf(
+                "ID",
+                types::AZ_U64,
+                0xFACE_u64.to_be_bytes()
+            )]))
+            .unwrap(),
+            0xFACE
+        );
+        assert_eq!(
+            read_entity_id(&class(types::ENTITY_ID).with_children([leaf_crc(
+                ENTITY_ID_FIELD_CRC,
+                types::AZ_U64,
+                0xF00D_u64.to_be_bytes(),
+            )]))
+            .unwrap(),
+            0xF00D
+        );
+        assert_eq!(
+            read_crc32(&class(types::CRC32).with_children([leaf(
+                "Value",
+                types::UNSIGNED_INT,
+                0x1234_u32.to_be_bytes()
+            )]))
+            .unwrap(),
+            0x1234
+        );
+        assert_eq!(
+            read_crc32(&class(types::CRC32).with_children([leaf_crc(
+                CRC32_VALUE_FIELD_CRC,
+                types::UNSIGNED_INT,
+                0xAADB_EE4F_u32.to_be_bytes(),
+            )]))
+            .unwrap(),
+            0xAADB_EE4F
+        );
+        assert_eq!(
+            read_crc32_or_u32(&class(types::CRC32).with_children([leaf(
+                "Value",
+                types::UNSIGNED_INT,
+                0x5678_u32.to_be_bytes()
+            )]))
+            .unwrap(),
+            0x5678
+        );
+        assert_eq!(
+            read_crc32_or_u32(&leaf(
+                "m_crc",
+                types::UNSIGNED_INT,
+                0x9ABC_u32.to_be_bytes()
+            ))
+            .unwrap(),
+            0x9ABC
+        );
+    }
+
+    #[test]
+    fn reads_entity_id_vector() {
+        let element = Element::new(types::AZSTD_VECTOR)
+            .with_container_shape(crate::context::ContainerShape::Sequence)
+            .with_children([
+                class(types::ENTITY_ID).with_children([leaf(
+                    "id",
+                    types::AZ_U64,
+                    0xCAFE_u64.to_be_bytes(),
+                )]),
+                class(types::ENTITY_ID).with_children([leaf(
+                    "ID",
+                    types::AZ_U64,
+                    0xFACE_u64.to_be_bytes(),
+                )]),
+            ]);
+
+        assert_eq!(
+            read_entity_id_vector(&element).unwrap(),
+            vec![0xCAFE, 0xFACE]
+        );
+    }
+
+    #[test]
+    fn ignores_non_entity_id_vector_children() {
+        let element = Element::new(types::AZSTD_VECTOR)
+            .with_container_shape(crate::context::ContainerShape::Sequence)
+            .with_children([leaf("Element", types::UNSIGNED_INT, 1_u32.to_be_bytes())]);
+
+        assert_eq!(read_entity_id_vector(&element).unwrap(), Vec::<u64>::new());
+    }
+
+    #[test]
+    fn infers_sequence_shape_from_azstd_vector_wire_uuid() {
+        let element =
+            Element::new(types::AZSTD_VECTOR).with_children([Element::new(types::ENTITY_ID)
+                .with_children([leaf("id", types::AZ_U64, 1_u64.to_be_bytes())])]);
+
+        assert_eq!(read_entity_id_vector(&element).unwrap(), vec![1]);
+    }
+
+    #[test]
+    fn specialized_vector_fixtures_decode_without_container_shape() {
+        let specialized = Uuid::from_u128(0xaaaaaaaa_bbbb_cccc_dddd_eeeeeeeeeeee);
+        let element = Element::new(specialized).with_children([Element::new(types::ENTITY_ID)
+            .with_children([leaf("id", types::AZ_U64, 0xCAFE_u64.to_be_bytes())])]);
+
+        assert_eq!(read_entity_id_vector(&element).unwrap(), vec![0xCAFE]);
+    }
+
+    #[test]
+    fn rejects_malformed_entity_id_vector_child() {
+        let element = Element::new(types::AZSTD_VECTOR)
+            .with_container_shape(crate::context::ContainerShape::Sequence)
+            .with_children([class(types::ENTITY_ID)]);
+
+        assert!(matches!(
+            read_entity_id_vector(&element).unwrap_err(),
+            ObjectStreamValueError::MissingField { .. }
+        ));
+    }
+
+    #[test]
+    fn reads_crc32_vector() {
+        let element = Element::new(types::AZSTD_VECTOR)
+            .with_container_shape(crate::context::ContainerShape::Sequence)
+            .with_children([
+                class(types::CRC32).with_children([leaf(
+                    "Value",
+                    types::UNSIGNED_INT,
+                    0x1234_u32.to_be_bytes(),
+                )]),
+                class(types::CRC32).with_children([leaf(
+                    "value",
+                    types::UNSIGNED_INT,
+                    0x5678_u32.to_be_bytes(),
+                )]),
+            ]);
+
+        assert_eq!(read_crc32_vector(&element).unwrap(), vec![0x1234, 0x5678]);
+    }
+
+    #[test]
+    fn ignores_non_crc32_vector_children() {
+        let element = Element::new(types::AZSTD_VECTOR)
+            .with_container_shape(crate::context::ContainerShape::Sequence)
+            .with_children([leaf("Element", types::UNSIGNED_INT, 1_u32.to_be_bytes())]);
+
+        assert_eq!(read_crc32_vector(&element).unwrap(), Vec::<u32>::new());
+    }
+
+    #[test]
+    fn rejects_malformed_crc32_vector_child() {
+        let element = Element::new(types::AZSTD_VECTOR)
+            .with_container_shape(crate::context::ContainerShape::Sequence)
+            .with_children([class(types::CRC32)]);
+
+        assert!(matches!(
+            read_crc32_vector(&element).unwrap_err(),
+            ObjectStreamValueError::MissingField { .. }
+        ));
+    }
+
+    #[test]
+    fn rejects_malformed_wrapped_az_ids() {
+        assert!(matches!(
+            read_entity_id(&class(types::CRC32)).unwrap_err(),
+            ObjectStreamValueError::UnexpectedType {
+                expected: "AZ::EntityId",
+                ..
+            }
+        ));
+        assert!(matches!(
+            read_entity_id(&class(types::ENTITY_ID)).unwrap_err(),
+            ObjectStreamValueError::MissingField { .. }
+        ));
+        assert!(matches!(
+            read_crc32(&class(types::CRC32)).unwrap_err(),
+            ObjectStreamValueError::MissingField { .. }
+        ));
+        assert!(matches!(
+            read_crc32_or_u32(&leaf("Crc", types::BOOL, [1])).unwrap_err(),
+            ObjectStreamValueError::UnexpectedType {
+                expected: "AZ::Crc32 or unsigned int",
+                ..
+            }
+        ));
+    }
+
+    #[test]
+    fn rejects_bad_scalar_payloads() {
+        let enum_type = Uuid::from_u128(0x11111111_2222_3333_4444_555555555555);
+
+        assert!(matches!(
+            read_i32_scalar(&leaf("Mode", enum_type, [1, 2, 3]).with_builtin_serializer(
+                crate::codec::BuiltinSerializerDescriptor::new(
+                    crate::codec::BuiltinSerializerKind::I32,
+                    0,
+                ),
+            ),)
+            .unwrap_err(),
+            ObjectStreamValueError::InvalidLength { expected: 4, .. }
+        ));
+        assert!(matches!(
+            read_u16_scalar(&leaf("Granularity", types::BOOL, [1])).unwrap_err(),
+            ObjectStreamValueError::InvalidValue {
+                expected: "unsigned short or unsigned int serializer",
+                ..
+            }
+        ));
+        assert!(matches!(
+            read_u64_scalar(&leaf("Id", types::BOOL, [1])).unwrap_err(),
+            ObjectStreamValueError::InvalidValue {
+                expected: "unsigned long, AZ::u64, or unsigned int serializer",
+                ..
+            }
+        ));
+        assert!(matches!(
+            read_u64_payload(&leaf("Id", types::BOOL, [1])).unwrap_err(),
+            ObjectStreamValueError::InvalidLength {
+                expected: 8,
+                actual: 1,
+                ..
+            }
+        ));
+        assert!(matches!(
+            read_payload_bytes::<12>(&leaf("Bytes", types::BOOL, [1])).unwrap_err(),
+            ObjectStreamValueError::InvalidLength {
+                expected: 12,
+                actual: 1,
+                ..
+            }
+        ));
+        assert!(matches!(
+            read_optional_payload_bytes::<24>(&leaf("Bytes", types::BOOL, [1])).unwrap_err(),
+            ObjectStreamValueError::InvalidLength {
+                expected: 24,
+                actual: 1,
+                ..
+            }
+        ));
+        assert!(matches!(
+            read_f64_scalar(&leaf("Delay", types::BOOL, [1])).unwrap_err(),
+            ObjectStreamValueError::UnexpectedType {
+                expected: "double or float",
+                ..
+            }
+        ));
+    }
+
+    #[test]
+    fn reads_string_and_packed_floats() {
+        assert_eq!(
+            read_string(&leaf(
+                "AssetPath",
+                types::AZSTD_STRING,
+                b"Materials/Foo.mtl"
+            ))
+            .unwrap(),
+            "Materials/Foo.mtl"
+        );
+        assert_eq!(
+            read_vector_float(&leaf("Scalar", types::VECTOR_FLOAT, floats([1.5])))
+                .unwrap()
+                .to_bits(),
+            1.5_f32.to_bits()
+        );
+        assert_eq!(
+            read_vec3(&leaf("Offset", types::VECTOR3, floats([1.0, 2.0, 3.0])))
+                .unwrap()
+                .map(f32::to_bits),
+            [1.0_f32, 2.0, 3.0].map(f32::to_bits)
+        );
+        assert_eq!(
+            read_vec2(&leaf("Vertex", types::VECTOR2, floats([1.0, 2.0])))
+                .unwrap()
+                .map(f32::to_bits),
+            [1.0_f32, 2.0].map(f32::to_bits)
+        );
+        assert_eq!(
+            read_color(&leaf("Color", types::COLOR, floats([0.1, 0.2, 0.3, 0.4])))
+                .unwrap()
+                .map(f32::to_bits),
+            [0.1_f32, 0.2, 0.3, 0.4].map(f32::to_bits)
+        );
+        assert_eq!(
+            read_vec4(&leaf(
+                "Plane",
+                types::VECTOR4,
+                floats([0.0, 1.0, 0.0, -2.0])
+            ))
+            .unwrap()
+            .map(f32::to_bits),
+            [0.0_f32, 1.0, 0.0, -2.0].map(f32::to_bits)
+        );
+        assert_eq!(
+            read_quat(&leaf(
+                "Rotation",
+                types::QUATERNION,
+                floats([0.0, 0.0, 0.0, 1.0])
+            ))
+            .unwrap()
+            .map(f32::to_bits),
+            [0.0_f32, 0.0, 0.0, 1.0].map(f32::to_bits)
+        );
+        assert_eq!(
+            read_transform(&leaf(
+                "m_worldTM",
+                types::TRANSFORM,
+                floats([1.0, 0.0, 0.0, 2.0, 0.0, 1.0, 0.0, 3.0, 0.0, 0.0, 1.0, 4.0])
+            ))
+            .unwrap()
+            .map(f32::to_bits),
+            [
+                1.0_f32, 0.0, 0.0, 2.0, 0.0, 1.0, 0.0, 3.0, 0.0, 0.0, 1.0, 4.0
+            ]
+            .map(f32::to_bits)
+        );
+        assert_eq!(
+            read_matrix3x3(&leaf(
+                "basis",
+                types::MATRIX3X3,
+                floats([1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0])
+            ))
+            .unwrap()
+            .map(f32::to_bits),
+            [1.0_f32, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0].map(f32::to_bits)
+        );
+        assert_eq!(
+            read_matrix4x4(&leaf(
+                "matrix",
+                types::MATRIX4X4,
+                floats([
+                    1.0, 0.0, 0.0, 5.0, 0.0, 1.0, 0.0, 6.0, 0.0, 0.0, 1.0, 7.0, 0.0, 0.0, 0.0, 1.0,
+                ])
+            ))
+            .unwrap()
+            .map(f32::to_bits),
+            [
+                1.0_f32, 0.0, 0.0, 5.0, 0.0, 1.0, 0.0, 6.0, 0.0, 0.0, 1.0, 7.0, 0.0, 0.0, 0.0, 1.0,
+            ]
+            .map(f32::to_bits)
+        );
+        assert_eq!(
+            read_byte_stream(&leaf("Data", types::BYTE_STREAM, [0, 1, 2, 255])).unwrap(),
+            &[0, 1, 2, 255]
+        );
+    }
+
+    #[test]
+    fn formats_known_leaf_values_for_search() {
+        assert_eq!(
+            read_leaf_text(&leaf("label", types::AZSTD_BASIC_STRING, b"surface")).unwrap(),
+            "surface"
+        );
+        assert_eq!(
+            read_leaf_text(&leaf("scalar", types::VECTOR_FLOAT, floats([1.5]))).unwrap(),
+            "1.5000000"
+        );
+        assert_eq!(
+            read_leaf_text(&leaf(
+                "plane",
+                types::VECTOR4,
+                floats([0.0, 1.0, 0.0, -2.0])
+            ))
+            .unwrap(),
+            "0.0000000 1.0000000 0.0000000 -2.0000000"
+        );
+        assert_eq!(
+            read_leaf_text(&leaf(
+                "matrix",
+                types::MATRIX4X4,
+                floats([
+                    1.0, 0.0, 0.0, 5.0, 0.0, 1.0, 0.0, 6.0, 0.0, 0.0, 1.0, 7.0, 0.0, 0.0, 0.0, 1.0,
+                ])
+            ))
+            .unwrap(),
+            "1.0000000 0.0000000 0.0000000 5.0000000 0.0000000 1.0000000 0.0000000 6.0000000 0.0000000 0.0000000 1.0000000 7.0000000 0.0000000 0.0000000 0.0000000 1.0000000"
+        );
+    }
+
+    #[test]
+    fn generic_decode_accepts_equivalent_float_leaf_shapes() {
+        let scalar: f32 =
+            DecodeAzValue::decode_az_value(&leaf("Scalar", types::VECTOR_FLOAT, floats([2.25])))
+                .unwrap();
+        assert_eq!(scalar.to_bits(), 2.25_f32.to_bits());
+
+        let vector: [f32; 4] =
+            DecodeAzValue::decode_az_value(&leaf("Vector", types::VECTOR4, floats([1.0; 4])))
+                .unwrap();
+        assert_eq!(vector.map(f32::to_bits), [1.0_f32; 4].map(f32::to_bits));
+
+        let quat: [f32; 4] = DecodeAzValue::decode_az_value(&leaf(
+            "Rotation",
+            types::QUATERNION,
+            floats([0.0, 0.0, 0.0, 1.0]),
+        ))
+        .unwrap();
+        assert_eq!(
+            quat.map(f32::to_bits),
+            [0.0_f32, 0.0, 0.0, 1.0].map(f32::to_bits)
+        );
+
+        let matrix: [f32; 16] = DecodeAzValue::decode_az_value(&leaf(
+            "Matrix",
+            types::MATRIX4X4,
+            floats([
+                1.0, 0.0, 0.0, 5.0, 0.0, 1.0, 0.0, 6.0, 0.0, 0.0, 1.0, 7.0, 0.0, 0.0, 0.0, 1.0,
+            ]),
+        ))
+        .unwrap();
+        assert_eq!(matrix[15].to_bits(), 1.0_f32.to_bits());
+    }
+
+    #[test]
+    fn reads_trimmed_string_values() {
+        assert_eq!(
+            read_trimmed_string(&leaf("Name", types::AZSTD_STRING, b"  detector  ")).unwrap(),
+            Some("detector")
+        );
+        assert_eq!(
+            read_trimmed_string(&leaf("Name", types::AZSTD_STRING, b"   ")).unwrap(),
+            None
+        );
+    }
+
+    #[test]
+    fn reads_owned_trimmed_string_values() {
+        assert_eq!(
+            read_trimmed_string_owned(&leaf("Name", types::AZSTD_STRING, b"  detector  ")).unwrap(),
+            Some("detector".to_string())
+        );
+        assert_eq!(
+            read_trimmed_string_owned(&leaf("Name", types::AZSTD_STRING, b"   ")).unwrap(),
+            None
+        );
+    }
+
+    #[test]
+    fn reads_optional_trimmed_string_values() {
+        assert_eq!(
+            read_optional_trimmed_string(&Element::new(types::AZSTD_STRING).with_field("Name"))
+                .unwrap(),
+            None
+        );
+        assert_eq!(
+            read_optional_trimmed_string(&leaf("Name", types::AZSTD_STRING, b"  detector  "))
+                .unwrap(),
+            Some("detector")
+        );
+        assert_eq!(
+            read_optional_trimmed_string_owned(&leaf("Name", types::AZSTD_STRING, b"   ")).unwrap(),
+            None
+        );
+        assert!(matches!(
+            read_optional_trimmed_string(&leaf("Name", types::BOOL, [1])).unwrap_err(),
+            ObjectStreamValueError::UnexpectedType {
+                expected: "AZStd::string",
+                ..
+            }
+        ));
+    }
+
+    #[test]
+    fn reads_string_vector_children() {
+        let element = Element::new(types::AZSTD_VECTOR)
+            .with_container_shape(crate::context::ContainerShape::Sequence)
+            .with_children([
+                leaf("element", types::AZSTD_STRING, b"  alpha  "),
+                leaf("element", types::AZSTD_BASIC_STRING, b"beta"),
+                leaf("element", types::AZSTD_STRING, b" "),
+            ]);
+
+        assert_eq!(read_string_vector(&element).unwrap(), vec!["alpha", "beta"]);
+    }
+
+    #[test]
+    fn reads_owned_string_vector_children() {
+        let element = Element::new(types::AZSTD_VECTOR)
+            .with_container_shape(crate::context::ContainerShape::Sequence)
+            .with_children([
+                leaf("element", types::AZSTD_STRING, b"  alpha  "),
+                leaf("element", types::AZSTD_BASIC_STRING, b"beta"),
+                leaf("element", types::AZSTD_STRING, b" "),
+            ]);
+
+        assert_eq!(
+            read_string_vector_owned(&element).unwrap(),
+            vec!["alpha".to_string(), "beta".to_string()]
+        );
+    }
+
+    #[test]
+    fn reads_bool_vector_children() {
+        let element = Element::new(types::AZSTD_VECTOR)
+            .with_container_shape(crate::context::ContainerShape::Sequence)
+            .with_children([
+                leaf("element", types::BOOL, [1]),
+                leaf("element", types::BOOL, [0]),
+            ]);
+
+        assert_eq!(read_bool_vector(&element).unwrap(), vec![true, false]);
+    }
+
+    #[test]
+    fn reads_f64_vector_children() {
+        let element = Element::new(types::AZSTD_VECTOR)
+            .with_container_shape(crate::context::ContainerShape::Sequence)
+            .with_children([
+                leaf("element", types::DOUBLE, 2.5_f64.to_be_bytes()),
+                leaf("element", types::FLOAT, 1.25_f32.to_be_bytes()),
+            ]);
+
+        assert_eq!(read_f64_vector(&element).unwrap(), vec![2.5, 1.25]);
+    }
+
+    #[test]
+    fn rejects_unexpected_type() {
+        let err = read_bool(&leaf("Visible", types::INT, 1_i32.to_be_bytes())).unwrap_err();
+        assert!(matches!(
+            err,
+            ObjectStreamValueError::UnexpectedType {
+                expected: "bool",
+                ..
+            }
+        ));
+    }
+
+    #[test]
+    fn reads_streaming_header_values() {
+        let field = ArcStr::from("Count");
+        let data = 42_u32.to_be_bytes();
+        let header = ElementHeader {
+            flags: ST_BINARYFLAG_HAS_VALUE,
+            name_crc: None,
+            version: None,
+            id: types::UNSIGNED_INT,
+            specialization: None,
+            resolution: crate::TypeResolution::Resolved {
+                type_id: types::UNSIGNED_INT,
+                class: crate::context::ReflectedClassKey::new(types::UNSIGNED_INT),
+                edge: None,
+                enum_type_id: None,
+                builtin_serializer: Some(crate::codec::BuiltinSerializerDescriptor::new(
+                    crate::codec::BuiltinSerializerKind::U32,
+                    0,
+                )),
+                is_container: false,
+                container_shape: None,
+            },
+            version_state: crate::context::VersionConversionState::default(),
+            name: None,
+            field: Some(&field),
+            data: Some(&data),
+            payload_encoding: PayloadEncoding::BinaryBigEndian,
+        };
+
+        assert_eq!(read_u32(&header).unwrap(), 42);
+    }
+
+    #[test]
+    fn field_name_uses_unnamed_fallback() {
+        assert_eq!(
+            field_name(&leaf("Named", types::BOOL, [1])),
+            "Named".to_string()
+        );
+        assert_eq!(field_name(&Element::new(types::BOOL)), "<unnamed>");
+    }
+
+    #[test]
+    fn field_cursor_consumes_matches_in_order() {
+        let element = Element::new(types::AZSTD_VECTOR).with_children([
+            leaf("First", types::BOOL, [1]),
+            leaf("Second", types::BOOL, [0]),
+            leaf("Third", types::BOOL, [1]),
+        ]);
+        let mut cursor = FieldCursor::from_element(&element);
+
+        assert_eq!(
+            cursor.find("Second").and_then(Element::field).unwrap(),
+            "Second"
+        );
+        assert!(cursor.find("First").is_none());
+        assert_eq!(
+            cursor.find("Third").and_then(Element::field).unwrap(),
+            "Third"
+        );
+        assert!(cursor.is_empty());
+    }
+
+    #[test]
+    fn element_fields_reuses_full_child_list() {
+        let element = Element::new(types::AZSTD_VECTOR).with_children([
+            leaf("First", types::BOOL, [1]),
+            leaf("Second", types::BOOL, [0]),
+        ]);
+        let mut fields = ElementFields::new(&element);
+
+        assert_eq!(fields.read("Second", read_bool).unwrap(), Some(false));
+        assert_eq!(fields.read("First", read_bool).unwrap(), Some(true));
+        assert_eq!(fields.read("Second", read_bool).unwrap(), Some(false));
+    }
+
+    #[test]
+    fn element_fields_reads_first_serialized_alias() {
+        let element = Element::new(types::AZSTD_VECTOR).with_children([
+            leaf("OldName", types::FLOAT, 1.5_f32.to_be_bytes()),
+            leaf("NewName", types::FLOAT, 2.5_f32.to_be_bytes()),
+        ]);
+        let mut fields = ElementFields::new(&element);
+
+        let (field, value) = fields
+            .read_any(&["NewName", "OldName"], read_f32)
+            .unwrap()
+            .unwrap();
+
+        assert_eq!(field, "OldName");
+        assert_eq!(value.to_bits(), 1.5_f32.to_bits());
+    }
+
+    #[test]
+    fn field_access_reads_values_without_materializing_names() {
+        let element = Element::new(types::AZSTD_VECTOR).with_children([
+            leaf("Enabled", types::BOOL, [1]),
+            leaf("Name", types::AZSTD_STRING, b"detector"),
+            leaf("Count", types::UNSIGNED_INT, 7_u32.to_be_bytes()),
+        ]);
+        let mut fields = FieldCursor::from_element(&element);
+
+        assert_eq!(fields.read("Enabled", read_bool).unwrap(), Some(true));
+        assert!(fields.read("Missing", read_u8).unwrap().is_none());
+        assert_eq!(
+            fields.field("Name").map(read_string).transpose().unwrap(),
+            Some("detector")
+        );
+        assert_eq!(fields.read("Count", read_u32).unwrap(), Some(7));
+        assert!(fields.is_empty());
+    }
+
+    #[test]
+    fn field_access_decodes_values_by_type() {
+        let element = Element::new(types::AZSTD_VECTOR).with_children([
+            leaf("Enabled", types::BOOL, [1]),
+            leaf("Name", types::AZSTD_STRING, b"detector"),
+            leaf("Label", types::AZSTD_STRING, b"raw label"),
+            leaf("Count", types::UNSIGNED_INT, 7_u32.to_be_bytes()),
+        ]);
+        let mut fields = FieldCursor::from_element(&element);
+
+        let enabled: Option<bool> = fields.decode("Enabled").unwrap();
+        assert_eq!(enabled, Some(true));
+        let name: Option<&str> = fields.decode("Name").unwrap();
+        assert_eq!(name, Some("detector"));
+        let label: Option<String> = fields.decode("Label").unwrap();
+        assert_eq!(label.as_deref(), Some("raw label"));
+        let count: Option<u32> = fields.decode("Count").unwrap();
+        assert_eq!(count, Some(7));
+        assert!(fields.is_empty());
+    }
+
+    #[test]
+    fn field_access_reads_trimmed_string_fields() {
+        let element = Element::new(types::AZSTD_VECTOR).with_children([
+            leaf("Name", types::AZSTD_STRING, b"  detector  "),
+            leaf("Empty", types::AZSTD_STRING, b"   "),
+            leaf("Label", types::AZSTD_BASIC_STRING, b"active"),
+        ]);
+        let mut cursor = FieldCursor::from_element(&element);
+
+        assert_eq!(
+            cursor.read_trimmed_string("Name").unwrap(),
+            Some(Some("detector"))
+        );
+        assert_eq!(cursor.read_trimmed_string("Empty").unwrap(), Some(None));
+        assert_eq!(
+            cursor.read_trimmed_string_owned("Label").unwrap(),
+            Some(Some("active".to_string()))
+        );
+        assert_eq!(cursor.read_trimmed_string_owned("Missing").unwrap(), None);
+        assert!(cursor.is_empty());
+    }
+
+    #[test]
+    fn field_access_reads_trimmed_string_aliases() {
+        let element = Element::new(types::AZSTD_VECTOR).with_children([
+            leaf("name", types::AZSTD_STRING, b"  serialized first  "),
+            leaf("Name", types::AZSTD_STRING, b"alias priority second"),
+            leaf("Empty", types::AZSTD_STRING, b"   "),
+        ]);
+        let mut cursor = FieldCursor::from_element(&element);
+
+        let (field, value) = cursor
+            .read_trimmed_string_any(&["Name", "name"])
+            .unwrap()
+            .unwrap();
+        assert_eq!(field, "name");
+        assert_eq!(value, Some("serialized first"));
+        let (field, value) = cursor
+            .read_trimmed_string_any_owned(&["Empty"])
+            .unwrap()
+            .unwrap();
+        assert_eq!(field, "Empty");
+        assert_eq!(value, None);
+        assert_eq!(
+            cursor.read_trimmed_string_any_owned(&["Missing"]).unwrap(),
+            None
+        );
+        assert!(cursor.is_empty());
+    }
+
+    #[test]
+    fn field_access_reads_first_matching_alias() {
+        let element = Element::new(types::AZSTD_VECTOR).with_children([
+            leaf("OldName", types::FLOAT, 1.5_f32.to_be_bytes()),
+            leaf("NewName", types::FLOAT, 2.5_f32.to_be_bytes()),
+        ]);
+        let mut fields = FieldCursor::from_element(&element);
+
+        let (field, value) = fields
+            .read_any(&["NewName", "OldName"], read_f32)
+            .unwrap()
+            .unwrap();
+
+        assert_eq!(field, "OldName");
+        assert_eq!(value.to_bits(), 1.5_f32.to_bits());
+        assert_eq!(
+            fields.read("NewName", read_f32).unwrap().map(f32::to_bits),
+            Some(2.5_f32.to_bits())
+        );
+    }
+
+    #[test]
+    fn child_by_field_any_follows_child_order() {
+        let element = Element::new(types::AZSTD_VECTOR).with_children([
+            leaf("OldName", types::FLOAT, 1.5_f32.to_be_bytes()),
+            leaf("NewName", types::FLOAT, 2.5_f32.to_be_bytes()),
+        ]);
+
+        let child = child_by_field_any(&element, &["NewName", "OldName"]).expect("alias child");
+        assert_eq!(child.field().map(arcstr::ArcStr::as_str), Some("OldName"));
+        assert_eq!(read_f32(child).unwrap().to_bits(), 1.5_f32.to_bits());
+    }
+
+    #[test]
+    fn child_by_field_or_index_prefers_named_child() {
+        let element = Element::new(types::AZSTD_VECTOR).with_children([
+            leaf("OldName", types::FLOAT, 1.5_f32.to_be_bytes()),
+            leaf("NewName", types::FLOAT, 2.5_f32.to_be_bytes()),
+        ]);
+
+        let child = child_by_field_or_index(&element, "NewName", 0).expect("field");
+        assert_eq!(child.field().map(arcstr::ArcStr::as_str), Some("NewName"));
+        assert_eq!(read_f32(child).unwrap().to_bits(), 2.5_f32.to_bits());
+    }
+
+    #[test]
+    fn child_by_field_or_index_falls_back_to_index() {
+        let element = Element::new(types::AZSTD_VECTOR).with_children([
+            leaf("OldName", types::FLOAT, 1.5_f32.to_be_bytes()),
+            leaf("OtherName", types::FLOAT, 2.5_f32.to_be_bytes()),
+        ]);
+
+        let child = child_by_field_or_index(&element, "NewName", 0).expect("index child");
+        assert_eq!(child.field().map(arcstr::ArcStr::as_str), Some("OldName"));
+        assert_eq!(read_f32(child).unwrap().to_bits(), 1.5_f32.to_bits());
+    }
+
+    #[test]
+    fn read_child_by_field_or_index_decodes_named_child() {
+        let element = Element::new(types::AZSTD_VECTOR).with_children([
+            leaf("OldName", types::FLOAT, 1.5_f32.to_be_bytes()),
+            leaf("NewName", types::FLOAT, 2.5_f32.to_be_bytes()),
+        ]);
+
+        assert_eq!(
+            read_child_by_field_or_index(&element, "NewName", 0, read_f32).unwrap(),
+            Some(2.5)
+        );
+    }
+
+    #[test]
+    fn decode_child_by_field_or_index_falls_back_to_index() {
+        let element = Element::new(types::AZSTD_VECTOR).with_children([
+            leaf("OldName", types::INT, 7_i32.to_be_bytes()),
+            leaf("OtherName", types::INT, 11_i32.to_be_bytes()),
+        ]);
+
+        assert_eq!(
+            decode_child_by_field_or_index::<i32>(&element, "NewName", 0).unwrap(),
+            Some(7)
+        );
+    }
+
+    #[test]
+    fn child_by_field_or_index_returns_none_on_miss() {
+        let element = Element::new(types::AZSTD_VECTOR).with_children([leaf(
+            "OldName",
+            types::FLOAT,
+            1.5_f32.to_be_bytes(),
+        )]);
+
+        assert!(child_by_field_or_index(&element, "NewName", 2).is_none());
+    }
+
+    #[test]
+    fn field_access_decodes_first_matching_alias() {
+        let element = Element::new(types::AZSTD_VECTOR).with_children([
+            leaf("OldName", types::FLOAT, 1.5_f32.to_be_bytes()),
+            leaf("NewName", types::FLOAT, 2.5_f32.to_be_bytes()),
+        ]);
+        let mut fields = FieldCursor::from_element(&element);
+
+        let (field, value): (&str, f32) =
+            fields.decode_any(&["NewName", "OldName"]).unwrap().unwrap();
+
+        assert_eq!(field, "OldName");
+        assert_eq!(value.to_bits(), 1.5_f32.to_bits());
+        let next: Option<f32> = fields.decode("NewName").unwrap();
+        assert_eq!(next.map(f32::to_bits), Some(2.5_f32.to_bits()));
+    }
+
+    #[test]
+    fn field_access_requires_first_matching_alias() {
+        let element = Element::new(types::AZSTD_VECTOR).with_children([
+            leaf("OldName", types::FLOAT, 1.5_f32.to_be_bytes()),
+            leaf("NewName", types::FLOAT, 2.5_f32.to_be_bytes()),
+        ]);
+        let mut fields = ElementFields::new(&element);
+
+        let (field, value): (&str, f32) = fields.required_any(&["NewName", "OldName"]).unwrap();
+
+        assert_eq!(field, "OldName");
+        assert_eq!(value.to_bits(), 1.5_f32.to_bits());
+        assert!(matches!(
+            fields.required_any::<u32>(&["Missing", "AlsoMissing"]),
+            Err(ObjectStreamValueError::MissingField { field })
+                if field == "Missing|AlsoMissing"
+        ));
+    }
+
+    #[test]
+    fn field_access_handles_required_and_defaulted_fields() {
+        let element = Element::new(types::AZSTD_VECTOR).with_children([
+            leaf("Enabled", types::BOOL, [1]),
+            leaf("Count", types::UNSIGNED_INT, 7_u32.to_be_bytes()),
+        ]);
+        let mut fields = FieldCursor::from_element(&element);
+
+        let enabled: bool = fields.required("Enabled").unwrap();
+        assert!(enabled);
+        let missing: u32 = fields.decode_or_default("Missing").unwrap();
+        assert_eq!(missing, 0);
+        let count: u32 = fields.decode_or("Count", 10).unwrap();
+        assert_eq!(count, 7);
+
+        let mut fields = FieldCursor::from_element(&element);
+        assert!(matches!(
+            fields.required::<u32>("Missing"),
+            Err(ObjectStreamValueError::MissingField { .. })
+        ));
+    }
+
+    #[test]
+    fn field_access_decodes_owned_strings() {
+        let element = Element::new(types::AZSTD_VECTOR).with_children([leaf(
+            "Name",
+            types::AZSTD_STRING,
+            b"shape",
+        )]);
+        let mut fields = FieldCursor::from_element(&element);
+
+        let name: Box<str> = fields.required("Name").unwrap();
+        assert_eq!(&*name, "shape");
+    }
+
+    #[test]
+    fn field_access_decodes_packed_float_arrays() {
+        let element = Element::new(types::AZSTD_VECTOR).with_children([
+            leaf("Position", types::VECTOR3, floats([1.0, 2.0, 3.0])),
+            leaf("Tint", types::COLOR, floats([0.1, 0.2, 0.3, 0.4])),
+            leaf("Missing", types::BOOL, [1]),
+        ]);
+        let mut fields = FieldCursor::from_element(&element);
+
+        let position: [f32; 3] = fields.required("Position").unwrap();
+        assert_eq!(
+            position.map(f32::to_bits),
+            [1.0_f32, 2.0, 3.0].map(f32::to_bits)
+        );
+        let tint: [f32; 4] = fields.required("Tint").unwrap();
+        assert_eq!(
+            tint.map(f32::to_bits),
+            [0.1_f32, 0.2, 0.3, 0.4].map(f32::to_bits)
+        );
+        let transform: [f32; 12] = fields.decode_or_default("Transform").unwrap();
+        assert_eq!(transform.map(f32::to_bits), [0.0_f32; 12].map(f32::to_bits));
+    }
+
+    #[test]
+    fn decodes_streaming_header_without_copying_string() {
+        let field = ArcStr::from("Name");
+        let data = b"volume";
+        let header = ElementHeader {
+            flags: ST_BINARYFLAG_HAS_VALUE,
+            name_crc: None,
+            version: None,
+            id: types::AZSTD_STRING,
+            specialization: None,
+            resolution: crate::TypeResolution::Resolved {
+                type_id: types::AZSTD_STRING,
+                class: crate::context::ReflectedClassKey::new(types::AZSTD_STRING),
+                edge: None,
+                enum_type_id: None,
+                builtin_serializer: Some(crate::codec::BuiltinSerializerDescriptor::new(
+                    crate::codec::BuiltinSerializerKind::String,
+                    0,
+                )),
+                is_container: false,
+                container_shape: None,
+            },
+            version_state: crate::context::VersionConversionState::default(),
+            name: None,
+            field: Some(&field),
+            data: Some(data),
+            payload_encoding: PayloadEncoding::BinaryBigEndian,
+        };
+
+        let value: &str = DecodeAzValue::decode_az_value(&header).unwrap();
+        assert_eq!(value, "volume");
+    }
+
+    fn leaf(field: &str, id: Uuid, data: impl Into<Vec<u8>>) -> Element {
+        let element = Element::new(id).with_field(field).with_data(data);
+        if let Some(kind) = crate::codec::builtin_serializer_kind(id) {
+            element.with_builtin_serializer(crate::codec::BuiltinSerializerDescriptor::new(kind, 0))
+        } else {
+            element
+        }
+    }
+
+    fn leaf_crc(name_crc: u32, id: Uuid, data: impl Into<Vec<u8>>) -> Element {
+        let mut element = leaf("", id, data);
+        element.field = None;
+        element.name_crc = Some(name_crc);
+        element
+    }
+
+    fn class(id: Uuid) -> Element {
+        Element::new(id).with_test_class()
+    }
+
+    fn floats<const N: usize>(values: [f32; N]) -> Vec<u8> {
+        values.into_iter().flat_map(f32::to_be_bytes).collect()
+    }
+}

@@ -1,0 +1,6 @@
+{
+  "git": {
+    "sha1": "1391f0d0615a89f391ea55e7b168a6288168e8dd"
+  },
+  "path_in_vcs": "crates/bindings/bevy_reflect_bms_bindings"
+}

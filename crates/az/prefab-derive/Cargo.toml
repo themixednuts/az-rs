@@ -1,0 +1,25 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-prefab-derive"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Narrow Bevy-native Prefab TypeData derive for Azoth"
+
+[lib]
+proc-macro = true
+
+[lints]
+workspace = true
+
+[dependencies]
+proc-macro2 = { workspace = true }
+quote = { workspace = true }
+syn = { workspace = true }
+
+[dev-dependencies]
+az-prefab = { workspace = true }
+bevy_ecs = { workspace = true }
+bevy_reflect = { workspace = true }
+trybuild = "1"

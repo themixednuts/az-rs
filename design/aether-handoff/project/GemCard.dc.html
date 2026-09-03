@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#15171b;}
+</style>
+</helmet>
+<div data-htmlswap-component="gem-card" data-htmlswap-region="project.manager.create" onClick="{{ handleClick }}" style="{{ cardStyle }}" style-hover="border-color:#3a4150;">
+  <div style="flex:1 1 auto;min-width:0;">
+    <div style="display:flex;align-items:center;gap:7px;">
+      <span style="font-size:12px;font-weight:500;color:#e4e7ec;font-family:'IBM Plex Sans',system-ui,sans-serif;">{{ name }}</span>
+      <span style="font-size:9.5px;color:#5f6670;font-family:'IBM Plex Mono',monospace;">{{ ver }}</span>
+      <sc-if value="{{ locked }}" hint-placeholder-val="{{ false }}"><span style="font-size:9px;color:#7c838f;background:#23272e;padding:1px 5px;border-radius:3px;font-family:'IBM Plex Sans',system-ui,sans-serif;">REQUIRED</span></sc-if>
+    </div>
+    <div style="font-size:10.5px;color:#8b919c;line-height:1.4;margin-top:2px;font-family:'IBM Plex Sans',system-ui,sans-serif;">{{ desc }}</div>
+  </div>
+  <span style="{{ trackStyle }}"><span style="{{ knobStyle }}"></span></span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:260,&quot;height&quot;:62},&quot;gem&quot;:{&quot;editor&quot;:null,&quot;default&quot;:{&quot;name&quot;:&quot;Atom Renderer&quot;,&quot;ver&quot;:&quot;v0.4.2&quot;,&quot;desc&quot;:&quot;Vulkan forward+ renderer with GPU-driven culling.&quot;,&quot;enabled&quot;:true,&quot;locked&quot;:false},&quot;tsType&quot;:&quot;{ name:string; ver:string; desc:string; enabled:boolean; locked:boolean }&quot;},&quot;onToggle&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(on: boolean) =&gt; void&quot;}}">
+class Component extends DCLogic {
+  state = { on: undefined };
+  renderVals() {
+    const p = this.props;
+    const g = p.gem || {};
+    const locked = g.locked ?? p.locked ?? false;
+    const controlled = typeof p.onToggle === 'function';
+    const seed = g.enabled ?? p.enabled ?? false;
+    const on = locked ? true : (controlled ? seed : (this.state.on !== undefined ? this.state.on : seed));
+    const handleClick = () => {
+      if (locked) return;
+      const next = !on;
+      if (!controlled) this.setState({ on: next });
+      if (typeof p.onToggle === 'function') p.onToggle(next);
+    };
+    return {
+      name: g.name ?? p.name ?? 'Atom Renderer',
+      ver: g.ver ?? (g.version ? 'v' + g.version : 'v0.4.2'),
+      desc: g.desc ?? p.desc ?? 'Vulkan forward+ renderer with GPU-driven culling.',
+      locked, handleClick,
+      cardStyle: {
+        display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '10px 12px',
+        borderRadius: '8px', cursor: locked ? 'not-allowed' : 'default',
+        border: on ? '1px solid #2f4f7a' : '1px solid #2c313a',
+        background: on ? 'rgba(65,136,224,0.07)' : '#1b1e23'
+      },
+      trackStyle: { width: '30px', height: '17px', borderRadius: '9px', background: on ? (locked ? '#2d5230' : '#3160a8') : '#3a3f48', position: 'relative', flex: '0 0 auto', marginTop: '1px', opacity: locked ? 0.8 : 1, transition: 'background .12s' },
+      knobStyle: { position: 'absolute', top: '2px', left: '2px', width: '13px', height: '13px', borderRadius: '50%', background: on ? '#fff' : '#9aa1ac', transform: on ? 'translateX(13px)' : 'translateX(0)', transition: 'transform .12s' }
+    };
+  }
+}
+</script>
+</body>
+</html>

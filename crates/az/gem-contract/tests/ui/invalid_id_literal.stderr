@@ -1,0 +1,17 @@
+error[E0080]: evaluation panicked: invalid gem id: dotted lowercase segments required; each segment must start with a letter
+ --> tests/ui/invalid_id_literal.rs:7:20
+  |
+7 | const GEM: GemId = GemId::new("Azoth.Vegetation");
+  |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ evaluation of `GEM` failed inside this call
+  |
+note: inside `GemId::new`
+ --> $RUST/core/src/panic.rs
+  |
+  |         $crate::panicking::panic_fmt($crate::const_format_args!($($t)+));
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the failure occurred here
+  |
+ ::: src/ids.rs
+  |
+  | dotted_id!(GemId, "gem");
+  | ------------------------ in this macro invocation
+  = note: this error originates in the macro `$crate::panic::panic_2021` which comes from the expansion of the macro `dotted_id` (in Nightly builds, run with -Z macro-backtrace for more info)

@@ -1,0 +1,22 @@
+(
+    parity_cases: [
+        (id: "scalar_editing", golden: "gamedata-row.inspector.ron", current_contract: "Primitive numeric/text fields emit Set commands."),
+        (id: "slider_range", golden: "mesh.inspector.ron", current_contract: "LOD Bias selects Slider(-2..2, step 1)."),
+        (id: "multiline_text", golden: "inspector-behaviors.ron", current_contract: "Textarea rows metadata selects the multiline renderer."),
+        (id: "color_vector", golden: "transform.inspector.ron", current_contract: "Transform vectors preserve suffix metadata; color uses the generic color renderer."),
+        (id: "enum_variant", golden: "camera.inspector.ron", current_contract: "CameraProjection exposes named variants and payload defaults."),
+        (id: "nested_struct", golden: "camera.inspector.ron", current_contract: "Projection payload recurses into its reflected struct."),
+        (id: "list_editing", golden: "material-assignment.inspector.ron", current_contract: "Slot overrides support insert/remove/move commands."),
+        (id: "map_editing", golden: "nested-collections.inspector.ron", current_contract: "Map entries are recursively projected and structurally edited."),
+        (id: "typed_map_keys", golden: "nested-collections.inspector.ron", current_contract: "Current transport supports string map keys; vNext carries a typed key envelope."),
+        (id: "asset_object_refs", golden: "asset-handle.inspector.ron", current_contract: "Asset widgets preserve asset type; prefab fixtures preserve object references."),
+        (id: "mixed_selection", golden: "inspector-behaviors.ron", current_contract: "Unequal selected values fold to mixed state without replacing values."),
+        (id: "undo_redo", golden: "inspector-behaviors.ron", current_contract: "Committed edit commands preserve undo/redo journal behavior."),
+        (id: "visibility_read_only", golden: "inspector-behaviors.ron", current_contract: "Project-host rule results override static hidden/read-only flags."),
+        (id: "validation", golden: "camera.inspector.ron", current_contract: "Field constraints and near-less-than-far diagnostics reject commit."),
+        (id: "actions", golden: "inspector-behaviors.ron", current_contract: "Registered type buttons invoke project-host actions by current action identity."),
+        (id: "add_component", golden: "add-component.inspector.ron", current_contract: "Palette search joins schema presentation with component capabilities and defaults."),
+        (id: "gamedata", golden: "gamedata-row.inspector.ron", current_contract: "Row schema drives columns and the named primary-key field."),
+        (id: "graph_ports", golden: "graph-port.inspector.ron", current_contract: "Port schema identity and default value remain domain descriptor data."),
+    ],
+)

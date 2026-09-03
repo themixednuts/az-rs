@@ -1,0 +1,5 @@
+error: `#[contribution(runtime)]` reads `runtime`'s roles and caps from `gem.toml`, so it takes no keys; spell every fact at the call site with `gem`, `id`, `roles`, and `caps`, or name the contribution and let the manifest answer
+  --> tests/ui/contribution_token_and_keys.rs:18:5
+   |
+18 |     runtime,
+   |     ^^^^^^^

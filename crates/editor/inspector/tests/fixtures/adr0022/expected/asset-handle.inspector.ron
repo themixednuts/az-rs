@@ -1,0 +1,12 @@
+(
+    case: "asset_handle",
+    schema: "azoth.render.Mesh",
+    type_label: "Mesh",
+    category: Some("Rendering"),
+    icon: Some("deployed_code"),
+    fields: [
+        (name: "mesh", label: "Mesh", schema_type: "core.asset-path", widget: "asset:mesh", default: Some("asset:"), constraints: ()),
+    ],
+    add_component: None,
+    behaviors: ["typed_asset_picker", "empty_asset_default", "asset_dependency_intent"],
+)

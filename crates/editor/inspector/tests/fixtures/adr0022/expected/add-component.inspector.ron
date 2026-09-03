@@ -1,0 +1,10 @@
+(
+    case: "add_component",
+    schema: "azoth.transform.Transform",
+    type_label: "Transform",
+    category: Some("Core"),
+    icon: Some("open_with"),
+    fields: [],
+    add_component: Some((editor_export: true, runtime_export: true, provides: ["azoth.transform"], requires: [], incompatible: ["azoth.transform"], default_available: true)),
+    behaviors: ["palette_search", "applicability", "capability_conflict", "default_initial_value"],
+)

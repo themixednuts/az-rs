@@ -1,0 +1,13 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "cry-chunk"
+version = "0.1.0"
+edition.workspace = true
+description = "Safe parser for public Cry 0x746 containers and geometry payloads"
+
+[lints]
+workspace = true
+
+[dependencies]
+thiserror = { workspace = true }

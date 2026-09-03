@@ -1,0 +1,1 @@
+ALTER TABLE `project_ui_states` ADD `active_level_document_id` TEXT;

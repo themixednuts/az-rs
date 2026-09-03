@@ -1,0 +1,59 @@
+(
+    document: (
+        schema: "azoth.authored-document/v1",
+        id: "prefabs/adr0022-phase0-nested-override.prefab.ron",
+    ),
+    objects: [
+        (
+            id: "018f0c5a-0022-7000-8000-000000000101",
+            schema: "azoth.prefab.Prefab",
+            schema_version: 1,
+            value: Struct({
+                49525662: Bool(true),
+                105446707: List([ObjectRef("018f0c5a-0022-7000-8000-000000000103")]),
+                2369371622: String("Nested Override Fixture"),
+                3372870890: List([ObjectRef("018f0c5a-0022-7000-8000-000000000102")]),
+                3669025293: ObjectRef("018f0c5a-0022-7000-8000-000000000102"),
+            }),
+        ),
+        (
+            id: "018f0c5a-0022-7000-8000-000000000102",
+            schema: "azoth.prefab.Entity",
+            schema_version: 1,
+            value: Struct({
+                49525662: Bool(true),
+                469045609: List([]),
+                2369371622: String("mount"),
+            }),
+        ),
+        (
+            id: "018f0c5a-0022-7000-8000-000000000103",
+            schema: "azoth.prefab.Instance",
+            schema_version: 1,
+            value: Struct({
+                49525662: Bool(true),
+                466561496: AssetPath("prefabs/base-door.prefab.ron"),
+                1698942069: ObjectRef("018f0c5a-0022-7000-8000-000000000102"),
+                2369371622: String("door-instance"),
+                4258025162: List([ObjectRef("018f0c5a-0022-7000-8000-000000000104")]),
+            }),
+        ),
+        (
+            id: "018f0c5a-0022-7000-8000-000000000104",
+            schema: "azoth.prefab.OverrideOp",
+            schema_version: 1,
+            value: Struct({
+                845187144: Struct({
+                    861522412: List([ObjectRef("018f0c5a-0022-7000-8000-000000000103")]),
+                    1994390661: Unsigned(1),
+                    2223459638: Struct({}),
+                    3099987130: ObjectRef("018f0c5a-0022-7000-8000-000000000202"),
+                }),
+                3294899967: Variant(
+                    id: 682729123,
+                    value: Some(Struct({1113510858: Float(2.0)})),
+                ),
+            }),
+        ),
+    ],
+)

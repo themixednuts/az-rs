@@ -1,0 +1,35 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-runtime-host"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "UI-free Azoth runtime-host service adapter"
+
+
+[lints]
+workspace = true
+[features]
+default = []
+test-support = []
+
+[dependencies]
+az-gem-contract = { workspace = true }
+az-proto-core = { path = "../proto/core" }
+az-proto-project = { path = "../proto/project" }
+az-proto-runtime = { path = "../proto/runtime" }
+az-rpc = { workspace = true }
+capnp = { workspace = true }
+capnp-rpc = { workspace = true }
+futures = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+az-architecture-guard = { workspace = true }
+blake3 = { workspace = true }
+tempfile = "3"
+toml = { workspace = true }

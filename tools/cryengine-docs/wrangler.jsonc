@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cryengine-docs-markdown",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-03-24",
+  "workers_dev": true,
+  "browser": {
+    "binding": "BROWSER",
+    "remote": true
+  }
+}

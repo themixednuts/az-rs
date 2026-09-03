@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#181b20;}
+  .ms{font-family:'Material Symbols Outlined';font-weight:400;font-style:normal;line-height:1;display:inline-block;vertical-align:middle;-webkit-font-smoothing:antialiased;user-select:none;}
+</style>
+</helmet>
+<div data-htmlswap-component="stepper" data-htmlswap-slot="steps" style="display:flex;align-items:center;gap:4px;font-family:'IBM Plex Sans',system-ui,sans-serif;">
+  <sc-for list="{{ steps }}" as="s" hint-placeholder-count="3">
+    <div data-htmlswap-component="step" data-htmlswap-key="{{ s.label }}" onClick="{{ s.onClick }}" style="{{ s.style }}" style-hover="color:#d6dae0;">
+      <span style="{{ s.numStyle }}"><sc-if value="{{ s.done }}" hint-placeholder-val="{{ false }}"><span class="ms" style="font-size:14px;">check</span></sc-if><sc-if value="{{ s.notDone }}" hint-placeholder-val="{{ true }}">{{ s.num }}</sc-if></span>{{ s.label }}
+    </div>
+    <span style="{{ s.connStyle }}"></span>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:340,&quot;height&quot;:40},&quot;labels&quot;:{&quot;editor&quot;:null,&quot;default&quot;:[&quot;Template&quot;,&quot;Configure&quot;,&quot;Gems&quot;],&quot;tsType&quot;:&quot;string[]&quot;},&quot;current&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:2,&quot;min&quot;:1,&quot;max&quot;:3,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;State&quot;},&quot;onStep&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(step: number) =&gt; void&quot;}}">
+class Component extends DCLogic {
+  state = { cur: undefined };
+  renderVals() {
+    const p = this.props;
+    const labels = Array.isArray(p.labels) && p.labels.length ? p.labels : ['Template', 'Configure', 'Gems'];
+    const current = this.state.cur !== undefined ? this.state.cur : (p.current ?? 1);
+    const steps = labels.map((label, ix) => {
+      const n = ix + 1;
+      const cur = current === n, done = current > n;
+      return {
+        key: label, num: String(n), label, done, notDone: !done,
+        onClick: () => {
+          this.setState({ cur: n });
+          if (typeof p.onStep === 'function') p.onStep(n);
+        },
+        style: { display: 'flex', alignItems: 'center', gap: '7px', height: '28px', padding: '0 8px', fontSize: '11.5px', cursor: 'default', color: cur ? '#e4e7ec' : (done ? '#9aa1ac' : '#6b7280'), fontWeight: cur ? 600 : 400 },
+        numStyle: { width: '19px', height: '19px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10.5px', fontWeight: 600, flex: '0 0 auto', color: (cur || done) ? '#fff' : '#8b919c', background: cur ? '#3160a8' : (done ? '#3a8f4e' : '#2c313a') },
+        connStyle: { width: ix < labels.length - 1 ? '18px' : '0', height: '1px', background: '#2c313a', display: 'inline-block' }
+      };
+    });
+    return { steps };
+  }
+}
+</script>
+</body>
+</html>

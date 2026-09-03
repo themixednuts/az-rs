@@ -1,0 +1,15 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "spacetime-plugin"
+version = "0.1.0"
+edition.workspace = true
+description = "Bevy plugin that wraps `spacetimedb-sdk` for native server-side use. Drives `frame_tick()`, bridges connection events into Bevy messages."
+
+
+[lints]
+workspace = true
+[dependencies]
+bevy = { workspace = true, features = ["default_app"] }
+spacetimedb-sdk = "2.2"
+tracing = { workspace = true }

@@ -1,0 +1,21 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-engine"
+version = "0.1.0"
+edition = "2024"
+description = "AZoth Engine - Rust port of AZoth Engine"
+
+
+[lints]
+workspace = true
+[dependencies]
+bevy = { workspace = true, features = ["default_app", "common_api", "scene"] }
+thiserror = { workspace = true }
+
+[features]
+default = []
+
+[dev-dependencies]
+az-architecture-guard = { workspace = true }
+toml = { workspace = true }

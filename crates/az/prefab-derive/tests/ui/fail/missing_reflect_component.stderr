@@ -1,0 +1,29 @@
+error: Prefab requires #[reflect(Component)] so ReflectComponent is registered
+ --> tests/ui/fail/missing_reflect_component.rs:4:28
+  |
+4 | #[derive(Reflect, Default, Prefab)]
+  |                            ^^^^^^
+  |
+  = note: this error originates in the derive macro `Prefab` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `PrefabTypeData: FromType<MissingComponent>` is not satisfied
+ --> tests/ui/fail/missing_reflect_component.rs:5:20
+  |
+4 | #[derive(Reflect, Default, Prefab)]
+  |          ------- required by a bound introduced by this call
+5 | #[reflect(Default, Prefab)]
+  |                    ^^^^^^ the trait `FromType<MissingComponent>` is not implemented for `PrefabTypeData`
+  |
+help: the trait `FromType<MissingComponent>` is not implemented for `PrefabTypeData`
+      but trait `FromType<MultiInstanceOf>` is implemented for it
+ --> $WORKSPACE/crates/az/prefab/src/multi_instance.rs
+  |
+  | #[derive(Component, Reflect, Clone, Default, PartialEq, Eq, Prefab)]
+  |                                                             ^^^^^^
+  = help: for that trait implementation, expected `MultiInstanceOf`, found `MissingComponent`
+note: required by a bound in `TypeRegistration::register_type_data`
+ --> $CARGO/bevy_reflect-$VERSION/src/type_registry.rs
+  |
+  |     pub fn register_type_data<T: TypeData + FromType<V>, V>(&mut self) {
+  |                                             ^^^^^^^^^^^ required by this bound in `TypeRegistration::register_type_data`
+  = note: this error originates in the derive macro `Prefab` (in Nightly builds, run with -Z macro-backtrace for more info)

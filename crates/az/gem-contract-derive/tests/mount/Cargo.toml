@@ -1,0 +1,15 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-gem-mount"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Fixture contribution crate for the manifest forms of the contribution attribute"
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+az-gem-contract = { workspace = true }

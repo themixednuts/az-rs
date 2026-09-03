@@ -1,0 +1,31 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-lua-bytecode"
+version = "0.1.0"
+edition.workspace = true
+description = "Lua bytecode parsing, decompilation, and legacy asset conversion"
+
+[lints]
+workspace = true
+
+[dependencies]
+az-asset-builder = { workspace = true }
+az-core = { workspace = true }
+az-gem-contract = { workspace = true }
+bstr = { workspace = true }
+byteorder = { workspace = true }
+full_moon = { workspace = true }
+heck = { workspace = true }
+petgraph = { workspace = true }
+stylua = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+
+[[bench]]
+name = "decompile_hot_path"
+harness = false

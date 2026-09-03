@@ -1,0 +1,35 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-gem-contract"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Typed gem contribution contract for Azoth registration and composition"
+
+[lints]
+workspace = true
+
+[lib]
+name = "az_gem_contract"
+path = "src/lib.rs"
+
+[features]
+default = ["app"]
+# The Bevy edge of the contract: the `App` re-export, `GemContext::app()`, and
+# the composer's owned `App`. Everything else — ids, capabilities, descriptors,
+# registries, clocks, report, roles, session mode — is model surface and stays
+# feature-free, so registrar-only consumers take this crate with
+# `default-features = false` and never see Bevy.
+app = ["dep:bevy_app"]
+
+[dependencies]
+az-gem-contract-derive = { workspace = true }
+bevy_app = { workspace = true, optional = true }
+serde = { workspace = true, features = ["derive"] }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }
+trybuild = "1"

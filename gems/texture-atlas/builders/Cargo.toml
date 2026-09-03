@@ -1,0 +1,23 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-gem-texture-atlas-builders"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "TextureAtlas contribution bundle: the gem's atlas source family, product format, asset type and build rule"
+publish = false
+
+[lints]
+workspace = true
+
+# Exactly the crates the gem's builder role links, and no others: the format
+# crate whose registration this bundle names, plus the contract it names it
+# through. The gem crate arrives transitively — `texture-atlas-assets` is the
+# crate that depends on it, which is the whole reason this bundle exists.
+[dependencies]
+az-gem-contract = { workspace = true }
+texture-atlas-assets = { workspace = true }
+
+[dev-dependencies]
+azoth-texture-atlas-ids = { path = "../ids" }

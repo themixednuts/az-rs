@@ -1,0 +1,32 @@
+[manifest]
+kind = "gem"
+schema = "azoth.gem/v3"
+
+[gem]
+id = "azoth.roads-and-rivers"
+name = "RoadsAndRivers"
+version = "0.1.0"
+
+[paths]
+assets = "assets"
+scripts = "scripts"
+
+[[contributions]]
+id = "package"
+kind = "code"
+package = "az-gem-roads-and-rivers"
+roles = ["game", "p2p", "client", "server", "unified", "headless-server", "project-host", "runtime-host"]
+
+# Reflected prefab types are read by the two hosts that resolve prefab documents
+# without a Bevy world: `project-host` through its type registry and
+# `asset-worker` through AZSCENE analysis. `asset-processor` is deliberately
+# absent — the AP host links no gem code.
+[[contributions]]
+id = "prefab-types"
+kind = "builder"
+package = "az-gem-roads-and-rivers"
+roles = ["project-host", "asset-worker"]
+
+[[dependencies]]
+id = "azoth.lmbr-central"
+version = "^0.1.0"

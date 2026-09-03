@@ -1,0 +1,67 @@
+use bevy::prelude::*;
+
+use super::core::LightConfiguration;
+use super::kinds::{LightCubemapResolution, LightType, VoxelGiMode};
+use crate::rendering::EngineSpec;
+
+impl Default for LightConfiguration {
+    fn default() -> Self {
+        Self {
+            light_type: LightType::Point,
+            visible: true,
+            on_initially: true,
+            point_max_distance: 2.0,
+            point_attenuation_bulb_size: 0.05,
+            area_max_distance: 2.0,
+            area_width: 5.0,
+            area_height: 5.0,
+            area_fov_degrees: 45.0,
+            projector_attenuation_bulb_size: 0.05,
+            projector_range: 5.0,
+            projector_fov_degrees: 90.0,
+            projector_near_plane: 0.0,
+            projector_texture_asset_path: None,
+            projector_material_asset_path: None,
+            probe_sort_priority: 0,
+            probe_area: Vec3::splat(20.0),
+            probe_cubemap_resolution: LightCubemapResolution::Res256,
+            probe_cubemap_asset_path: None,
+            box_projected: false,
+            box_width: 20.0,
+            box_height: 20.0,
+            box_length: 20.0,
+            attenuation_falloff_max: 0.3,
+            tod_influence: 1.0,
+            probe_fade: 1.0,
+            min_spec: EngineSpec::Low,
+            view_distance_cap_enabled: false,
+            view_distance_multiplier: 1.0,
+            view_distance_cap: 0.0,
+            cast_shadows_spec: EngineSpec::Never,
+            voxel_gi_mode: VoxelGiMode::None,
+            color: Color::srgb(1.0, 1.0, 1.0),
+            diffuse_multiplier: 1.0,
+            specular_multiplier: 1.0,
+            affects_this_area_only: true,
+            use_vis_areas: true,
+            volumetric_fog: true,
+            volumetric_fog_only: false,
+            indoor_only: false,
+            ambient: false,
+            deferred: true,
+            anim_index: 0,
+            anim_speed: 1.0,
+            anim_phase: 0.0,
+            cast_terrain_shadows: false,
+            shadow_bias: 1.0,
+            shadow_slope_bias: 1.0,
+            shadow_res_scale: 1.0,
+            shadow_update_min_radius: 10.0,
+            shadow_update_ratio: 1.0,
+            shadow_max_camera_distance: 0.0,
+            cubemap_id: None,
+            anim_phase_random: false,
+            clip_volume_entity: None,
+        }
+    }
+}

@@ -1,0 +1,19 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-material"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Azoth native material authored-source schemas"
+
+[lints]
+workspace = true
+
+[dependencies]
+az-core = { workspace = true, features = ["serde"] }
+glam = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+
+[build-dependencies]
+az-build-fingerprint = { workspace = true }

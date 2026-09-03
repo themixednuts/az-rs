@@ -1,0 +1,42 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-project"
+version = "0.1.0"
+edition.workspace = true
+description = "Project manifests, capabilities, runtime profiles, and source sessions for Azoth"
+
+
+[lints]
+workspace = true
+
+[features]
+test-support = []
+[dependencies]
+az-core = { workspace = true, features = ["serde"] }
+az-filesystem = { workspace = true }
+# Runtime-neutral auth identity types remain in the contract gem. Host-tool
+# configuration and secret references are owned here and by `az-secrets` so
+# client targets never link a resolver.
+az-gem-auth = { workspace = true }
+az-secrets = { workspace = true }
+# Re-exports GemTargetRole from az-gem-contract (ADR 0041).
+az-gem-contract = { workspace = true }
+az-work = { workspace = true, features = ["process"] }
+blake3 = { workspace = true }
+hex = { workspace = true }
+ron = { workspace = true }
+semver = "1"
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+sha2 = { workspace = true }
+thiserror = { workspace = true }
+toml = { workspace = true }
+tracing = { workspace = true }
+unicode-normalization = { workspace = true }
+
+[target.'cfg(windows)'.dependencies]
+windows = { workspace = true, features = ["Win32_Storage_FileSystem"] }
+
+[dev-dependencies]
+tempfile = "3"

@@ -1,0 +1,20 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-engine-types"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Engine contribution bundle: the AZ types and component lowerings every host role composes"
+publish = false
+
+[lints]
+workspace = true
+
+# Exactly the engine crates the `types` role set links, and no others: this
+# list is the linkage half of the contribution (ADR 0036), so a crate added
+# here is a crate every target from a `tool` to a `client` will link.
+[dependencies]
+az-core = { workspace = true }
+az-gem-contract = { workspace = true }
+az-transform = { workspace = true }

@@ -1,0 +1,52 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "gamedata"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Engine-wide GameData release, table asset, and query contracts"
+
+
+[lints]
+workspace = true
+[features]
+default = []
+# The RON compiler, the envelope reader, and the catalog/graph/fingerprint
+# algorithms. Registry entry types (`RowSchema`, `manager::*`) are NOT here:
+# a runtime binary names them to link a project's generated catalog.
+authoring = ["dep:ron"]
+bevy = ["dep:az-framework", "dep:bevy", "dep:tracing"]
+# `#[derive(GameDataRow)]` expands to `::gamedata::Row` and
+# `::gamedata::GameDataRow` and nothing else, so deriving a row type does not
+# link an authoring host.
+derive = ["dep:gamedata-derive"]
+
+[dependencies]
+# Registrar-only: registry entry types, no `App`. See az-node-graph. The
+# crate's own `bevy` feature is the separate, explicit Bevy opt-in.
+az-gem-contract = { workspace = true }
+az-core = { workspace = true, features = ["serde"] }
+az-asset = { workspace = true }
+az-asset-builder = { workspace = true }
+az-framework = { path = "../../crates/az/framework", optional = true, default-features = false }
+bevy = { workspace = true, features = ["default_app"], optional = true }
+bevy_color = { workspace = true }
+blake3 = { workspace = true }
+bytes = { workspace = true }
+gamedata-derive = { path = "derive", optional = true }
+glam = { workspace = true }
+heck = "0.5"
+ron = { workspace = true, optional = true }
+rustc-hash = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true, optional = true }
+uuid = { workspace = true, features = ["serde", "v5"] }
+
+[dev-dependencies]
+# The generated ids the compose test reads identity back through: a test that
+# spelled `"azoth.gamedata"` would be asserting its own literal.
+azoth-gamedata-ids = { path = "ids" }
+serde_json = { workspace = true }
+tempfile = "3"

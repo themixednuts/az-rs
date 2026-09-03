@@ -1,0 +1,21 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-durable"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Provider-neutral fenced durable-subject primitives"
+
+[lints]
+workspace = true
+
+[dependencies]
+arrayvec = { workspace = true }
+blake3 = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+futures = { workspace = true }

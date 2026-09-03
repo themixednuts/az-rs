@@ -1,0 +1,11 @@
+error: associated constant `REGISTRATION` is never used
+ --> tests/ui/fail/unenumerated_component.rs:8:8
+  |
+8 | struct Widget;
+  |        ^^^^^^ associated constant in this implementation
+  |
+note: the lint level is defined here
+ --> tests/ui/fail/unenumerated_component.rs:8:8
+  |
+8 | struct Widget;
+  |        ^^^^^^

@@ -1,0 +1,15 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "steam-locator"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Steam library metadata and install discovery helpers"
+
+
+[lints]
+workspace = true
+[lib]
+name = "steam_locator"
+path = "src/lib.rs"

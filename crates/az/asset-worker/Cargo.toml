@@ -1,0 +1,47 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-asset-worker"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Project-owned asset builder worker runtime for Azoth"
+
+[lints]
+workspace = true
+
+[features]
+default = []
+test-support = []
+
+[dependencies]
+az-asset = { workspace = true }
+az-asset-builder = { workspace = true }
+az-core = { workspace = true, features = ["serde"] }
+az-gem-contract = { workspace = true }
+az-graph-builder = { workspace = true }
+az-proto-asset = { path = "../proto/asset" }
+az-proto-core = { path = "../proto/core" }
+az-rpc = { workspace = true }
+az-work = { workspace = true }
+blake3 = { workspace = true }
+capnp = { workspace = true }
+capnp-rpc = { workspace = true }
+futures = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+az-asset-builder = { workspace = true, features = ["test-support"] }
+# The four engine bundles an asset-worker role names, so the harness starts
+# from the floor a real worker starts from. Dev-only until the prebuilt worker
+# composes its own (Push 2).
+az-engine-assets = { workspace = true }
+az-engine-builders = { workspace = true }
+az-engine-runtime = { workspace = true }
+az-engine-types = { workspace = true }
+tempfile = "3"

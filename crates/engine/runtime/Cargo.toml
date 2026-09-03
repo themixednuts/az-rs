@@ -1,0 +1,43 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-engine-runtime"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Engine contribution bundle: the Bevy-world component types, their lowerings, and the replication wire the engine owns"
+publish = false
+
+[lints]
+workspace = true
+
+# The engine crates the ten world-and-asset roles link. `az-facet` already
+# names `gridmate`, so the wire half of this bundle adds no link edge that the
+# Bevy-world half did not already require — which is what makes one bundle the
+# honest granularity here rather than two.
+#
+# `aws-plugin` is deliberately absent: it is reachable only behind
+# `gridmate/client`, and an unswitchable floor must not put `reqwest` and
+# `tokio` in a headless server's link set to register one type it never sends.
+[dependencies]
+az-facet = { workspace = true }
+# `default-features = false` drops `luajit` and `oodle`. This bundle needs
+# az-framework's three AZ type registrations, not a scripting backend, and the
+# default set would put LuaJIT in the link graph of every host that composes the
+# engine floor — including the two asset-pipeline roles that never run a script.
+# az-prefab-builder already depends on it this way; a host that wants scripting
+# turns the feature on where it wants it. The path form is not a style choice:
+# the workspace entry pins `default-features`, so `workspace = true` cannot
+# narrow it, which is why az-prefab-builder spells the path too.
+az-framework = { path = "../../az/framework", default-features = false }
+az-gem-contract = { workspace = true }
+# The registry the middleware's reflected types land in. `az-facet` already
+# names it, so this adds a name rather than a link edge.
+az-prefab = { workspace = true }
+gridmate = { workspace = true }
+
+# The generated ids the compose test reads identity back through: a test that
+# spelled `"azoth"` would be asserting its own literal.
+[dev-dependencies]
+az-core = { workspace = true }
+az-engine-ids = { workspace = true }

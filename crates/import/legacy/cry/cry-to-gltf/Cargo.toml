@@ -1,0 +1,19 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "cry-to-gltf"
+version = "0.1.0"
+edition.workspace = true
+description = "Neutral offline conversion from public Cry geometry chunks to GLB"
+
+[lints]
+workspace = true
+
+[dependencies]
+cry-chunk = { workspace = true }
+half = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+gltf = { workspace = true }

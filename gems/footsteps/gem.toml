@@ -1,0 +1,18 @@
+[manifest]
+kind = "gem"
+schema = "azoth.gem/v3"
+
+[gem]
+id = "azoth.footsteps"
+name = "Footsteps"
+version = "0.1.0"
+
+[paths]
+assets = "assets"
+scripts = "scripts"
+
+[[contributions]]
+id = "package"
+kind = "code"
+package = "az-gem-footsteps"
+roles = ["game", "p2p", "client", "unified", "project-host", "runtime-host"]

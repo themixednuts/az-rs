@@ -1,0 +1,17 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "cry-3d-engine"
+version = "0.1.0"
+edition.workspace = true
+description = "Cry3DEngine binary asset parsers"
+
+
+[lints]
+workspace = true
+[dependencies]
+az-asset-builder = { path = "../../../../az/asset-builder" }
+bevy = { workspace = true, features = ["common_api"] }
+quick-xml = { workspace = true }
+smallvec = { workspace = true }
+thiserror = { workspace = true }

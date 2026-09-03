@@ -1,0 +1,15 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "cry-ai"
+version = "0.1.0"
+edition.workspace = true
+description = "Parsers for CryAI binary navigation assets"
+
+
+[lints]
+workspace = true
+[dependencies]
+az-asset-builder = { workspace = true }
+glam = { workspace = true }
+thiserror = { workspace = true }

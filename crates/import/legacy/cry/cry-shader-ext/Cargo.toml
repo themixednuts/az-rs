@@ -1,0 +1,17 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "cry-shader-ext"
+version = "0.1.0"
+edition.workspace = true
+description = "Parser for Cry/Lumberyard shader generation extension assets"
+
+
+[lints]
+workspace = true
+[dependencies]
+az-asset-builder = { workspace = true }
+az-core = { path = "../../../../az/core" }
+ron = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }

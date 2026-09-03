@@ -1,0 +1,35 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-gem-lmbr-central"
+version = "0.1.0"
+edition = "2024"
+description = "Lumberyard LmbrCentral Gem runtime data as a Bevy plugin"
+
+
+[lints]
+workspace = true
+[dependencies]
+az-gem-contract = { workspace = true }
+az-core = { path = "../../crates/az/core", features = ["bevy", "serde"] }
+az-derive = { workspace = true }
+az-asset = { path = "../../crates/az/asset" }
+az-framework = { path = "../../crates/az/framework", default-features = false }
+az-animation = { workspace = true }
+az-gem-animation = { workspace = true }
+az-physics = { workspace = true }
+az-mesh-builder = { workspace = true, features = ["bevy"] }
+az-prefab = { workspace = true }
+az-gem-audio-system = { path = "../audio-system" }
+bevy = { workspace = true, features = ["default_app", "3d_bevy_render", "scene", "audio", "dds"] }
+bevy_color.workspace = true
+serde = { workspace = true, features = ["derive"] }
+smallvec = { workspace = true }
+spade = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+az-physics-rapier = { workspace = true }
+azoth-lmbr-central-ids = { path = "ids" }

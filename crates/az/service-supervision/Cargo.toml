@@ -1,0 +1,37 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-service-supervision"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Shared Azoth service supervision records and owned process launcher"
+
+[lints]
+workspace = true
+
+[dependencies]
+az-filesystem = { workspace = true }
+az-proto-core = { path = "../proto/core" }
+az-rpc = { workspace = true }
+az-work = { workspace = true, features = ["process"] }
+capnp = { workspace = true }
+crossbeam-channel = { workspace = true }
+notify = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+uuid = { workspace = true, features = ["serde"] }
+
+[target.'cfg(unix)'.dependencies]
+libc = { workspace = true }
+
+[target.'cfg(windows)'.dependencies]
+windows = { workspace = true, features = [
+    "Win32_Foundation",
+    "Win32_System_Threading",
+] }
+
+[dev-dependencies]
+tempfile = "3"
+toml = { workspace = true }

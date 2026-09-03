@@ -1,0 +1,16 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-architecture-guard"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Shared test helpers for Azoth architecture boundary checks"
+
+
+[lints]
+workspace = true
+[dependencies]
+ron = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+toml = { workspace = true }

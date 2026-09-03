@@ -1,0 +1,13 @@
+(
+    version: 1,
+    type_versions: {"Camera": 1, "SpotLight": 1},
+    entities: {
+        "invalid": (
+            components: {
+                "Camera": (near: 2.0, far: 1.0),
+                "SpotLight": (inner_angle_degrees: 90.0, outer_angle_degrees: 45.0),
+            },
+        ),
+    },
+    instances: {},
+)

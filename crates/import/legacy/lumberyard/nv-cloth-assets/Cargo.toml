@@ -1,0 +1,23 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "nv-cloth-assets"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "NvCloth compatibility parser and source transform"
+
+
+[lints]
+workspace = true
+[dependencies]
+az-asset-builder = { workspace = true }
+az-core = { workspace = true }
+az-filesystem = { workspace = true }
+az-nv-cloth = { workspace = true }
+bevy = { workspace = true, features = ["common_api"] }
+ron = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }

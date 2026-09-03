@@ -1,0 +1,18 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "cry-text"
+version = "0.1.0"
+edition.workspace = true
+description = "Legacy Cry/Lumberyard text source transforms"
+
+
+[lints]
+workspace = true
+[dependencies]
+az-asset-builder = { workspace = true }
+az-gem-contract = { workspace = true }
+encoding_rs = { workspace = true }
+ron = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }

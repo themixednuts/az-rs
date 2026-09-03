@@ -1,0 +1,57 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-assetdb"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Plain-WAL Turso Azoth asset registry for durable source identity, workspace views, job attempts, products, authored documents, and dependency facts."
+
+# Durable project registry used by project-host, asset-processor, and editor
+# workflows. Lumberyard/O3DE AssetProcessor remains useful prior art, but this
+# schema is not a compatibility mirror of AP's source/job/product tables.
+#
+# The registry is the authority for source identity, workspace views, authored
+# DB documents, job attempts, and product facts. Rebuildable product bytes live
+# in the platform cache/catalog layer.
+
+
+[lints]
+workspace = true
+[features]
+default = []
+test-support = []
+
+[dependencies]
+az-asset-builder = { workspace = true }
+az-turso = { workspace = true }
+anyhow = "1"
+blake3 = { workspace = true }
+futures-lite = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true, features = ["sync"] }
+tracing = { workspace = true }
+turso = { workspace = true }
+uuid = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+
+# Runtime storage boundary uses Drizzle's native Turso backend. The
+# asset-processor process owns the MVCC database and publishes repository
+# operations to peer services over the asset service API.
+drizzle = { workspace = true, features = ["serde", "turso", "uuid"] }
+
+[dev-dependencies]
+criterion = { workspace = true }
+tempfile = "3"
+toml = { workspace = true }
+
+[[bench]]
+name = "commit"
+harness = false
+required-features = ["test-support"]
+
+[[bench]]
+name = "wal"
+harness = false
+required-features = ["test-support"]

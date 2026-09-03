@@ -1,0 +1,18 @@
+(
+    id: 7,
+    name: "Strength",
+    direction: Input,
+    value: Data(schema_type: "core.f32"),
+    capacity: Single,
+    layout: (
+        side: West,
+        order: None,
+        attachment: EvenlySpaced,
+    ),
+    description: Some("Strength multiplier."),
+    default_value: Some((
+        type_path: "core.f32",
+        encoding: TypedRon,
+        payload: [49, 46, 48],
+    )),
+)

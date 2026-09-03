@@ -1,0 +1,22 @@
+[manifest]
+kind = "gem"
+schema = "azoth.gem/v3"
+
+[gem]
+id = "azoth.legacy-terrain"
+name = "LegacyTerrain"
+version = "0.1.0"
+
+[paths]
+assets = "assets"
+scripts = "scripts"
+
+[[contributions]]
+id = "package"
+kind = "code"
+package = "az-gem-legacy-terrain"
+roles = ["game", "p2p", "client", "server", "unified", "headless-server", "project-host", "runtime-host"]
+
+[[dependencies]]
+id = "azoth.lmbr-central"
+version = "^0.1.0"

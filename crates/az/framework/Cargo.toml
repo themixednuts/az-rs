@@ -1,0 +1,41 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-framework"
+version = "0.1.0"
+edition.workspace = true
+description = "AzFramework component data and Bevy integration"
+
+
+[lints]
+workspace = true
+[dependencies]
+az-asset = { path = "../asset", default-features = false }
+az-core = { path = "../core", features = ["bevy"] }
+az-derive = { workspace = true }
+az-gem-contract = { workspace = true }
+az-graph-runtime = { workspace = true, features = ["bevy"] }
+az-pak = { path = "../../formats/compat/az-pak", default-features = false }
+az-prefab = { workspace = true }
+bevy = { workspace = true, features = ["default_app", "common_api", "scene"] }
+bevy_mod_scripting = { workspace = true, optional = true }
+glam = { workspace = true }
+parking_lot = "0.12"
+serde = { workspace = true, features = ["derive"] }
+sha2 = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+az-filesystem = { workspace = true }
+blake3 = { workspace = true }
+criterion = { workspace = true }
+tempfile = "3"
+
+[features]
+default = ["luajit"]
+lua = ["bevy_mod_scripting/lua"]
+lua54 = ["bevy_mod_scripting/lua54"]
+luajit = ["bevy_mod_scripting/luajit"]
+oodle = ["az-asset/oodle", "az-pak/oodle"]

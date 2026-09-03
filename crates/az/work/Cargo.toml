@@ -1,0 +1,52 @@
+[package]
+license.workspace = true
+repository.workspace = true
+name = "az-work"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+description = "Azoth local work execution policy for serial or data-parallel jobs."
+
+[lints]
+workspace = true
+
+[dependencies]
+# Core data-parallel + async surface (UNGATED): the unified concurrency lib is
+# runtime-agnostic. `futures` drives the bounded async fan-out; `tokio-util`
+# backs the cancellation token (atomic poll + async wakeups + child tokens).
+az-jobs = { workspace = true }
+futures = { workspace = true }
+tokio-util = { workspace = true }
+tracing = { workspace = true }
+
+# Runtime adapter deps: gated so shared crates accreting a JobContext never grow
+# cfgs. Only the concrete executor structs are gated, never the core surface.
+[dependencies.tokio]
+workspace = true
+optional = true
+
+[dependencies.bevy_tasks]
+workspace = true
+optional = true
+
+[features]
+default = []
+process = ["dep:libc", "dep:windows"]
+# TokioExecutor (multi-thread): daemon, cli.
+tokio = ["dep:tokio", "tokio/rt"]
+# TokioLocalExecutor (LocalSet/spawn_local): editor current-thread open flow.
+tokio-local = ["tokio", "tokio/rt"]
+# BevyExecutor (bevy_tasks pools): engine.
+bevy = ["dep:bevy_tasks"]
+
+[target.'cfg(unix)'.dependencies]
+libc = { version = "0.2", optional = true }
+
+[target.'cfg(windows)'.dependencies]
+windows = { workspace = true, optional = true, features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_System_Diagnostics_ToolHelp",
+    "Win32_System_JobObjects",
+    "Win32_System_Threading",
+] }

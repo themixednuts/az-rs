@@ -1,0 +1,173 @@
+[manifest]
+kind = "engine"
+schema = "azoth.engine/v1"
+
+[engine]
+id = "azoth"
+name = "Azoth"
+version = "0.1.0"
+
+[source_control.lore]
+remote_url = "lore://127.0.0.1:41337"
+
+# The engine's own contributions, in the gem stanza grammar verbatim
+# (asset-contract ticket 014, D1). The engine is a manifested composition root
+# rather than a gem: these compose first, unconditionally, ahead of the lock
+# closure below, and no project can switch them off — so there is no `enabled`
+# switch and no capability map here.
+#
+# Granularity is a role-coherent bundle, not one contribution per crate (D5).
+# Each package's Cargo dependencies are exactly the engine crates its role set
+# links, which is what keeps a `client` target from linking
+# `az-texture-builder`; the member crates keep their own `register(ctx)`
+# functions unchanged, and identity attaches here.
+
+[[contributions]]
+id = "types"
+kind = "code"
+package = "az-engine-types"
+roles = [
+  "game",
+  "p2p",
+  "client",
+  "server",
+  "unified",
+  "headless-server",
+  "project-host",
+  "asset-processor",
+  "asset-worker",
+  "runtime-host",
+  "tool",
+  "named-service",
+]
+
+[[contributions]]
+id = "assets"
+kind = "code"
+package = "az-engine-assets"
+roles = [
+  "game",
+  "p2p",
+  "client",
+  "server",
+  "unified",
+  "headless-server",
+  "project-host",
+  "asset-processor",
+  "asset-worker",
+  "runtime-host",
+]
+
+[[contributions]]
+id = "runtime"
+kind = "code"
+package = "az-engine-runtime"
+roles = [
+  "game",
+  "p2p",
+  "client",
+  "server",
+  "unified",
+  "headless-server",
+  "asset-processor",
+  "asset-worker",
+  "runtime-host",
+]
+
+[[contributions]]
+id = "builders"
+kind = "builder"
+package = "az-engine-builders"
+roles = ["project-host", "asset-processor", "asset-worker"]
+
+[[gems]]
+id = "azoth.audio-system"
+path = "gems/audio-system"
+
+[[gems]]
+id = "azoth.animation"
+path = "gems/animation"
+
+[[gems]]
+id = "azoth.camera"
+path = "gems/camera"
+
+[[gems]]
+id = "azoth.auth"
+path = "gems/auth"
+
+[[gems]]
+id = "azoth.auth.eos"
+path = "gems/auth-eos"
+
+[[gems]]
+id = "azoth.auth.local"
+path = "gems/auth-local"
+
+[[gems]]
+id = "azoth.auth.steam"
+path = "gems/auth-steam"
+
+[[gems]]
+id = "azoth.eos"
+path = "gems/eos"
+
+[[gems]]
+id = "azoth.fast-noise"
+path = "gems/fast-noise"
+
+[[gems]]
+id = "azoth.footsteps"
+path = "gems/footsteps"
+
+[[gems]]
+id = "azoth.gamedata"
+path = "gems/gamedata"
+
+[[gems]]
+id = "azoth.gradient-signal"
+path = "gems/gradient-signal"
+
+[[gems]]
+id = "azoth.historical-input"
+path = "gems/historical-input"
+
+[[gems]]
+id = "azoth.legacy-terrain"
+path = "gems/legacy-terrain"
+
+[[gems]]
+id = "azoth.lmbr-central"
+path = "gems/lmbr-central"
+
+[[gems]]
+id = "azoth.lyshine"
+path = "gems/lyshine"
+
+[[gems]]
+id = "azoth.nv-cloth"
+path = "gems/nv-cloth"
+
+[[gems]]
+id = "azoth.roads-and-rivers"
+path = "gems/roads-and-rivers"
+
+[[gems]]
+id = "azoth.rock-n-roll"
+path = "gems/rock-n-roll"
+
+[[gems]]
+id = "azoth.slayer-script"
+path = "gems/slayer-script"
+
+[[gems]]
+id = "azoth.steam"
+path = "gems/steam"
+
+[[gems]]
+id = "azoth.texture-atlas"
+path = "gems/texture-atlas"
+
+[[gems]]
+id = "azoth.vegetation"
+path = "gems/vegetation"
