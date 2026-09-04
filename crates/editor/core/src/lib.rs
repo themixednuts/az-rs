@@ -102,6 +102,7 @@ pub use daemon::AzDaemonClient;
 pub use daemon_bootstrap::ensure_daemon_endpoint_for_project;
 #[cfg(target_os = "windows")]
 pub use editor_render::EditorSceneObject;
+#[cfg(target_os = "windows")]
 pub use editor_render::{EditorRenderApp, EditorRenderInitError};
 pub use error::{EditorError, EditorResult};
 pub use game_data_catalog::{
